@@ -27,67 +27,35 @@ import java.util.Objects;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
 
-public class MailRepositoryUrl {
-    private static final int PROTOCOL_PART = 0;
-    private static final String PROTOCOL_SEPARATOR = "://";
-
-    public static final MailRepositoryUrl fromEncoded(String encodedUrl) throws UnsupportedEncodingException {
-        return new MailRepositoryUrl(URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8.displayName()));
+public class MailRepositoryPath implements Comparable<MailRepositoryPath> {
+    public static final MailRepositoryPath fromEncoded(String encodedPath) throws UnsupportedEncodingException {
+        return new MailRepositoryPath(URLDecoder.decode(encodedPath, StandardCharsets.UTF_8.displayName()));
     }
 
-    public static final MailRepositoryUrl from(String url) {
-        return new MailRepositoryUrl(url);
-    }
-
-    public static MailRepositoryUrl fromPathAndProtocol(MailRepositoryPath path, String protocol) {
-        return new MailRepositoryUrl(path, protocol);
+    public static final MailRepositoryPath from(String path) {
+        return new MailRepositoryPath(path);
     }
 
     private final String value;
-    private final MailRepositoryPath path;
-    private final Protocol protocol;
 
-    private MailRepositoryUrl(String value) {
+    private MailRepositoryPath(String value) {
         Preconditions.checkNotNull(value);
-        Preconditions.checkArgument(value.contains(PROTOCOL_SEPARATOR), "The expected format is: <protocol> \"" + PROTOCOL_SEPARATOR + "\" <path>");
         this.value = value;
-        String protocol = Splitter.on(':')
-            .splitToList(value)
-            .get(PROTOCOL_PART);
-        this.protocol = new Protocol(protocol);
-        this.path = MailRepositoryPath.from(value.substring(protocol.length() + PROTOCOL_SEPARATOR.length()));
-    }
-
-    private MailRepositoryUrl(MailRepositoryPath path, String protocol) {
-        Preconditions.checkNotNull(path);
-        Preconditions.checkNotNull(protocol);
-        this.path = path;
-        this.protocol = new Protocol(protocol);
-        this.value = protocol + PROTOCOL_SEPARATOR + path.asString();
     }
 
     public String asString() {
         return value;
     }
 
-    public MailRepositoryPath getPath() {
-        return path;
-    }
-
     public String urlEncoded() throws UnsupportedEncodingException {
         return URLEncoder.encode(value, StandardCharsets.UTF_8.displayName());
     }
 
-    public Protocol getProtocol() {
-       return protocol;
-    }
-
     @Override
     public final boolean equals(Object o) {
-        if (o instanceof MailRepositoryUrl) {
-            MailRepositoryUrl that = (MailRepositoryUrl) o;
+        if (o instanceof MailRepositoryPath) {
+            MailRepositoryPath that = (MailRepositoryPath) o;
 
             return Objects.equals(this.value, that.value);
         }
@@ -104,5 +72,10 @@ public class MailRepositoryUrl {
         return MoreObjects.toStringHelper(this)
             .add("value", value)
             .toString();
+    }
+
+    @Override
+    public int compareTo(MailRepositoryPath that) {
+        return this.value.compareTo(that.value);
     }
 }

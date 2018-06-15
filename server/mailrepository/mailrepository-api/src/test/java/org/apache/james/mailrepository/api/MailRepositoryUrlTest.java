@@ -65,6 +65,12 @@ public class MailRepositoryUrlTest {
     }
 
     @Test
+    public void fromPathAndProtocolShouldReturnTheFullValue() throws Exception {
+        assertThat(MailRepositoryUrl.fromPathAndProtocol(MailRepositoryPath.from("myRepo"), "url"))
+            .isEqualTo(MailRepositoryUrl.from("url://myRepo"));
+    }
+
+    @Test
     public void encodedValueShouldEncodeUnderlyingValue() throws Exception {
         assertThat(MailRepositoryUrl.from("url://myRepo").urlEncoded())
             .isEqualTo("url%3A%2F%2FmyRepo");
