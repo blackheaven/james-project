@@ -1407,7 +1407,7 @@ If the Accept header in the request is "application/json", then the response loo
 ```
 If the Accept header in the request is "message/rfc822", then the response will be the _eml_ file itself.
 
-Additional query paramater `additionalFields` add the existing informations to the response for the supported values:
+Additional query parameter `additionalFields` add the existing informations to the response for the supported values:
  - attributes
  - headers
  - textBody
@@ -1416,7 +1416,7 @@ Additional query paramater `additionalFields` add the existing informations to t
  - perRecipientsHeaders
 
 ```
-curl -XGET http://ip:port/mailRepositories/file%3A%2F%2Fvar%2Fmail%2Ferror%2F/mails/mail-key-1
+curl -XGET http://ip:port/mailRepositories/file%3A%2F%2Fvar%2Fmail%2Ferror%2F/mails/mail-key-1?additionalFields=attributes,headers,textBody,htmlBody,messageSize,perRecipientsHeaders
 ```
 
 Give the following kind of response:
