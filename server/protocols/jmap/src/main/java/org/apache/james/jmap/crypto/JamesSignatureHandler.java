@@ -67,14 +67,14 @@ public class JamesSignatureHandler implements SignatureHandler {
     public void init() throws Exception {
         KeyStore keystore = KeyStore.getInstance(JKS);
         InputStream fis = fileSystem.getResource(jmapConfiguration.getKeystore());
-        char[] charArray = jmapConfiguration.getSecret().toCharArray();
-        keystore.load(fis, charArray);
+        char[] secret = jmapConfiguration.getSecret().toCharArray();
+        keystore.load(fis, secret);
         Certificate aliasCertificate = fetchAlias(keystore);
         if (aliasCertificate == null) {
             throw new KeyStoreException("Alias '" + ALIAS + "' keystore can't be found");
         }
         publicKey = aliasCertificate.getPublicKey();
-        Key key = keystore.getKey(ALIAS, charArray);
+        Key key = keystore.getKey(ALIAS, secret);
         if (! (key instanceof PrivateKey)) {
             throw new KeyStoreException("Provided key is not a PrivateKey");
         }
