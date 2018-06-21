@@ -21,6 +21,10 @@ package org.apache.james.jmap.crypto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.FileNotFoundException;
+
+import org.apache.james.filesystem.api.FileSystem;
+import org.apache.james.jmap.JMAPConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,6 +39,18 @@ public class JamesSignatureHandlerTest {
     @Before
     public void setUp() throws Exception {
         signatureHandler = new JamesSignatureHandlerProvider().provide();
+    }
+
+    @Test(expected = FileNotFoundException.class)
+    public void initShouldThrowOnUnknownKeystore() throws Exception {
+        JMAPConfiguration jmapConfiguration = JamesSignatureHandlerProvider
+            .newConfigurationBuilder()
+            .keystore("unknownKeystore")
+            .build();
+        FileSystem fileSystem = JamesSignatureHandlerProvider.newFileSystem();
+
+        new JamesSignatureHandler(fileSystem, jmapConfiguration)
+            .init();
     }
 
     @Test

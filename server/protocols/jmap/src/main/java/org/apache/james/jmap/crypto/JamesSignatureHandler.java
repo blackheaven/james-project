@@ -19,6 +19,7 @@
 
 package org.apache.james.jmap.crypto;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -64,10 +65,15 @@ public class JamesSignatureHandler implements SignatureHandler {
     @Override
     public void init() throws Exception {
         KeyStore keystore = KeyStore.getInstance(JKS);
-        InputStream fis = fileSystem.getResource(jmapConfiguration.getKeystore());
-        keystore.load(fis, jmapConfiguration.getSecret().toCharArray());
+        String keystorRessource = jmapConfiguration.getKeystore();
+        InputStream fis = fileSystem.getResource(keystorRessource);
+        if (fis == null) {
+            throw new FileNotFoundException(keystorRessource);
+        }
+        char[] charArray = jmapConfiguration.getSecret().toCharArray();
+        keystore.load(fis, charArray);
         publicKey = keystore.getCertificate(ALIAS).getPublicKey();
-        Key key = keystore.getKey(ALIAS, jmapConfiguration.getSecret().toCharArray());
+        Key key = keystore.getKey(ALIAS, charArray);
         if (! (key instanceof PrivateKey)) {
             throw new Exception("Provided key is not a PrivateKey");
         }
