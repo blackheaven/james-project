@@ -30,7 +30,7 @@ public class MailRepositoryUrlTest {
     @Test
     public void shouldMatchBeanContract() {
         EqualsVerifier.forClass(MailRepositoryUrl.class)
-            .withIgnoredFields("protocol")
+            .withIgnoredFields("protocol", "path")
             .verify();
     }
 
