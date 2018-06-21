@@ -19,16 +19,17 @@
 
 package org.apache.james.jmap.crypto;
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 
 import javax.inject.Inject;
 
@@ -65,19 +66,23 @@ public class JamesSignatureHandler implements SignatureHandler {
     @Override
     public void init() throws Exception {
         KeyStore keystore = KeyStore.getInstance(JKS);
-        String keystorRessource = jmapConfiguration.getKeystore();
-        InputStream fis = fileSystem.getResource(keystorRessource);
-        if (fis == null) {
-            throw new FileNotFoundException(keystorRessource);
-        }
+        InputStream fis = fileSystem.getResource(jmapConfiguration.getKeystore());
         char[] charArray = jmapConfiguration.getSecret().toCharArray();
         keystore.load(fis, charArray);
-        publicKey = keystore.getCertificate(ALIAS).getPublicKey();
+        Certificate aliasCertificate = fetchAlias(keystore);
+        if (aliasCertificate == null) {
+            throw new KeyStoreException("Alias '" + ALIAS + "' keystore can't be found");
+        }
+        publicKey = aliasCertificate.getPublicKey();
         Key key = keystore.getKey(ALIAS, charArray);
         if (! (key instanceof PrivateKey)) {
-            throw new Exception("Provided key is not a PrivateKey");
+            throw new KeyStoreException("Provided key is not a PrivateKey");
         }
         privateKey = (PrivateKey) key;
+    }
+
+    @VisibleForTesting Certificate fetchAlias(KeyStore keystore) throws KeyStoreException {
+        return keystore.getCertificate(ALIAS);
     }
 
     @Override

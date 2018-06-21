@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.jmap.JMAPConfiguration;
@@ -40,9 +41,18 @@ public class JamesSignatureHandlerProvider {
         "U1LZUUbJW9/CH45YXz82CYqkrfbnQxqRb2iVbVjs/sHopHd1NTiCfUtwvcYJiBVj\n" +
         "kwIDAQAB\n" +
         "-----END PUBLIC KEY-----";
+    private BiFunction<FileSystem, JMAPConfiguration, JamesSignatureHandler> newHandler;
+
+    public JamesSignatureHandlerProvider(BiFunction<FileSystem, JMAPConfiguration, JamesSignatureHandler> newHandler) {
+        this.newHandler = newHandler;
+    }
+
+    public JamesSignatureHandlerProvider() {
+        newHandler = (fileSystem, jmapConfiguration) -> new JamesSignatureHandler(fileSystem, jmapConfiguration);
+    }
 
     public JamesSignatureHandler provide() throws Exception {
-        JamesSignatureHandler signatureHandler = new JamesSignatureHandler(newFileSystem(), 
+        JamesSignatureHandler signatureHandler = newHandler.apply(newFileSystem(),
                 newConfigurationBuilder().build());
         signatureHandler.init();
         return signatureHandler;
