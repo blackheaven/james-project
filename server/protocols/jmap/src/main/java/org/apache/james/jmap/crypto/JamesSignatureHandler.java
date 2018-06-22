@@ -30,6 +30,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -69,10 +70,10 @@ public class JamesSignatureHandler implements SignatureHandler {
         InputStream fis = fileSystem.getResource(jmapConfiguration.getKeystore());
         char[] secret = jmapConfiguration.getSecret().toCharArray();
         keystore.load(fis, secret);
-        Certificate aliasCertificate = fetchAlias(keystore);
-        if (aliasCertificate == null) {
-            throw new KeyStoreException("Alias '" + ALIAS + "' keystore can't be found");
-        }
+        Certificate aliasCertificate = Optional
+                .ofNullable(fetchAlias(keystore))
+                .orElseThrow(() -> new KeyStoreException("Alias '" + ALIAS + "' keystore can't be found"));
+
         publicKey = aliasCertificate.getPublicKey();
         Key key = keystore.getKey(ALIAS, secret);
         if (! (key instanceof PrivateKey)) {
