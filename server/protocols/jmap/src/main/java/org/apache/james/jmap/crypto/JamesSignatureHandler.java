@@ -71,7 +71,7 @@ public class JamesSignatureHandler implements SignatureHandler {
         char[] secret = jmapConfiguration.getSecret().toCharArray();
         keystore.load(fis, secret);
         Certificate aliasCertificate = Optional
-                .ofNullable(fetchAlias(keystore))
+                .ofNullable(keystore.getCertificate(ALIAS))
                 .orElseThrow(() -> new KeyStoreException("Alias '" + ALIAS + "' keystore can't be found"));
 
         publicKey = aliasCertificate.getPublicKey();
@@ -80,10 +80,6 @@ public class JamesSignatureHandler implements SignatureHandler {
             throw new KeyStoreException("Provided key is not a PrivateKey");
         }
         privateKey = (PrivateKey) key;
-    }
-
-    @VisibleForTesting Certificate fetchAlias(KeyStore keystore) throws KeyStoreException {
-        return keystore.getCertificate(ALIAS);
     }
 
     @Override

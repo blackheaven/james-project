@@ -21,16 +21,11 @@ package org.apache.james.jmap.crypto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.cert.Certificate;
 
-import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.jmap.JMAPConfiguration;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.common.annotations.VisibleForTesting;
 
 public class JamesSignatureHandlerTest {
 
@@ -45,23 +40,16 @@ public class JamesSignatureHandlerTest {
        signatureHandler = new JamesSignatureHandlerProvider().provide();
     }
 
-    private static class MockJamesSignatureHandler extends JamesSignatureHandler {
-        public MockJamesSignatureHandler(FileSystem fileSystem, JMAPConfiguration jmapConfiguration) {
-            super(fileSystem, jmapConfiguration);
-        }
-
-        @Override
-        @VisibleForTesting Certificate fetchAlias(KeyStore keystore) throws KeyStoreException {
-            return null;
-        }
-    }
-
     @Test(expected = KeyStoreException.class)
     public void initShouldThrowOnUnknownKeystore() throws Exception {
-        new JamesSignatureHandlerProvider((fileSystem, jmapConfiguration) ->
-                new MockJamesSignatureHandler(fileSystem, jmapConfiguration))
-            .provide()
-            .init();
+        JMAPConfiguration jmapConfiguration = JamesSignatureHandlerProvider.newConfigurationBuilder()
+            .keystore("badAliasKeystore")
+            .secret("password")
+            .build();
+
+        JamesSignatureHandler signatureHandler = new JamesSignatureHandler(JamesSignatureHandlerProvider.newFileSystem(),
+                jmapConfiguration);
+        signatureHandler.init();
     }
 
     @Test
