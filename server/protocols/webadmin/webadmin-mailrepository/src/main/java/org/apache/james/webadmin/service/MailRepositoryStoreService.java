@@ -42,7 +42,7 @@ import org.apache.james.webadmin.dto.InaccessibleFieldException;
 import org.apache.james.webadmin.dto.MailDto;
 import org.apache.james.webadmin.dto.MailDto.AdditionalField;
 import org.apache.james.webadmin.dto.MailKeyDTO;
-import org.apache.james.webadmin.dto.NormalMailRepositoryResponse;
+import org.apache.james.webadmin.dto.SingleMailRepositoryResponse;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.mailet.Mail;
 import org.eclipse.jetty.http.HttpStatus;
@@ -59,10 +59,10 @@ public class MailRepositoryStoreService {
         this.mailRepositoryStore = mailRepositoryStore;
     }
 
-    public Stream<NormalMailRepositoryResponse> listMailRepositories() {
+    public Stream<SingleMailRepositoryResponse> listMailRepositories() {
         return mailRepositoryStore
             .getPaths()
-            .map(NormalMailRepositoryResponse::new);
+            .map(SingleMailRepositoryResponse::new);
     }
 
     public MailRepository createMailRepository(MailRepositoryPath repositoryPath, String protocol) throws MailRepositoryStore.MailRepositoryStoreException {

@@ -23,11 +23,11 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.james.mailrepository.api.MailRepositoryPath;
 
-public class NormalMailRepositoryResponse implements MailRepositoryResponse {
+public class SingleMailRepositoryResponse implements MailRepositoryResponse {
 
     private final MailRepositoryPath repository;
 
-    public NormalMailRepositoryResponse(MailRepositoryPath repository) {
+    public SingleMailRepositoryResponse(MailRepositoryPath repository) {
         this.repository = repository;
     }
 

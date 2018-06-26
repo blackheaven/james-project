@@ -53,11 +53,11 @@ public class MailRepositoryUrl {
         Preconditions.checkNotNull(value);
         Preconditions.checkArgument(value.contains(PROTOCOL_SEPARATOR), "The expected format is: <protocol> \"" + PROTOCOL_SEPARATOR + "\" <path>");
         this.value = value;
-        String protocol = Splitter.on(':')
+        String protocol = Splitter.on(PROTOCOL_SEPARATOR)
             .splitToList(value)
             .get(PROTOCOL_PART);
         this.protocol = new Protocol(protocol);
-        this.path = MailRepositoryPath.from(value.substring(protocol.length() + PROTOCOL_SEPARATOR.length()));
+        this.path = MailRepositoryPath.from(value.substring(protocol.length()));
     }
 
     private MailRepositoryUrl(MailRepositoryPath path, String protocol) {

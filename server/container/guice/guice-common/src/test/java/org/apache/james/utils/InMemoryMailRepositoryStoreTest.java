@@ -211,7 +211,7 @@ public class InMemoryMailRepositoryStoreTest {
     }
 
     @Test
-    public void getByPathShouldReturnPreviouslyCreateMatchingdMailRepository() {
+    public void getByPathShouldReturnPreviouslyCreatedMatchingMailRepository() {
         MailRepository mailRepository = repositoryStore.select(FILE_REPO);
 
         assertThat(repositoryStore.getByPath(PATH_REPO))

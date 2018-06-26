@@ -39,7 +39,7 @@ import org.apache.james.util.ClassLoaderUtils;
 import org.apache.james.util.streams.Limit;
 import org.apache.james.util.streams.Offset;
 import org.apache.james.webadmin.dto.MailKeyDTO;
-import org.apache.james.webadmin.dto.NormalMailRepositoryResponse;
+import org.apache.james.webadmin.dto.SingleMailRepositoryResponse;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,7 +73,7 @@ public class MailRepositoryStoreServiceTest {
         when(mailRepositoryStore.getPaths())
             .thenReturn(Stream.of(FIRST_REPOSITORY_PATH));
         assertThat(testee.listMailRepositories())
-            .extracting(NormalMailRepositoryResponse::getRepository)
+            .extracting(SingleMailRepositoryResponse::getRepository)
             .containsOnly(FIRST_REPOSITORY_PATH.asString());
     }
 
@@ -82,7 +82,7 @@ public class MailRepositoryStoreServiceTest {
         when(mailRepositoryStore.getPaths())
             .thenReturn(Stream.of(FIRST_REPOSITORY_PATH, SECOND_REPOSITORY_PATH));
         assertThat(testee.listMailRepositories())
-            .extracting(NormalMailRepositoryResponse::getRepository)
+            .extracting(SingleMailRepositoryResponse::getRepository)
             .containsOnly(FIRST_REPOSITORY_PATH.asString(), SECOND_REPOSITORY_PATH.asString());
     }
 
