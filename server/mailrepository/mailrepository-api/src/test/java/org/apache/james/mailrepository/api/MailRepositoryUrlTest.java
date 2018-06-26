@@ -75,4 +75,10 @@ public class MailRepositoryUrlTest {
         assertThat(MailRepositoryUrl.from("url://myRepo").urlEncoded())
             .isEqualTo("url%3A%2F%2FmyRepo");
     }
+
+    @Test
+    public void getPathShouldReturnValue() {
+        assertThat(MailRepositoryUrl.from("proto://abc").getPath())
+            .isEqualTo(MailRepositoryPath.from("abc"));
+    }
 }

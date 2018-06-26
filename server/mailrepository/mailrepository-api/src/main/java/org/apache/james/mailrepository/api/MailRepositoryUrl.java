@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Objects;
 
 import com.google.common.base.MoreObjects;
@@ -31,6 +32,7 @@ import com.google.common.base.Splitter;
 
 public class MailRepositoryUrl {
     private static final int PROTOCOL_PART = 0;
+    private static final int PATH_PART = 1;
     private static final String PROTOCOL_SEPARATOR = "://";
 
     public static final MailRepositoryUrl fromEncoded(String encodedUrl) throws UnsupportedEncodingException {
@@ -53,11 +55,9 @@ public class MailRepositoryUrl {
         Preconditions.checkNotNull(value);
         Preconditions.checkArgument(value.contains(PROTOCOL_SEPARATOR), "The expected format is: <protocol> \"" + PROTOCOL_SEPARATOR + "\" <path>");
         this.value = value;
-        String protocol = Splitter.on(PROTOCOL_SEPARATOR)
-            .splitToList(value)
-            .get(PROTOCOL_PART);
-        this.protocol = new Protocol(protocol);
-        this.path = MailRepositoryPath.from(value.substring(protocol.length()));
+        List<String> urlParts = Splitter.on(PROTOCOL_SEPARATOR).splitToList(value);
+        this.protocol = new Protocol(urlParts.get(PROTOCOL_PART));
+        this.path = MailRepositoryPath.from(urlParts.get(PATH_PART));
     }
 
     private MailRepositoryUrl(MailRepositoryPath path, String protocol) {
