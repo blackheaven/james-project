@@ -125,7 +125,7 @@ public class MailRepositoryStoreService {
             ErrorResponder.builder()
                 .statusCode(HttpStatus.NOT_FOUND_404)
                 .type(ErrorResponder.ErrorType.NOT_FOUND)
-                .message(path + "does not exist")
+                .message(path.asString() + " does not exist")
                 .haltError();
         }
 

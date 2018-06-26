@@ -303,7 +303,7 @@ public class MailRepositoriesRoutes implements Routes {
         return ErrorResponder.builder()
             .statusCode(HttpStatus.NOT_FOUND_404)
             .type(ErrorType.NOT_FOUND)
-            .message("The repository '" + encodedPath+ "' (decoded value: '" + path.asString() + "') does not exist")
+            .message("The repository '" + encodedPath + "' (decoded value: '" + path.asString() + "') does not exist")
             .haltError();
     }
 
