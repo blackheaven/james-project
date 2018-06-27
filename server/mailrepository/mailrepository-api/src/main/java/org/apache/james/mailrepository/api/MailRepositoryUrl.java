@@ -26,20 +26,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 
 public class MailRepositoryUrl {
     private static final int PROTOCOL_PART = 0;
-    private static final int PATH_PART = 1;
     private static final String PROTOCOL_SEPARATOR = "://";
+    private static final int SKIP_PROTOCOL = 1;
 
-    public static final MailRepositoryUrl fromEncoded(String encodedUrl) throws UnsupportedEncodingException {
+    public static MailRepositoryUrl fromEncoded(String encodedUrl) throws UnsupportedEncodingException {
         return new MailRepositoryUrl(URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8.displayName()));
     }
 
-    public static final MailRepositoryUrl from(String url) {
+    public static MailRepositoryUrl from(String url) {
         return new MailRepositoryUrl(url);
     }
 
@@ -57,7 +59,9 @@ public class MailRepositoryUrl {
         this.value = value;
         List<String> urlParts = Splitter.on(PROTOCOL_SEPARATOR).splitToList(value);
         this.protocol = new Protocol(urlParts.get(PROTOCOL_PART));
-        this.path = MailRepositoryPath.from(urlParts.get(PATH_PART));
+        this.path = MailRepositoryPath.from(
+            Joiner.on(PROTOCOL_SEPARATOR)
+                .join(Iterables.skip(urlParts, SKIP_PROTOCOL)));
     }
 
     private MailRepositoryUrl(MailRepositoryPath path, String protocol) {
