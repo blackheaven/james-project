@@ -68,7 +68,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
@@ -120,7 +119,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.github.fge.lambdas.Throwing;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
@@ -132,11 +130,10 @@ import com.jayway.restassured.parsing.Parser;
 public abstract class SetMessagesMethodTest {
     private static final String FORWARDED = "$Forwarded";
     private static final int _1MB = 1024 * 1024;
-    private static final String USERNAME = "username@" + DOMAIN;
+    protected static final String USERNAME = "username@" + DOMAIN;
     private static final String PASSWORD = "password";
     private static final MailboxPath USER_MAILBOX = MailboxPath.forUser(USERNAME, "mailbox");
     private static final String NOT_UPDATED = ARGUMENTS + ".notUpdated";
-    private static final Integer NUMBER_OF_MAIL_TO_CREATE = 250;
 
     private AccessToken bobAccessToken;
 
@@ -146,9 +143,9 @@ public abstract class SetMessagesMethodTest {
 
     protected abstract void await();
 
-    private AccessToken accessToken;
+    protected AccessToken accessToken;
     private GuiceJamesServer jmapServer;
-    private MailboxProbe mailboxProbe;
+    protected MailboxProbe mailboxProbe;
     private DataProbe dataProbe;
     private MessageIdProbe messageProbe;
     private ACLProbe aclProbe;
@@ -5828,30 +5825,5 @@ public abstract class SetMessagesMethodTest {
             .path(ARGUMENTS + ".list[0].headers['Message-ID']");
 
         assertThat(receivedMimeMessageId).isEqualTo(creationMimeMessageId);
-    }
-
-    @Test
-    public void setMessagesShouldWorkForHugeNumberOfEmailsToTrash() throws Exception {
-        ZonedDateTime dateTime = ZonedDateTime.parse("2014-10-30T14:12:00Z");
-        String mailIds = IntStream
-            .rangeClosed(1, NUMBER_OF_MAIL_TO_CREATE)
-            .mapToObj(Throwing.intFunction((i) ->
-                mailboxProbe
-                    .appendMessage(USERNAME, MailboxPath.forUser(USERNAME, DefaultMailboxes.TRASH),
-                        new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags())
-                    .getMessageId()
-                    .serialize()).sneakyThrow())
-            .collect(Collectors.joining("\", \""));
-
-        given()
-            .header("Authorization", accessToken.serialize())
-            .body("[[\"setMessages\", {\"destroy\": [\"" + mailIds + "\"]}, \"#0\"]]")
-        .when()
-            .post("/jmap")
-        .then()
-            .statusCode(200)
-            .log().ifValidationFails()
-            .body(NAME, equalTo("messagesSet"))
-            .body(ARGUMENTS + ".destroyed", hasSize(NUMBER_OF_MAIL_TO_CREATE));
     }
 }
