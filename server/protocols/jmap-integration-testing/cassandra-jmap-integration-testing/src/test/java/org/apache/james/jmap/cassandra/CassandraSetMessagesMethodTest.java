@@ -68,5 +68,5 @@ public class CassandraSetMessagesMethodTest extends SetMessagesMethodTest {
     public void attachmentsShouldBeRetrievedWhenChainingSetMessagesAndGetMessagesTextAttachment() throws Exception {
 
     }
-
+    
 }
