@@ -485,7 +485,7 @@ public abstract class SetMailboxesMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("error"))
-            .body(ARGUMENTS + ".type", equalTo("Not yet implemented"));
+            .body(ARGUMENTS + ".type", equalTo("'role' is not yet implemented for 'setMailBoxes'"));
     }
 
     @Test
@@ -513,7 +513,7 @@ public abstract class SetMailboxesMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("error"))
-            .body(ARGUMENTS + ".type", equalTo("Not yet implemented"));
+            .body(ARGUMENTS + ".type", equalTo("'sortOrder' is not yet implemented for 'setMailboxes'"));
     }
 
     @Test

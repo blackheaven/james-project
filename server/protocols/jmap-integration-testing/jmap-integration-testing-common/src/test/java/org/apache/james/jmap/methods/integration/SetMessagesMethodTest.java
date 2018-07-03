@@ -198,7 +198,7 @@ public abstract class SetMessagesMethodTest {
             .log().ifValidationFails()
             .statusCode(200)
             .body(NAME, equalTo("error"))
-            .body(ARGUMENTS + ".type", equalTo("Not yet implemented"));
+            .body(ARGUMENTS + ".type", equalTo("'accountId' is not yet implemented for 'setMessages'"));
     }
 
     @Test
@@ -212,7 +212,7 @@ public abstract class SetMessagesMethodTest {
             .log().ifValidationFails()
             .statusCode(200)
             .body(NAME, equalTo("error"))
-            .body(ARGUMENTS + ".type", equalTo("Not yet implemented"));
+            .body(ARGUMENTS + ".type", equalTo("'ifInState' is not yet implemented for 'setMessages'"));
     }
 
     @Test

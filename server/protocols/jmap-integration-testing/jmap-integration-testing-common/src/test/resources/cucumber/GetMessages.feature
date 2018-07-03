@@ -36,7 +36,7 @@ Feature: GetMessages method
 
   Scenario: Retrieving messages with a non null accountId should return a NotSupported error
     When "alice@domain.tld" ask for messages using its accountId
-    Then an error "Not yet implemented" is returned
+    Then an error "'accountId' is not yet implemented 'getMessages'" is returned
 
   Scenario: Unknown arguments should be ignored when retrieving messages
     When "alice@domain.tld" ask for messages using unknown arguments

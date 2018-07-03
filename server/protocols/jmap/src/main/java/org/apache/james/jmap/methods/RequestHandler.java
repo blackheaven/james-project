@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.james.jmap.JmapNotImplementedException;
 import org.apache.james.jmap.model.AuthenticatedProtocolRequest;
 import org.apache.james.jmap.model.ProtocolResponse;
 import org.apache.james.mailbox.MailboxSession;
@@ -77,24 +77,24 @@ public class RequestHandler {
                         return method.process(jmapRequest, request.getClientId(), mailboxSession);
                     } catch (IOException e) {
                         LOGGER.error("Error occured while parsing the request.", e);
-                        if (e.getCause() instanceof NotImplementedException) {
-                            return errorNotImplemented(request);
+                        if (e.getCause() instanceof JmapNotImplementedException) {
+                            return errorNotImplemented((JmapNotImplementedException) e.getCause(), request);
                         }
                         return error(request, ErrorResponse.builder()
                                                         .type("invalidArguments")
                                                         .description(e.getMessage())
                                                         .build());
-                    } catch (NotImplementedException e) {
-                        return errorNotImplemented(request);
+                    } catch (JmapNotImplementedException e) {
+                        return errorNotImplemented(e, request);
                     }
                 };
     }
 
-    private Stream<JmapResponse> errorNotImplemented(AuthenticatedProtocolRequest request) {
+    private Stream<JmapResponse> errorNotImplemented(Exception error, AuthenticatedProtocolRequest request) {
         return Stream.of(
                 JmapResponse.builder()
                     .clientId(request.getClientId())
-                    .error("Not yet implemented")
+                    .error(error.getMessage())
                     .build());
     }
 
