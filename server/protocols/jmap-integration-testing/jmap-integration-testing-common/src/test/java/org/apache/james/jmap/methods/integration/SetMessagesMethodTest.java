@@ -143,9 +143,9 @@ public abstract class SetMessagesMethodTest {
 
     protected abstract void await();
 
-    protected AccessToken accessToken;
+    private AccessToken accessToken;
     private GuiceJamesServer jmapServer;
-    protected MailboxProbe mailboxProbe;
+    private MailboxProbe mailboxProbe;
     private DataProbe dataProbe;
     private MessageIdProbe messageProbe;
     private ACLProbe aclProbe;
@@ -5826,4 +5826,5 @@ public abstract class SetMessagesMethodTest {
 
         assertThat(receivedMimeMessageId).isEqualTo(creationMimeMessageId);
     }
+
 }

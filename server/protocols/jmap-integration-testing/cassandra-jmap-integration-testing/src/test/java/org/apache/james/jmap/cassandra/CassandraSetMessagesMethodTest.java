@@ -65,7 +65,8 @@ public class CassandraSetMessagesMethodTest extends SetMessagesMethodTest {
     @Ignore("JAMES-2221 Temporally ignored failed test")
     @Override
     @Test
-    public void attachmentsShouldBeRetrievedWhenChainingSetMessagesAndGetMessagesTextAttachment() {
+    public void attachmentsShouldBeRetrievedWhenChainingSetMessagesAndGetMessagesTextAttachment() throws Exception {
 
     }
+    
 }
