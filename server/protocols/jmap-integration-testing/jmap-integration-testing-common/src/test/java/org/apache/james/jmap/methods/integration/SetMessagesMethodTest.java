@@ -130,7 +130,7 @@ import com.jayway.restassured.parsing.Parser;
 public abstract class SetMessagesMethodTest {
     private static final String FORWARDED = "$Forwarded";
     private static final int _1MB = 1024 * 1024;
-    protected static final String USERNAME = "username@" + DOMAIN;
+    private static final String USERNAME = "username@" + DOMAIN;
     private static final String PASSWORD = "password";
     private static final MailboxPath USER_MAILBOX = MailboxPath.forUser(USERNAME, "mailbox");
     private static final String NOT_UPDATED = ARGUMENTS + ".notUpdated";
