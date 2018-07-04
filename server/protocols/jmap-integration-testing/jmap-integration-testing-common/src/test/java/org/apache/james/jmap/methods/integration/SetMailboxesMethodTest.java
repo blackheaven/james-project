@@ -485,7 +485,8 @@ public abstract class SetMailboxesMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("error"))
-            .body(ARGUMENTS + ".type", equalTo("'role' is not yet implemented for 'setMailBoxes'"));
+            .body(ARGUMENTS + ".type", equalTo("invalidArguments"))
+            .body(ARGUMENTS + ".description", equalTo("The field 'role' of 'MailboxCreateRequest' is not supported"));
     }
 
     @Test
@@ -513,7 +514,8 @@ public abstract class SetMailboxesMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("error"))
-            .body(ARGUMENTS + ".type", equalTo("'sortOrder' is not yet implemented for 'setMailboxes'"));
+            .body(ARGUMENTS + ".type", equalTo("invalidArguments"))
+            .body(ARGUMENTS + ".description", equalTo("The field 'sortOrder' of 'MailboxCreateRequest' is not supported"));
     }
 
     @Test

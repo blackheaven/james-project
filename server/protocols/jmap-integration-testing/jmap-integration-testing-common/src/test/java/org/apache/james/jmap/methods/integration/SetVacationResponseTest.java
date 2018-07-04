@@ -388,7 +388,8 @@ public abstract class SetVacationResponseTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("error"))
-            .body(ARGUMENTS + ".type", equalTo("'accountId' is not yet implemented for 'setVacationResponse'"));
+            .body(ARGUMENTS + ".type", equalTo("invalidArguments"))
+            .body(ARGUMENTS + ".description", equalTo("The field 'accountId' of 'SetVacationRequest' is not supported"));
     }
 
     @Test

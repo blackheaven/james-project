@@ -35,7 +35,7 @@ import com.google.common.base.Strings;
 
 @JsonDeserialize(builder = MailboxCreateRequest.Builder.class)
 public class MailboxCreateRequest {
-    private static final String COMMAND = "setMailboxes";
+    private static final String ISSUER = "MailboxCreateRequest";
 
     public static Builder builder() {
         return new Builder();
@@ -77,12 +77,12 @@ public class MailboxCreateRequest {
 
         public Builder role(Role role) {
             Preconditions.checkNotNull(role);
-            throw new JmapFieldNotSupportedException(COMMAND, "role");
+            throw new JmapFieldNotSupportedException(ISSUER, "role");
         }
 
         public Builder sortOrder(SortOrder sortOrder) {
             Preconditions.checkNotNull(sortOrder);
-            throw new JmapFieldNotSupportedException(COMMAND, "sortOrder");
+            throw new JmapFieldNotSupportedException(ISSUER, "sortOrder");
         }
 
 

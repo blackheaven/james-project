@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableSet;
 
 @JsonDeserialize(builder = GetMailboxesRequest.Builder.class)
 public class GetMailboxesRequest implements JmapRequest {
-    private static final String COMMAND = "getMailboxes";
+    private static final String ISSUER = "GetMailboxesRequest";
 
     public static Builder builder() {
         return new Builder();
@@ -53,7 +53,7 @@ public class GetMailboxesRequest implements JmapRequest {
 
         public Builder accountId(String accountId) {
             if (accountId != null) {
-                throw new JmapFieldNotSupportedException(COMMAND, "accountId");
+                throw new JmapFieldNotSupportedException(ISSUER, "accountId");
             }
             return this;
         }

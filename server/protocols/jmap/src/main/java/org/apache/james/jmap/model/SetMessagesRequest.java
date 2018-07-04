@@ -43,7 +43,7 @@ import com.google.common.collect.Maps;
 
 @JsonDeserialize(builder = SetMessagesRequest.Builder.class)
 public class SetMessagesRequest implements JmapRequest {
-    private static final String COMMAND = "setMessages";
+    private static final String ISSUER = "SetMessagesRequest";
 
     public static Builder builder() {
         return new Builder();
@@ -69,14 +69,14 @@ public class SetMessagesRequest implements JmapRequest {
 
         public Builder accountId(String accountId) {
             if (accountId != null) {
-                throw new JmapFieldNotSupportedException(COMMAND, "accountId");
+                throw new JmapFieldNotSupportedException(ISSUER, "accountId");
             }
             return this;
         }
 
         public Builder ifInState(String ifInState) {
             if (ifInState != null) {
-                throw new JmapFieldNotSupportedException(COMMAND, "ifInState");
+                throw new JmapFieldNotSupportedException(ISSUER, "ifInState");
             }
             return this;
         }

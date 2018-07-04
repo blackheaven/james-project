@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 @JsonDeserialize(builder = GetVacationRequest.Builder.class)
 public class GetVacationRequest implements JmapRequest {
-    private static final String COMMAND = "getVacation";
+    private static final String ISSUER = "GetVacationRequest";
 
     public static Builder builder() {
         return new Builder();
@@ -37,7 +37,7 @@ public class GetVacationRequest implements JmapRequest {
     public static class Builder {
 
         public Builder accountId(String accountId) {
-            throw new JmapFieldNotSupportedException(COMMAND, "accountId");
+            throw new JmapFieldNotSupportedException(ISSUER, "accountId");
         }
 
         public GetVacationRequest build() {

@@ -33,7 +33,7 @@ import com.google.common.collect.Maps;
 
 @JsonDeserialize(builder = SetVacationRequest.Builder.class)
 public class SetVacationRequest implements JmapRequest {
-    private static final String COMMAND = "setVacation";
+    private static final String ISSUER = "SetVacationRequest";
 
     public static Builder builder() {
         return new Builder();
@@ -46,7 +46,7 @@ public class SetVacationRequest implements JmapRequest {
 
         public Builder accountId(String accountId) {
             if (accountId != null) {
-                throw new JmapFieldNotSupportedException(COMMAND, "accountId");
+                throw new JmapFieldNotSupportedException(ISSUER, "accountId");
             }
             return this;
         }
