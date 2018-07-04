@@ -60,8 +60,8 @@ import com.google.common.collect.ImmutableSet;
 
 public class GetMessagesMethod implements Method {
 
-    private static final String ISSUER = "GetMessagesMethod";
     public static final String HEADERS_FILTER = "headersFilter";
+    private static final String ISSUER = "GetMessagesMethod";
     private static final Logger LOGGER = LoggerFactory.getLogger(GetMessagesMethod.class);
     private static final Method.Request.Name METHOD_NAME = Method.Request.name("getMessages");
     private static final Method.Response.Name RESPONSE_NAME = Method.Response.name("messages");
