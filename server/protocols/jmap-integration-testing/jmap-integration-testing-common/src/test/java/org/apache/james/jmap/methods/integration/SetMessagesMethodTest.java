@@ -1365,7 +1365,7 @@ public abstract class SetMessagesMethodTest {
             "    {" +
             "      \"create\": { \"" + messageCreationId  + "\" : {" +
             "        \"from\": { \"name\": \"Me\", \"email\": \"" + fromAddress + "\"}," +
-            "        \"to\": [{ \"name\": \"BOB\", \"email\": \"someone@example.com\"}]," +
+            "        \"to\": [{ \"name\": \"Me\", \"email\": \"" + fromAddress + "\"}]," +
             "        \"subject\": \"Thank you for joining example.com!\"," +
             "        \"textBody\": \"" + body + "\"," +
             "        \"mailboxIds\": [\"" + getOutboxId(accessToken) + "\"]" +
@@ -1385,8 +1385,41 @@ public abstract class SetMessagesMethodTest {
             .body(NAME, equalTo("messagesSet"))
             .body(ARGUMENTS + ".notCreated", aMapWithSize(0))
             .body(ARGUMENTS + ".created", aMapWithSize(1))
-            .body(ARGUMENTS + ".created", hasEntry(equalTo(messageCreationId), hasEntry(equalTo("textBody"), equalTo(body))))
-            ;
+            .body(ARGUMENTS + ".created", hasEntry(equalTo(messageCreationId), hasEntry(equalTo("textBody"), equalTo(body))));
+
+        calmlyAwait
+            .pollDelay(Duration.FIVE_HUNDRED_MILLISECONDS)
+            .atMost(30, TimeUnit.SECONDS).until(() -> hasANewMailWithBody(accessToken, body));
+    }
+
+    private boolean hasANewMailWithBody(AccessToken recipientToken, String body) {
+        try {
+            String inboxId = getMailboxId(accessToken, Role.INBOX);
+            String receivedMessageId =
+                with()
+                    .header("Authorization", accessToken.serialize())
+                    .body("[[\"getMessageList\", {\"filter\":{\"inMailboxes\":[\"" + inboxId + "\"]}}, \"#0\"]]")
+                    .post("/jmap")
+                .then()
+                    .extract()
+                    .path(ARGUMENTS + ".messageIds[0]");
+
+            given()
+                .header("Authorization", accessToken.serialize())
+                .body("[[\"getMessages\", {\"ids\": [\"" + receivedMessageId + "\"]}, \"#0\"]]")
+            .when()
+                .post("/jmap")
+            .then()
+                .statusCode(200)
+                .log().ifValidationFails()
+                .body(NAME, equalTo("messages"))
+                .body(ARGUMENTS + ".list", hasSize(1))
+                .body(ARGUMENTS + ".list[0].textBody", equalTo(body));
+            return true;
+
+        } catch (AssertionError e) {
+            return false;
+        }
     }
 
     @Test
