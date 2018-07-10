@@ -1411,7 +1411,6 @@ public abstract class SetMessagesMethodTest {
                 .post("/jmap")
             .then()
                 .statusCode(200)
-                .log().ifValidationFails()
                 .body(NAME, equalTo("messages"))
                 .body(ARGUMENTS + ".list", hasSize(1))
                 .body(ARGUMENTS + ".list[0].textBody", equalTo(body));
