@@ -1386,6 +1386,7 @@ public abstract class SetMessagesMethodTest {
             .body(ARGUMENTS + ".notCreated", aMapWithSize(0))
             .body(ARGUMENTS + ".created", aMapWithSize(1))
             .body(ARGUMENTS + ".created", hasEntry(equalTo(messageCreationId), hasEntry(equalTo("textBody"), equalTo(body))));
+        requestBody = null;
 
         calmlyAwait
             .pollDelay(Duration.FIVE_HUNDRED_MILLISECONDS)
