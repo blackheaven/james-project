@@ -1359,34 +1359,35 @@ public abstract class SetMessagesMethodTest {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String body = Strings.repeat("d", BIG_MESSAGE_SIZE);
-        String requestBody = "[" +
-            "  [" +
-            "    \"setMessages\"," +
-            "    {" +
-            "      \"create\": { \"" + messageCreationId  + "\" : {" +
-            "        \"from\": { \"name\": \"Me\", \"email\": \"" + fromAddress + "\"}," +
-            "        \"to\": [{ \"name\": \"Me\", \"email\": \"" + fromAddress + "\"}]," +
-            "        \"subject\": \"Thank you for joining example.com!\"," +
-            "        \"textBody\": \"" + body + "\"," +
-            "        \"mailboxIds\": [\"" + getOutboxId(accessToken) + "\"]" +
-            "      }}" +
-            "    }," +
-            "    \"#0\"" +
-            "  ]" +
-            "]";
+        {
+            String requestBody = "[" +
+                "  [" +
+                "    \"setMessages\"," +
+                "    {" +
+                "      \"create\": { \"" + messageCreationId  + "\" : {" +
+                "        \"from\": { \"name\": \"Me\", \"email\": \"" + fromAddress + "\"}," +
+                "        \"to\": [{ \"name\": \"Me\", \"email\": \"" + fromAddress + "\"}]," +
+                "        \"subject\": \"Thank you for joining example.com!\"," +
+                "        \"textBody\": \"" + body + "\"," +
+                "        \"mailboxIds\": [\"" + getOutboxId(accessToken) + "\"]" +
+                "      }}" +
+                "    }," +
+                "    \"#0\"" +
+                "  ]" +
+                "]";
 
-        given()
-            .header("Authorization", accessToken.serialize())
-            .body(requestBody)
-        .when()
-            .post("/jmap")
-        .then()
-            .statusCode(200)
-            .body(NAME, equalTo("messagesSet"))
-            .body(ARGUMENTS + ".notCreated", aMapWithSize(0))
-            .body(ARGUMENTS + ".created", aMapWithSize(1))
-            .body(ARGUMENTS + ".created", hasEntry(equalTo(messageCreationId), hasEntry(equalTo("textBody"), equalTo(body))));
-        requestBody = null;
+            given()
+                .header("Authorization", accessToken.serialize())
+                .body(requestBody)
+            .when()
+                .post("/jmap")
+            .then()
+                .statusCode(200)
+                .body(NAME, equalTo("messagesSet"))
+                .body(ARGUMENTS + ".notCreated", aMapWithSize(0))
+                .body(ARGUMENTS + ".created", aMapWithSize(1))
+                .body(ARGUMENTS + ".created", hasEntry(equalTo(messageCreationId), hasEntry(equalTo("textBody"), equalTo(body))));
+        }
 
         calmlyAwait
             .pollDelay(Duration.FIVE_HUNDRED_MILLISECONDS)
