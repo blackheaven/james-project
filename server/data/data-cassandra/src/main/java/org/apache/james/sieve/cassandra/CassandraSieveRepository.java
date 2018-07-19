@@ -21,7 +21,6 @@ package org.apache.james.sieve.cassandra;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -61,9 +60,9 @@ public class CassandraSieveRepository implements SieveRepository {
 
     @Override
     public ZonedDateTime getActivationDateForActiveScript(User user) throws ScriptNotFoundException {
-        return ZonedDateTime.ofInstant(cassandraActiveScriptDAO.getActiveSctiptInfo(user).join()
+        return cassandraActiveScriptDAO.getActiveSctiptInfo(user).join()
             .orElseThrow(ScriptNotFoundException::new)
-            .getActivationDate(), ZoneId.systemDefault());
+            .getActivationDate();
     }
 
     @Override

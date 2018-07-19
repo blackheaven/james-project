@@ -24,9 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
@@ -53,11 +51,10 @@ public class SieveIntegrationTest {
     public static final String LOCAL_PART = "receiver";
     public static final String RECEIVER_DOMAIN_COM = LOCAL_PART + "@domain.com";
 
-    public static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
-    public static final ZonedDateTime DATE_CLOSE = ZonedDateTime.parse("2016-01-16 00:00:00", formatter);
-    public static final ZonedDateTime DATE_DEFAULT = ZonedDateTime.parse("2016-01-14 00:00:00", formatter);
-    public static final ZonedDateTime DATE_NEW = ZonedDateTime.parse("2016-01-18 00:00:00", formatter);
-    public static final ZonedDateTime DATE_OLD = ZonedDateTime.parse("2011-01-18 00:00:00", formatter);
+    public static final ZonedDateTime DATE_CLOSE = ZonedDateTime.parse("2016-01-16T00:00:00Z");
+    public static final ZonedDateTime DATE_DEFAULT = ZonedDateTime.parse("2016-01-14T00:00:00Z");
+    public static final ZonedDateTime DATE_NEW = ZonedDateTime.parse("2016-01-18T00:00:00Z");
+    public static final ZonedDateTime DATE_OLD = ZonedDateTime.parse("2011-01-18T00:00:00Z");
     public static final MailboxPath NOT_SELECTED_MAILBOX = MailboxPath.forUser(LOCAL_PART, "INBOX.not.selected");
     public static final MailboxPath SELECTED_MAILBOX = MailboxPath.forUser(LOCAL_PART, "INBOX.select");
     public static final MailboxPath INBOX = MailboxPath.forUser(LOCAL_PART, "INBOX");

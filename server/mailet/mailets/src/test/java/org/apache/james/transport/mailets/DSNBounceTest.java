@@ -26,7 +26,8 @@ import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
+import java.text.DateFormat;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -132,7 +133,7 @@ public class DSNBounceTest {
                     .setText("My content"))
                 .name(MAILET_NAME)
                 .recipient("recipient@domain.com")
-                .lastUpdated(Date.from(OffsetDateTime.parse("2016-09-08T14:25:52.000Z").toInstant()))
+                .lastUpdated(Date.from(Instant.parse("2016-09-08T14:25:52.000Z")))
                 .build();
 
         dsnBounce.service(mail);
@@ -163,7 +164,7 @@ public class DSNBounceTest {
                     .setText("My content"))
                 .name(MAILET_NAME)
                 .recipient("recipient@domain.com")
-                .lastUpdated(Date.from(OffsetDateTime.parse("2016-09-08T14:25:52.000Z").toInstant()))
+                .lastUpdated(Date.from(Instant.parse("2016-09-08T14:25:52.000Z")))
                 .build();
 
         dsnBounce.service(mail);
@@ -204,7 +205,7 @@ public class DSNBounceTest {
                     .setText("My content"))
                 .name(MAILET_NAME)
                 .recipient("recipient@domain.com")
-                .lastUpdated(Date.from(OffsetDateTime.parse("2016-09-08T14:25:52.000Z").toInstant()))
+                .lastUpdated(Date.from(Instant.parse("2016-09-08T14:25:52.000Z")))
                 .build();
 
         dsnBounce.service(mail);
@@ -243,7 +244,7 @@ public class DSNBounceTest {
                     .setText("My content"))
                 .name(MAILET_NAME)
                 .recipient("recipient@domain.com")
-                .lastUpdated(Date.from(OffsetDateTime.parse("2016-09-08T14:25:52.000Z").toInstant()))
+                .lastUpdated(Date.from(Instant.parse("2016-09-08T14:25:52.000Z")))
                 .remoteAddr("remoteHost")
                 .build();
 
@@ -282,7 +283,7 @@ public class DSNBounceTest {
                     .setText("My content"))
                 .name(MAILET_NAME)
                 .recipient("recipient@domain.com")
-                .lastUpdated(Date.from(OffsetDateTime.parse("2016-09-08T14:25:52.000Z").toInstant()))
+                .lastUpdated(Date.from(Instant.parse("2016-09-08T14:25:52.000Z")))
                 .remoteAddr("remoteHost")
                 .build();
 
@@ -305,7 +306,7 @@ public class DSNBounceTest {
                     .setText("My content"))
                 .name(MAILET_NAME)
                 .recipient("recipient@domain.com")
-                .lastUpdated(Date.from(OffsetDateTime.parse("2016-09-08T14:25:52.000Z").toInstant()))
+                .lastUpdated(Date.from(Instant.parse("2016-09-08T14:25:52.000Z")))
                 .remoteAddr("remoteHost")
                 .build();
 
@@ -329,7 +330,7 @@ public class DSNBounceTest {
                     .setText("My content"))
                 .name(MAILET_NAME)
                 .recipient("recipient@domain.com")
-                .lastUpdated(Date.from(OffsetDateTime.parse("2016-09-08T14:25:52.000Z").toInstant()))
+                .lastUpdated(Date.from(Instant.parse("2016-09-08T14:25:52.000Z")))
                 .remoteAddr("remoteHost")
                 .build();
 
@@ -354,7 +355,7 @@ public class DSNBounceTest {
                     .setText("My content"))
                 .name(MAILET_NAME)
                 .recipient("recipient@domain.com")
-                .lastUpdated(Date.from(OffsetDateTime.parse("2016-09-08T14:25:52.000Z").toInstant()))
+                .lastUpdated(Date.from(Instant.parse("2016-09-08T14:25:52.000Z")))
                 .build();
 
         dsnBounce.service(mail);
@@ -386,7 +387,7 @@ public class DSNBounceTest {
             .sender(senderMailAddress)
             .name(MAILET_NAME)
             .recipient("recipient@domain.com")
-            .lastUpdated(Date.from(OffsetDateTime.parse("2016-09-08T14:25:52.000Z").toInstant()))
+            .lastUpdated(Date.from(Instant.parse("2016-09-08T14:25:52.000Z")))
             .mimeMessage(mimeMessage)
             .build();
         MimeMessage mimeMessageCopy = new MimeMessage(mimeMessage);
@@ -424,7 +425,7 @@ public class DSNBounceTest {
                     .setSubject("mySubject"))
                 .name(MAILET_NAME)
                 .recipient("recipient@domain.com")
-                .lastUpdated(Date.from(OffsetDateTime.parse("2016-09-08T14:25:52.000Z").toInstant()))
+                .lastUpdated(Date.from(Instant.parse("2016-09-08T14:25:52.000Z")))
                 .build();
 
         dsnBounce.service(mail);
@@ -459,7 +460,7 @@ public class DSNBounceTest {
                     .setText("My content"))
                 .name(MAILET_NAME)
                 .recipient("recipient@domain.com")
-                .lastUpdated(Date.from(OffsetDateTime.parse("2016-09-08T14:25:52.000Z").toInstant()))
+                .lastUpdated(Date.from(Instant.parse("2016-09-08T14:25:52.000Z")))
                 .build();
 
         dsnBounce.service(mail);
@@ -490,7 +491,7 @@ public class DSNBounceTest {
                     .addHeader(RFC2822Headers.DATE, expectedDate))
                 .name(MAILET_NAME)
                 .recipient("recipient@domain.com")
-                .lastUpdated(Date.from(OffsetDateTime.parse("2016-09-08T14:25:52.000Z").toInstant()))
+                .lastUpdated(Date.from(Instant.parse("2016-09-08T14:25:52.000Z")))
                 .build();
 
         dsnBounce.service(mail);
