@@ -49,8 +49,8 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.Duration;
+import org.awaitility.Awaitility;
+import org.awaitility.Duration;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;

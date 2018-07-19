@@ -19,7 +19,7 @@
 
 package org.apache.james;
 
-import static com.jayway.awaitility.Duration.FIVE_HUNDRED_MILLISECONDS;
+import static org.awaitility.Duration.FIVE_HUNDRED_MILLISECONDS;
 
 import java.util.concurrent.TimeUnit;
 
@@ -33,9 +33,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.Duration;
-import com.jayway.awaitility.core.ConditionFactory;
+import org.awaitility.Awaitility;
+import org.awaitility.Duration;
+import org.awaitility.core.ConditionFactory;
 
 public class CassandraMailRepositoryIntegrationTest {
 

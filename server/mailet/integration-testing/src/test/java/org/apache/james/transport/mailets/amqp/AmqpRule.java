@@ -28,7 +28,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.james.util.docker.SwarmGenericContainer;
 import org.junit.rules.ExternalResource;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;

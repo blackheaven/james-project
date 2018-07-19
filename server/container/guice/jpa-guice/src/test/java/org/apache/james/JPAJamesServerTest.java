@@ -35,9 +35,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.google.common.base.Strings;
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.Duration;
-import com.jayway.awaitility.core.ConditionFactory;
+import org.awaitility.Awaitility;
+import org.awaitility.Duration;
+import org.awaitility.core.ConditionFactory;
 
 public class JPAJamesServerTest extends AbstractJamesServerTest {
 

@@ -55,7 +55,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.jayway.awaitility.Duration;
+import org.awaitility.Duration;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
 

@@ -50,7 +50,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.jayway.awaitility.Duration;
+import org.awaitility.Duration;
 
 public class SmtpAuthorizedAddressesTest {
     private static final String FROM = "fromuser@" + DEFAULT_DOMAIN;

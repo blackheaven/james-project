@@ -19,7 +19,7 @@
 
 package org.apache.james.metric.es;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -41,7 +41,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import com.codahale.metrics.MetricRegistry;
-import com.jayway.awaitility.Duration;
+import org.awaitility.Duration;
 
 public class ESReporterTest {
 

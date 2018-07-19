@@ -28,7 +28,7 @@ import org.junit.rules.ExternalResource;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
-import com.jayway.awaitility.core.ConditionFactory;
+import org.awaitility.core.ConditionFactory;
 
 public class IMAPMessageReader extends ExternalResource implements Closeable {
 

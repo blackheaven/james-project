@@ -53,7 +53,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.google.common.collect.ImmutableList;
-import com.jayway.awaitility.Duration;
+import org.awaitility.Duration;
 
 public class DirectResolutionRemoteDeliveryIntegrationTest {
     private static final String JAMES_ANOTHER_DOMAIN = "james.com";

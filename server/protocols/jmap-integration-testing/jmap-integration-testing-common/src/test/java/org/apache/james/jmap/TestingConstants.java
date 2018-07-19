@@ -25,9 +25,9 @@ import static io.restassured.config.RestAssuredConfig.newConfig;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.Duration;
-import com.jayway.awaitility.core.ConditionFactory;
+import org.awaitility.Awaitility;
+import org.awaitility.Duration;
+import org.awaitility.core.ConditionFactory;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 

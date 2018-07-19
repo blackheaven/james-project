@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.ContainerConfig;

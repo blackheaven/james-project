@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 @Ignore("JAMES-1952")
 public class ClientProviderImplConnectionTest {

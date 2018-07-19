@@ -18,8 +18,8 @@
  ****************************************************************/
 package org.apache.james.mpt.smtp;
 
-import static com.jayway.awaitility.Duration.FIVE_HUNDRED_MILLISECONDS;
-import static com.jayway.awaitility.Duration.ONE_MINUTE;
+import static org.awaitility.Duration.FIVE_HUNDRED_MILLISECONDS;
+import static org.awaitility.Duration.ONE_MINUTE;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Locale;
@@ -30,9 +30,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.Duration;
-import com.jayway.awaitility.core.ConditionFactory;
+import org.awaitility.Awaitility;
+import org.awaitility.Duration;
+import org.awaitility.core.ConditionFactory;
 
 public abstract class ForwardSmtpTest {
 

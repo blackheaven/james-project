@@ -19,7 +19,7 @@
 
 package org.apache.james;
 
-import static com.jayway.awaitility.Duration.ONE_HUNDRED_MILLISECONDS;
+import static org.awaitility.Duration.ONE_HUNDRED_MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -34,9 +34,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.Duration;
-import com.jayway.awaitility.core.ConditionFactory;
+import org.awaitility.Awaitility;
+import org.awaitility.Duration;
+import org.awaitility.core.ConditionFactory;
 
 public class CassandraLdapJamesServerTest extends AbstractJmapJamesServerTest {
     private static final String JAMES_USER = "james-user";

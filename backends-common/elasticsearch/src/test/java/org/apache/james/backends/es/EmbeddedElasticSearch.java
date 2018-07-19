@@ -19,7 +19,7 @@
 
 package org.apache.james.backends.es;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ import org.elasticsearch.node.Node;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
-import com.jayway.awaitility.Duration;
+import org.awaitility.Duration;
 
 public class EmbeddedElasticSearch extends ExternalResource {
     private final Supplier<Path> folder;
