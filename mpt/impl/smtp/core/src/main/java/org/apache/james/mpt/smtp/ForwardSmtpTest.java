@@ -26,13 +26,12 @@ import java.util.Locale;
 
 import org.apache.james.mpt.script.SimpleScriptedTestProtocol;
 import org.apache.james.utils.FakeSmtp;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
 import org.awaitility.Awaitility;
 import org.awaitility.Duration;
 import org.awaitility.core.ConditionFactory;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 public abstract class ForwardSmtpTest {
 

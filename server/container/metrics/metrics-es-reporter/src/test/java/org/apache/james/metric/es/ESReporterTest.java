@@ -33,6 +33,7 @@ import org.apache.james.metrics.es.ESMetricReporter;
 import org.apache.james.metrics.es.ESReporterConfiguration;
 import org.apache.james.util.docker.Images;
 import org.apache.james.util.docker.SwarmGenericContainer;
+import org.awaitility.Duration;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.After;
@@ -41,7 +42,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import com.codahale.metrics.MetricRegistry;
-import org.awaitility.Duration;
 
 public class ESReporterTest {
 
