@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import org.apache.commons.io.IOUtils;
@@ -74,7 +74,7 @@ public abstract class AbstractSieveRepositoryTest {
         sieveRepository.putScript(USER, SCRIPT_NAME, SCRIPT_CONTENT);
         sieveRepository.setActive(USER, SCRIPT_NAME);
         assertThat(sieveRepository.getActivationDateForActiveScript(USER)).isNotNull();
-        assertThat(sieveRepository.getActivationDateForActiveScript(USER)).isNotEqualTo(ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneId.of("UTC")));
+        assertThat(sieveRepository.getActivationDateForActiveScript(USER)).isNotEqualTo(ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC));
     }
 
     @Test(expected = ScriptNotFoundException.class)

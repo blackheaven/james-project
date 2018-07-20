@@ -29,7 +29,7 @@ import static org.apache.james.sieve.cassandra.tables.CassandraSieveActiveTable.
 import static org.apache.james.sieve.cassandra.tables.CassandraSieveActiveTable.TABLE_NAME;
 import static org.apache.james.sieve.cassandra.tables.CassandraSieveActiveTable.USER_NAME;
 
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Optional;
@@ -72,7 +72,7 @@ public class CassandraActiveScriptDAO {
                 .setString(USER_NAME, user.asString()))
             .thenApply(rowOptional -> rowOptional.map(row -> new ActiveScriptInfo(
                 new ScriptName(row.getString(SCRIPT_NAME)),
-                ZonedDateTime.ofInstant(row.getTimestamp(DATE).toInstant(), ZoneId.of("UTC")))));
+                ZonedDateTime.ofInstant(row.getTimestamp(DATE).toInstant(), ZoneOffset.UTC))));
     }
 
     public CompletableFuture<Void> unactivate(User user) {

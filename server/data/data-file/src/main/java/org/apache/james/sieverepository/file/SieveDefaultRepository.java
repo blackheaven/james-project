@@ -25,7 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.time.Instant;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -86,7 +86,7 @@ public class SieveDefaultRepository implements SieveRepository {
 
     @Override
     public ZonedDateTime getActivationDateForActiveScript(User user) throws StorageException, ScriptNotFoundException {
-        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(retrieveUserFile(user).lastModified()), ZoneId.systemDefault());
+        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(retrieveUserFile(user).lastModified()), ZoneOffset.UTC);
     }
 
     public File retrieveUserFile(User user) throws ScriptNotFoundException {

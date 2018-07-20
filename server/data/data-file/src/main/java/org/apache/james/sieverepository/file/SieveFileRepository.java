@@ -30,7 +30,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.time.Instant;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -275,7 +275,7 @@ public class SieveFileRepository implements SieveRepository {
 
     @Override
     public ZonedDateTime getActivationDateForActiveScript(User user) throws StorageException, ScriptNotFoundException {
-        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(getActiveFile(user).lastModified()), ZoneId.systemDefault());
+        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(getActiveFile(user).lastModified()), ZoneOffset.UTC);
     }
 
     @Override
