@@ -112,11 +112,7 @@
 
             <h2>Event serializer</h2>
 
-            <p>There are two types of event serialization systems :
-                <ul>
-                    <li>Json : events are converted to JSON</li>
-                </ul>
-            </p>
+            <p>Json is the only serialization system currently supported.</p>
 
             <h2>Registration systems</h2>
 
