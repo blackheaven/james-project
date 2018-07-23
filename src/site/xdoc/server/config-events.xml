@@ -115,8 +115,6 @@
             <p>There are two types of event serialization systems :
                 <ul>
                     <li>Json : events are converted to JSON</li>
-                    <li>Message Pack : a binary representation of JSON. 2 times smaller in average but two times longer to compute. It allows you to trade
-                    bandwidth and data readability against CPU time.</li>
                 </ul>
             </p>
 
