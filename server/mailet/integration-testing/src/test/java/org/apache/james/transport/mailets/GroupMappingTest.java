@@ -60,6 +60,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.jayway.awaitility.Duration;
+
 import io.restassured.specification.RequestSpecification;
 
 public class GroupMappingTest {
@@ -502,9 +504,11 @@ public class GroupMappingTest {
                 .sender(SENDER)
                 .recipient(GROUP_ON_DOMAIN1));
 
-        fakeSmtp.isReceived(response -> response
-            .body("[0].from", equalTo(SENDER))
-            .body("[0].to[0]", equalTo(externalMail))
-            .body("[0].text", equalTo(MESSAGE_CONTENT)));
+        awaitAtMostOneMinute
+            .pollDelay(Duration.ONE_HUNDRED_MILLISECONDS)
+            .until(() -> fakeSmtp.isReceived(response -> response
+                .body("[0].from", equalTo(SENDER))
+                .body("[0].to[0]", equalTo(externalMail))
+                .body("[0].text", equalTo(MESSAGE_CONTENT))));
     }
 }
