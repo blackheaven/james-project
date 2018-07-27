@@ -19,9 +19,7 @@
 
 package org.apache.james.transport.mailets.jsieve;
 
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Enumeration;
 import java.util.Set;
 
