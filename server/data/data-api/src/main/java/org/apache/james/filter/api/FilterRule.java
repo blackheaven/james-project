@@ -50,7 +50,7 @@ public class FilterRule {
         }
 
         @Override
-        public boolean equals(Object o) {
+        public final boolean equals(Object o) {
             if (o instanceof Id) {
                 Id id = (Id) o;
                 return Objects.equals(value, id.value);
@@ -59,7 +59,7 @@ public class FilterRule {
         }
 
         @Override
-        public int hashCode() {
+        public final int hashCode() {
             return Objects.hash(value);
         }
 
@@ -87,9 +87,7 @@ public class FilterRule {
             }
             
             public static Field of(String fieldName) {
-                Optional<Field> result = find(fieldName);
-                Preconditions.checkArgument(result.isPresent(), "'" + fieldName + "' is not a valid field name");
-                return result.get();
+                return find(fieldName).orElseThrow(() -> new IllegalStateException("'" + fieldName + "' is not a valid field name"));
             }
             
             private final String fieldName;
@@ -99,7 +97,7 @@ public class FilterRule {
             }
             
             public String asString() {
-                return asString();
+                return fieldName;
             }
         }
         
@@ -116,9 +114,7 @@ public class FilterRule {
             }
             
             public static Comparator of(String comparatorName) {
-                Optional<Comparator> result = find(comparatorName);
-                Preconditions.checkArgument(result.isPresent(), "'" + comparatorName + "' is not a valid comparator name");
-                return result.get();
+                return find(comparatorName).orElseThrow(() -> new IllegalStateException("'" + comparatorName + "' is not a valid comparator name"));
             }
             
             private final String comparatorName;
@@ -163,7 +159,7 @@ public class FilterRule {
         }
 
         @Override
-        public boolean equals(Object o) {
+        public final boolean equals(Object o) {
             if (o instanceof Condition) {
                 Condition condition = (Condition) o;
                 return Objects.equals(field, condition.field)
@@ -174,8 +170,8 @@ public class FilterRule {
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(value);
+        public final int hashCode() {
+            return Objects.hash(field, comparator, value);
         }
 
         @Override
@@ -207,7 +203,7 @@ public class FilterRule {
         }
 
         @Override
-        public boolean equals(Object o) {
+        public final boolean equals(Object o) {
             if (o instanceof Action) {
                 Action action = (Action) o;
                 return Objects.equals(mailboxIds, action.mailboxIds);
@@ -216,7 +212,7 @@ public class FilterRule {
         }
 
         @Override
-        public int hashCode() {
+        public final int hashCode() {
             return Objects.hash(mailboxIds);
         }
 
@@ -236,6 +232,10 @@ public class FilterRule {
         private Optional<Action> action;
 
         public Builder() {
+            this.id = Optional.empty();
+            this.name = Optional.empty();
+            this.condition = Optional.empty();
+            this.action = Optional.empty();
         }
 
         public Builder id(Id id) {
