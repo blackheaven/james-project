@@ -34,7 +34,7 @@ import com.google.common.collect.ImmutableList;
 public interface FilteringManagementContract {
 
     public static final String NAME = "a name";
-    public static final Rule.Condition CONDITION = Rule.Condition.of("cc", "contains", "something");
+    public static final Rule.Condition CONDITION = Rule.Condition.of(Rule.Condition.Field.of("cc"), Rule.Condition.Comparator.of("contains"), "something");
     public static final Rule.Action ACTION = Rule.Action.ofMailboxIds(Arrays.asList("id-01"));
     public static final Function<String, Rule> RULE_BUILER = id -> Rule.builder().id(Rule.Id.of(id)).name(NAME).condition(CONDITION).action(ACTION).build();
     public static final Rule RULE_1 = RULE_BUILER.apply("1");

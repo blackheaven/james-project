@@ -129,12 +129,12 @@ public class Rule {
             }
         }
 
-        public static Condition of(String field, String comparator, String value) {
+        public static Condition of(Field field, Comparator comparator, String value) {
             Preconditions.checkNotNull(field, "field should no be null");
             Preconditions.checkNotNull(comparator, "comparator should no be null");
             Preconditions.checkNotNull(value, "value should no be null");
             Preconditions.checkArgument(StringUtils.isNotBlank(value), "value should no be empty");
-            return new Condition(Field.of(field), Comparator.of(comparator), value);
+            return new Condition(field, comparator, value);
         }
 
         private final Field field;
