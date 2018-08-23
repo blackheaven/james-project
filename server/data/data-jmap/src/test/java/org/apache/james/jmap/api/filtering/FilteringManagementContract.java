@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
+import java.util.function.Function;
 
 import org.apache.james.core.User;
 import org.apache.james.eventsourcing.eventstore.EventStore;
@@ -35,10 +36,10 @@ public interface FilteringManagementContract {
     public static final String NAME = "a name";
     public static final Rule.Condition CONDITION = Rule.Condition.of("cc", "contains", "something");
     public static final Rule.Action ACTION = Rule.Action.ofMailboxIds(Arrays.asList("id-01"));
-    public static final Rule.Builder RULE_BUILER = Rule.builder().name(NAME).condition(CONDITION).action(ACTION);
-    public static final Rule RULE_1 = RULE_BUILER.id(Rule.Id.of("3")).build();
-    public static final Rule RULE_2 = RULE_BUILER.id(Rule.Id.of("3")).build();
-    public static final Rule RULE_3 = RULE_BUILER.id(Rule.Id.of("3")).build();
+    public static final Function<String, Rule> RULE_BUILER = id -> Rule.builder().id(Rule.Id.of(id)).name(NAME).condition(CONDITION).action(ACTION).build();
+    public static final Rule RULE_1 = RULE_BUILER.apply("1");
+    public static final Rule RULE_2 = RULE_BUILER.apply("2");
+    public static final Rule RULE_3 = RULE_BUILER.apply("3");
 
     default FilteringManagement instanciateFilteringManagement(EventStore eventStore) {
         return new EventSourcingFilteringManagement(eventStore);

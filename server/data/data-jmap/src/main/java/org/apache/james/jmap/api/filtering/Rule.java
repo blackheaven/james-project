@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 public class Rule {
 
@@ -192,13 +193,13 @@ public class Rule {
             return new Action(mailboxIds);
         }
 
-        private final List<String> mailboxIds;
+        private final ImmutableList<String> mailboxIds;
 
         private Action(List<String> mailboxIds) {
-            this.mailboxIds = mailboxIds;
+            this.mailboxIds = ImmutableList.copyOf(mailboxIds);
         }
         
-        public List<String> getMailboxIds() {
+        public ImmutableList<String> getMailboxIds() {
             return mailboxIds;
         }
 
