@@ -21,6 +21,8 @@ package org.apache.james.jmap.api.filtering;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.Arrays;
+
 import org.apache.james.core.User;
 import org.apache.james.eventsourcing.eventstore.EventStore;
 import org.apache.james.jmap.api.filtering.impl.EventSourcingFilteringManagement;
@@ -29,6 +31,14 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableList;
 
 public interface FilteringManagementContract {
+
+    public static final String NAME = "a name";
+    public static final Rule.Condition CONDITION = Rule.Condition.of("cc", "contains", "something");
+    public static final Rule.Action ACTION = Rule.Action.ofMailboxIds(Arrays.asList("id-01"));
+    public static final Rule.Builder RULE_BUILER = Rule.builder().name(NAME).condition(CONDITION).action(ACTION);
+    public static final Rule RULE_1 = RULE_BUILER.id(Rule.Id.of("3")).build();
+    public static final Rule RULE_2 = RULE_BUILER.id(Rule.Id.of("3")).build();
+    public static final Rule RULE_3 = RULE_BUILER.id(Rule.Id.of("3")).build();
 
     default FilteringManagement instanciateFilteringManagement(EventStore eventStore) {
         return new EventSourcingFilteringManagement(eventStore);
@@ -50,24 +60,24 @@ public interface FilteringManagementContract {
     default void listingRulesShouldReturnDefinedRules(EventStore eventStore) {
         User user = User.fromUsername("bart@simpson.cartoon");
         FilteringManagement testee = instanciateFilteringManagement(eventStore);
-        testee.defineRulesForUser(user, ImmutableList.of(Rule.of("1"), Rule.of("2")));
-        assertThat(testee.listRulesForUser(user)).containsExactly(Rule.of("1"), Rule.of("2"));
+        testee.defineRulesForUser(user, ImmutableList.of(RULE_1, RULE_2));
+        assertThat(testee.listRulesForUser(user)).containsExactly(RULE_1, RULE_2);
     }
 
     @Test
     default void listingRulesShouldReturnLastDefinedRules(EventStore eventStore) {
         User user = User.fromUsername("bart@simpson.cartoon");
         FilteringManagement testee = instanciateFilteringManagement(eventStore);
-        testee.defineRulesForUser(user, ImmutableList.of(Rule.of("1"), Rule.of("2")));
-        testee.defineRulesForUser(user, ImmutableList.of(Rule.of("2"), Rule.of("1")));
-        assertThat(testee.listRulesForUser(user)).containsExactly(Rule.of("2"), Rule.of("1"));
+        testee.defineRulesForUser(user, ImmutableList.of(RULE_1, RULE_2));
+        testee.defineRulesForUser(user, ImmutableList.of(RULE_2, RULE_1));
+        assertThat(testee.listRulesForUser(user)).containsExactly(RULE_2, RULE_1);
     }
 
     @Test
     default void definingRulesShouldThrowWhenDuplicateRules(EventStore eventStore) {
         User user = User.fromUsername("bart@simpson.cartoon");
         FilteringManagement testee = instanciateFilteringManagement(eventStore);
-        assertThatThrownBy(() -> testee.defineRulesForUser(user, ImmutableList.of(Rule.of("1"), Rule.of("1"))))
+        assertThatThrownBy(() -> testee.defineRulesForUser(user, ImmutableList.of(RULE_1, RULE_1)))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -75,15 +85,15 @@ public interface FilteringManagementContract {
     default void definingRulesShouldKeepOrdering(EventStore eventStore) {
         User user = User.fromUsername("bart@simpson.cartoon");
         FilteringManagement testee = instanciateFilteringManagement(eventStore);
-        testee.defineRulesForUser(user, ImmutableList.of(Rule.of("3"), Rule.of("2"), Rule.of("1")));
-        assertThat(testee.listRulesForUser(user)).containsExactly(Rule.of("3"), Rule.of("2"), Rule.of("1"));
+        testee.defineRulesForUser(user, ImmutableList.of(RULE_3, RULE_2, RULE_1));
+        assertThat(testee.listRulesForUser(user)).containsExactly(RULE_3, RULE_2, RULE_1);
     }
 
     @Test
     default void definingEmptyRuleListShouldRemoveExistingRules(EventStore eventStore) {
         User user = User.fromUsername("bart@simpson.cartoon");
         FilteringManagement testee = instanciateFilteringManagement(eventStore);
-        testee.defineRulesForUser(user, ImmutableList.of(Rule.of("3"), Rule.of("2"), Rule.of("1")));
+        testee.defineRulesForUser(user, ImmutableList.of(RULE_3, RULE_2, RULE_1));
         testee.defineRulesForUser(user, ImmutableList.of());
         assertThat(testee.listRulesForUser(user)).isEmpty();
     }
