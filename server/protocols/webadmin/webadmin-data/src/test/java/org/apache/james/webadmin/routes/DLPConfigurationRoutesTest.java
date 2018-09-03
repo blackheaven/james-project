@@ -745,6 +745,18 @@ class DLPConfigurationRoutesTest {
         }
 
         @Test
+        public void fetchOnUnknownDomainAndRuleShouldBe404() throws Exception {
+            when()
+                .get("strange.com/rules/666")
+            .then()
+                .statusCode(HttpStatus.NOT_FOUND_404)
+                .contentType(JSON_CONTENT_TYPE)
+                .body("statusCode", is(HttpStatus.NOT_FOUND_404))
+                .body("type", is("InvalidArgument"))
+                .body("message", is("'strange.com' is not managed by this James server"));
+        }
+
+        @Test
         public void fetchOnUnknownRuleIdShouldBe404() throws Exception {
             storeRules();
 

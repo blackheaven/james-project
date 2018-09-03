@@ -74,6 +74,9 @@ public class DLPConfigurationRoutes implements Routes {
     private static final String DOMAIN_NAME = ":senderDomain";
     private static final String SPECIFIC_DLP_RULE_DOMAIN = BASE_PATH + SEPARATOR + DOMAIN_NAME;
 
+    private static final String RULE_ID_NAME = ":ruleId";
+    private static final String RULE_SPECIFIC_PATH = SPECIFIC_DLP_RULE_DOMAIN + SEPARATOR + "rules" + SEPARATOR + RULE_ID_NAME;
+
     private final JsonTransformer jsonTransformer;
     private final DLPConfigurationStore dlpConfigurationStore;
     private final JsonExtractor<DLPConfigurationDTO> jsonExtractor;
@@ -135,7 +138,7 @@ public class DLPConfigurationRoutes implements Routes {
 
     @GET
     @Path("/{senderDomain}")
-    @ApiOperation(value = "Return a DLP configuration for given senderDomain")
+    @ApiOperation(value = "Return a DLP configuration for a given senderDomain")
     @ApiImplicitParams({
         @ApiImplicitParam(required = true, dataType = "string", name = "senderDomain", paramType = "path")
     })
@@ -191,7 +194,7 @@ public class DLPConfigurationRoutes implements Routes {
 
     @GET
     @Path("/{senderDomain}/rules/{ruleId}")
-    @ApiOperation(value = "Return a DLP rule for given senderDomain and a ruleId")
+    @ApiOperation(value = "Return a DLP rule for a given senderDomain and a ruleId")
     @ApiImplicitParams({
         @ApiImplicitParam(required = true, dataType = "string", name = "senderDomain", paramType = "path"),
         @ApiImplicitParam(required = true, dataType = "string", name = "ruleId", paramType = "path")
@@ -200,16 +203,16 @@ public class DLPConfigurationRoutes implements Routes {
         @ApiResponse(code = HttpStatus.OK_200, message = "OK. DLP rule is returned", response = DLPConfigurationItemDTO.class),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Invalid senderDomain in request",
             response = ErrorResponder.ErrorDetail.class),
-        @ApiResponse(code = HttpStatus.NOT_FOUND_404, message = "The domain does not exist.",
+        @ApiResponse(code = HttpStatus.NOT_FOUND_404, message = "The domain and/or the rule does not exist.",
             response = ErrorResponder.ErrorDetail.class),
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500,
             message = "Internal server error - Something went bad on the server side.",
             response = ErrorResponder.ErrorDetail.class)
     })
     public void defineFetch(Service service) {
-        service.get(SPECIFIC_DLP_RULE_DOMAIN + "/rules/:ruleId", (request, response) -> {
+        service.get(RULE_SPECIFIC_PATH, (request, response) -> {
             Domain senderDomain = parseDomain(request);
-            Id ruleId = DLPConfigurationItem.Id.of(request.params("ruleId"));
+            Id ruleId = DLPConfigurationItem.Id.of(request.params(RULE_ID_NAME));
             DLPConfigurationItem dlpConfigurationItem = dlpConfigurationStore
                 .fetch(senderDomain, ruleId)
                 .orElseThrow(() -> notFound("There is no rule '" + ruleId.asString() + "' for '" + senderDomain.asString() + "' managed by this James server"));
