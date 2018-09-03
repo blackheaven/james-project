@@ -35,11 +35,13 @@ import javax.ws.rs.Produces;
 
 import org.apache.james.core.Domain;
 import org.apache.james.dlp.api.DLPConfigurationItem;
+import org.apache.james.dlp.api.DLPConfigurationItem.Id;
 import org.apache.james.dlp.api.DLPConfigurationStore;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.DLPConfigurationDTO;
+import org.apache.james.webadmin.dto.DLPConfigurationItemDTO;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.ErrorResponder.ErrorType;
 import org.apache.james.webadmin.utils.JsonExtractor;
@@ -98,6 +100,8 @@ public class DLPConfigurationRoutes implements Routes {
         defineList(service);
 
         defineClear(service);
+
+        defineFetch(service);
     }
 
     @PUT
@@ -182,6 +186,38 @@ public class DLPConfigurationRoutes implements Routes {
 
             response.status(HttpStatus.NO_CONTENT_204);
             return EMPTY_BODY;
+        }, jsonTransformer);
+    }
+
+    @GET
+    @Path("/{senderDomain}/rules/{ruleId}")
+    @ApiOperation(value = "Return a DLP rule for given senderDomain and a ruleId")
+    @ApiImplicitParams({
+        @ApiImplicitParam(required = true, dataType = "string", name = "senderDomain", paramType = "path"),
+        @ApiImplicitParam(required = true, dataType = "string", name = "ruleId", paramType = "path")
+    })
+    @ApiResponses(value = {
+        @ApiResponse(code = HttpStatus.OK_200, message = "OK. DLP rule is returned", response = DLPConfigurationItemDTO.class),
+        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Invalid senderDomain in request",
+            response = ErrorResponder.ErrorDetail.class),
+        @ApiResponse(code = HttpStatus.NOT_FOUND_404, message = "The domain does not exist.",
+            response = ErrorResponder.ErrorDetail.class),
+        @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500,
+            message = "Internal server error - Something went bad on the server side.",
+            response = ErrorResponder.ErrorDetail.class)
+    })
+    public void defineFetch(Service service) {
+        service.get(SPECIFIC_DLP_RULE_DOMAIN + "/rules/:ruleId", (request, response) -> {
+            Domain senderDomain = parseDomain(request);
+            Id ruleId = DLPConfigurationItem.Id.of(request.params("ruleId"));
+            DLPConfigurationItem dlpConfigurationItem = dlpConfigurationStore
+                .fetch(senderDomain, ruleId)
+                .orElseThrow(() -> notFound("There is no rule '" + ruleId.asString() + "' for '" + senderDomain.asString() + "' managed by this James server"));
+
+            DLPConfigurationItemDTO dto = DLPConfigurationItemDTO.toDTO(dlpConfigurationItem);
+            response.status(HttpStatus.OK_200);
+            response.header(CONTENT_TYPE, JSON_CONTENT_TYPE);
+            return dto;
         }, jsonTransformer);
     }
 

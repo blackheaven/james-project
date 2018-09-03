@@ -19,10 +19,12 @@
 
 package org.apache.james.dlp.api;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.james.core.Domain;
 
 public interface DLPConfigurationLoader {
     Stream<DLPConfigurationItem> list(Domain domain);
+    Optional<DLPConfigurationItem> fetch(Domain domain, DLPConfigurationItem.Id ruleId);
 }
