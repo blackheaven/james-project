@@ -1920,6 +1920,7 @@ curl -XGET http://ip:port/dlp/rules/senderDomain/rules/ruleId
 Response codes:
 
  - 200: A dlp configuration item is returned
+ - 400: Invalid senderDomain or payload in request
  - 404: The domain and/or the rule does not exist.
 
 This is an example of returned body.
