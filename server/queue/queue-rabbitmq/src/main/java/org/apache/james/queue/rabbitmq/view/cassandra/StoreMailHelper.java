@@ -19,6 +19,7 @@
 
 package org.apache.james.queue.rabbitmq.view.cassandra;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
@@ -35,14 +36,17 @@ class StoreMailHelper {
     private final EnqueuedMailsDAO enqueuedMailsDao;
     private final BrowseStartDAO browseStartDao;
     private final CassandraMailQueueViewConfiguration configuration;
+    private final Clock clock;
 
     @Inject
     StoreMailHelper(EnqueuedMailsDAO enqueuedMailsDao,
                     BrowseStartDAO browseStartDao,
-                    CassandraMailQueueViewConfiguration configuration) {
+                    CassandraMailQueueViewConfiguration configuration,
+                    Clock clock) {
         this.enqueuedMailsDao = enqueuedMailsDao;
         this.browseStartDao = browseStartDao;
         this.configuration = configuration;
+        this.clock = clock;
     }
 
     CompletableFuture<Void> storeMailInEnqueueTable(Mail mail, MailQueueName mailQueueName) {
@@ -65,7 +69,7 @@ class StoreMailHelper {
 
     private Instant currentSliceStartInstant() {
         long sliceSide = configuration.getSliceWindowInSecond();
-        long sliceId = Instant.now().getEpochSecond() / sliceSide;
+        long sliceId = clock.instant().getEpochSecond() / sliceSide;
         return Instant.ofEpochSecond(sliceId * sliceSide);
     }
 

@@ -48,13 +48,15 @@ class BrowseHelper {
     private final Clock clock;
 
     @Inject
-    BrowseHelper(BrowseStartDAO browseStartDao, DeletedMailsDAO deletedMailsDao,
-                 EnqueuedMailsDAO enqueuedMailsDao, CassandraMailQueueViewConfiguration configuration) {
+    BrowseHelper(BrowseStartDAO browseStartDao,
+                 DeletedMailsDAO deletedMailsDao,
+                 EnqueuedMailsDAO enqueuedMailsDao,
+                 CassandraMailQueueViewConfiguration configuration, Clock clock) {
         this.browseStartDao = browseStartDao;
         this.deletedMailsDao = deletedMailsDao;
         this.enqueuedMailsDao = enqueuedMailsDao;
         this.configuration = configuration;
-        clock = Clock.systemUTC();
+        this.clock = clock;
     }
 
     CompletableFuture<Stream<ManageableMailQueue.MailQueueItemView>> browse(MailQueueName queueName) {

@@ -47,7 +47,6 @@ class DeleteMailHelper {
         this.deletedMailsDao = deletedMailsDao;
         this.browseStartDao = browseStartDao;
         this.browseHelper = browseHelper;
-
         this.configuration = configuration;
         this.random = new Random();
     }
@@ -80,7 +79,7 @@ class DeleteMailHelper {
     }
 
     private boolean shouldBrowseStart() {
-        int threshold = configuration.getUpdateFirstEnqueuedPace();
+        int threshold = configuration.getUpdateBrowseStartPace();
         return Math.abs(random.nextInt()) % threshold == 0;
     }
 }
