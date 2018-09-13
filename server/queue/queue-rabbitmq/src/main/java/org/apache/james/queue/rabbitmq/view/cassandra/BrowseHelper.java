@@ -67,26 +67,26 @@ class BrowseHelper {
 
     FluentFutureStream<EnqueuedMail> browseReferences(MailQueueName queueName) {
         return FluentFutureStream.of(browseStartDao.findBrowseStart(queueName)
-            .thenApply(this::calculateAllSlicesFromBrowseStart))
-            .thenFlatMap(currentSlice -> browseOnlyEnqueuedInOrder(queueName, currentSlice));
+            .thenApply(this::allSlicesFrom))
+            .thenFlatMap(slice -> browseSlice(queueName, slice));
     }
 
-    private FluentFutureStream<EnqueuedMail> browseOnlyEnqueuedInOrder(MailQueueName queueName, Slice currentSlice) {
+    private FluentFutureStream<EnqueuedMail> browseSlice(MailQueueName queueName, Slice slice) {
         return FluentFutureStream.ofFluentFutureStreams(
             allBucketIds()
-                .map(bucketId -> browseOnlyEnqueuedForBucket(queueName, currentSlice, bucketId)))
+                .map(bucketId -> browseBucket(queueName, slice, bucketId)))
             .sorted(Comparator.comparing(EnqueuedMail::getEnqueuedTime));
     }
 
-    private FluentFutureStream<EnqueuedMail> browseOnlyEnqueuedForBucket(MailQueueName queueName, Slice currentSlice, BucketId bucketId) {
+    private FluentFutureStream<EnqueuedMail> browseBucket(MailQueueName queueName, Slice slice, BucketId bucketId) {
         return FluentFutureStream.of(
-            enqueuedMailsDao.selectEnqueuedMails(queueName, currentSlice, bucketId))
+            enqueuedMailsDao.selectEnqueuedMails(queueName, slice, bucketId))
                 .thenFilter(mailReference -> deletedMailsDao.isStillEnqueued(queueName, mailReference.getMailKey()));
     }
 
-    private Stream<Slice> calculateAllSlicesFromBrowseStart(Optional<Instant> maybeBrowseStartInstant) {
-        return maybeBrowseStartInstant
-            .map(browseStartInstant -> Slice.of(browseStartInstant, configuration.getSliceWindow()))
+    private Stream<Slice> allSlicesFrom(Optional<Instant> maybeBrowseStart) {
+        return maybeBrowseStart
+            .map(browseStart -> Slice.of(browseStart, configuration.getSliceWindow()))
             .map(startSlice -> allSlicesTill(startSlice, clock.instant()))
             .orElse(Stream.empty());
     }
