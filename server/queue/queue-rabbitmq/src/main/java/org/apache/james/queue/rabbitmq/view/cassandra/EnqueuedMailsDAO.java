@@ -82,10 +82,10 @@ class EnqueuedMailsDAO {
 
     private PreparedStatement prepareSelectFrom(Session session) {
         return session.prepare(select()
-                .from(TABLE_NAME)
-                .where(eq(QUEUE_NAME, bindMarker(QUEUE_NAME)))
-                .and(eq(TIME_RANGE_START, bindMarker(TIME_RANGE_START)))
-                .and(eq(BUCKET_ID, bindMarker(BUCKET_ID))));
+            .from(TABLE_NAME)
+            .where(eq(QUEUE_NAME, bindMarker(QUEUE_NAME)))
+            .and(eq(TIME_RANGE_START, bindMarker(TIME_RANGE_START)))
+            .and(eq(BUCKET_ID, bindMarker(BUCKET_ID))));
     }
 
     private PreparedStatement prepareInsert(Session session) {

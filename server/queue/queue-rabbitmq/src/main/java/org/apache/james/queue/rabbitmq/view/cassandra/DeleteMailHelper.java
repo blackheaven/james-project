@@ -54,10 +54,10 @@ class DeleteMailHelper {
     CompletableFuture<Void> markAsDeleted(Mail mail, MailQueueName mailQueueName) {
         return deletedMailsDao
             .markAsDeleted(mailQueueName, MailKey.fromMail(mail))
-            .thenRunAsync(() -> updateBrowseStart(mailQueueName));
+            .thenRunAsync(() -> maybeUpdateBrowseStart(mailQueueName));
     }
 
-    private void updateBrowseStart(MailQueueName mailQueueName) {
+    private void maybeUpdateBrowseStart(MailQueueName mailQueueName) {
         if (shouldUpdateBrowseStart()) {
             findNewBrowseStart(mailQueueName)
                 .thenCompose(newBrowseStart -> setNewBrowseStart(mailQueueName, newBrowseStart))

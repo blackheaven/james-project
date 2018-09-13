@@ -27,7 +27,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -59,7 +58,6 @@ class BrowseHelper {
     }
 
     CompletableFuture<Stream<ManageableMailQueue.MailQueueItemView>> browse(MailQueueName queueName) {
-
         return browseReferences(queueName)
             .map(EnqueuedMail::getMail)
             .map(ManageableMailQueue.MailQueueItemView::new)
@@ -68,12 +66,11 @@ class BrowseHelper {
 
     FluentFutureStream<EnqueuedMail> browseReferences(MailQueueName queueName) {
         return FluentFutureStream.of(browseStartDao.findBrowseStart(queueName)
-            .thenApply(calculateAllSlicesFromBrowseStart()))
+            .thenApply(this::calculateAllSlicesFromBrowseStart))
             .thenFlatCompose(currentSlice -> browseOnlyEnqueuedInOrder(queueName, currentSlice));
     }
 
     private CompletableFuture<Stream<EnqueuedMail>> browseOnlyEnqueuedInOrder(MailQueueName queueName, Slice currentSlice) {
-
         return FluentFutureStream.ofNestedStreams(allBucketIds()
             .map(bucketId -> browseOnlyEnqueuedForBucket(queueName, currentSlice, bucketId)))
             .sorted(EnqueuedMail.getEnqueuedTimeComparator())
@@ -82,7 +79,6 @@ class BrowseHelper {
 
     private CompletableFuture<Stream<EnqueuedMail>> browseOnlyEnqueuedForBucket(
         MailQueueName queueName, Slice currentSlice, BucketId bucketId) {
-
         return FluentFutureStream.of(
             enqueuedMailsDao
                 .selectEnqueuedMails(queueName, currentSlice, bucketId))
@@ -90,8 +86,8 @@ class BrowseHelper {
                 .completableFuture();
     }
 
-    private Function<Optional<Instant>, Stream<Slice>> calculateAllSlicesFromBrowseStart() {
-        return maybeBrowseStartInstant -> maybeBrowseStartInstant
+    private Stream<Slice> calculateAllSlicesFromBrowseStart(Optional<Instant> maybeBrowseStartInstant) {
+        return maybeBrowseStartInstant
             .map(browseStartInstant -> Slice.of(browseStartInstant, configuration.getSliceWindow()))
             .map(startSlice -> allSlicesTill(startSlice, clock.instant()))
             .orElse(Stream.empty());

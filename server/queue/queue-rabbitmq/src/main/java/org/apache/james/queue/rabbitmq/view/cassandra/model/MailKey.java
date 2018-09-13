@@ -19,6 +19,8 @@
 
 package org.apache.james.queue.rabbitmq.view.cassandra.model;
 
+import java.util.Objects;
+
 import org.apache.mailet.Mail;
 
 import com.google.common.base.Preconditions;
@@ -44,5 +46,20 @@ public class MailKey {
 
     public String getMailKey() {
         return mailKey;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (o instanceof MailKey) {
+            MailKey mailKey1 = (MailKey) o;
+
+            return Objects.equals(this.mailKey, mailKey1.mailKey);
+        }
+        return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(mailKey);
     }
 }

@@ -135,9 +135,10 @@ public class EnqueuedMailsDaoTest {
             .hasOnlyOneElementSatisfying(selectedEnqueuedMail -> {
                 SoftAssertions softly = new SoftAssertions();
                 softly.assertThat(selectedEnqueuedMail.getMailQueueName()).isEqualTo(OUT_GOING_1);
-                softly.assertThat(selectedEnqueuedMail.getBucketId()).isEqualTo(BUCKET_ID_VALUE);
+                softly.assertThat(selectedEnqueuedMail.getBucketId()).isEqualTo(BUCKET_ID);
                 softly.assertThat(selectedEnqueuedMail.getTimeRangeStart()).isEqualTo(NOW);
                 softly.assertThat(selectedEnqueuedMail.getMailKey()).isEqualTo(MAIL_KEY_1);
+                softly.assertAll();
             });
     }
 }
