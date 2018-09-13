@@ -22,10 +22,10 @@ package org.apache.james.queue.rabbitmq.view.cassandra.model;
 import static org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlices.Slice;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class BucketedSlicesTest {
@@ -36,12 +36,9 @@ class BucketedSlicesTest {
     private static final Instant FIRST_SLICE_INSTANT_NEXT_HOUR = FIRST_SLICE_INSTANT.plusSeconds(ONE_HOUR_IN_SECONDS);
     private static final Instant FIRST_SLICE_INSTANT_NEXT_TWO_HOUR = FIRST_SLICE_INSTANT.plusSeconds(ONE_HOUR_IN_SECONDS * 2);
 
-    private static final Slice FIRST_SLICE = Slice.of(FIRST_SLICE_INSTANT, ONE_HOUR_IN_SECONDS);
-    private static final Slice FIRST_SLICE_NEXT_TWO_HOUR = Slice.of(FIRST_SLICE_INSTANT_NEXT_TWO_HOUR, ONE_HOUR_IN_SECONDS);
-
-    @Nested
-    class Validation {
-    }
+    private static final Duration ONE_HOUR_SLICE_WINDOW = Duration.ofSeconds(ONE_HOUR_IN_SECONDS);
+    private static final Slice FIRST_SLICE = Slice.of(FIRST_SLICE_INSTANT, ONE_HOUR_SLICE_WINDOW);
+    private static final Slice FIRST_SLICE_NEXT_TWO_HOUR = Slice.of(FIRST_SLICE_INSTANT_NEXT_TWO_HOUR, Duration.ofSeconds(ONE_HOUR_IN_SECONDS));
 
     @Test
     void allSlicesTillShouldReturnOnlyFirstSliceWhenEndAtInTheSameInterval() {
@@ -56,8 +53,8 @@ class BucketedSlicesTest {
         assertThat(allSlices)
             .containsExactly(
                 FIRST_SLICE,
-                Slice.of(FIRST_SLICE_INSTANT_NEXT_HOUR, ONE_HOUR_IN_SECONDS),
-                Slice.of(FIRST_SLICE_INSTANT_NEXT_TWO_HOUR, ONE_HOUR_IN_SECONDS));
+                Slice.of(FIRST_SLICE_INSTANT_NEXT_HOUR, ONE_HOUR_SLICE_WINDOW),
+                Slice.of(FIRST_SLICE_INSTANT_NEXT_TWO_HOUR, ONE_HOUR_SLICE_WINDOW));
     }
 
     @Test

@@ -19,6 +19,7 @@
 
 package org.apache.james.util;
 
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
@@ -120,5 +121,11 @@ public class CompletableFutureUtil {
             }
             return CompletableFuture.completedFuture(b);
         };
+    }
+
+    public static <T> CompletableFuture<Stream<T>> sorted(CompletableFuture<Stream<T>> futureStream, Comparator<T> comparator) {
+        return futureStream
+            .thenApply(stream ->
+                stream.sorted(comparator));
     }
 }

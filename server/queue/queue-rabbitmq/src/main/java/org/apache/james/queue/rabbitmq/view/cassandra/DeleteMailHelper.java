@@ -51,14 +51,14 @@ class DeleteMailHelper {
         this.random = new Random();
     }
 
-    CompletableFuture<Void> updateDeleteTable(Mail mail, MailQueueName mailQueueName) {
+    CompletableFuture<Void> markAsDeleted(Mail mail, MailQueueName mailQueueName) {
         return deletedMailsDao
             .markAsDeleted(mailQueueName, MailKey.fromMail(mail))
             .thenRunAsync(() -> updateBrowseStart(mailQueueName));
     }
 
     private void updateBrowseStart(MailQueueName mailQueueName) {
-        if (shouldBrowseStart()) {
+        if (shouldUpdateBrowseStart()) {
             findNewBrowseStart(mailQueueName)
                 .thenCompose(newBrowseStart -> setNewBrowseStart(mailQueueName, newBrowseStart))
                 .join();
@@ -72,13 +72,13 @@ class DeleteMailHelper {
             .thenApply(Stream::findFirst);
     }
 
-    private CompletableFuture<Void> setNewBrowseStart(MailQueueName mailQueueName, Optional<Instant> newBrowseStart) {
-        return newBrowseStart.map(value ->
-            browseStartDao.updateBrowseStart(mailQueueName, value))
+    private CompletableFuture<Void> setNewBrowseStart(MailQueueName mailQueueName, Optional<Instant> maybeNewBrowseStart) {
+        return maybeNewBrowseStart
+            .map(newBrowseStartInstant -> browseStartDao.updateBrowseStart(mailQueueName, newBrowseStartInstant))
             .orElse(CompletableFuture.completedFuture(null));
     }
 
-    private boolean shouldBrowseStart() {
+    private boolean shouldUpdateBrowseStart() {
         int threshold = configuration.getUpdateBrowseStartPace();
         return Math.abs(random.nextInt()) % threshold == 0;
     }

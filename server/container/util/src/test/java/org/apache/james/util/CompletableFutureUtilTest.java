@@ -420,4 +420,23 @@ public class CompletableFutureUtilTest {
                 .join())
             .isEmpty();
     }
+
+    @Test
+    public void sortShouldReturnEmptyWhenEmptyStream() {
+        FluentFutureStream<Long> futureStream = FluentFutureStream.ofFutures();
+        assertThat(futureStream.sorted(Long::compareTo).join())
+            .isEmpty();
+    }
+
+    @Test
+    public void sortShouldReturnTheSortedStream() {
+        FluentFutureStream<Long> futureStream = FluentFutureStream.ofFutures(
+            CompletableFuture.completedFuture(4L),
+            CompletableFuture.completedFuture(3L),
+            CompletableFuture.completedFuture(2L),
+            CompletableFuture.completedFuture(1L));
+
+        assertThat(futureStream.sorted(Long::compareTo).join())
+            .containsExactly(1L, 2L, 3L, 4L);
+    }
 }

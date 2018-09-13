@@ -27,6 +27,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -35,9 +36,7 @@ import javax.inject.Inject;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.view.cassandra.model.EnqueuedMail;
-import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.FluentFutureStream;
-import org.apache.james.util.StreamUtils;
 
 class BrowseHelper {
 
@@ -69,19 +68,19 @@ class BrowseHelper {
 
     FluentFutureStream<EnqueuedMail> browseReferences(MailQueueName queueName) {
         return FluentFutureStream.of(browseStartDao.findBrowseStart(queueName)
-            .thenApply(maybeStart -> maybeStart.map(this::allSlicesFrom).orElse(Stream.empty())))
+            .thenApply(calculateAllSlicesFromBrowseStart()))
             .thenFlatCompose(currentSlice -> browseOnlyEnqueuedInOrder(queueName, currentSlice));
     }
 
     private CompletableFuture<Stream<EnqueuedMail>> browseOnlyEnqueuedInOrder(MailQueueName queueName, Slice currentSlice) {
 
-         return CompletableFutureUtil.allOf(allBucketIds()
-            .map(bucketId -> browseOnlyEnqueuedInOrder(queueName, currentSlice, bucketId)))
-            .thenApply(StreamUtils::flatten)
-            .thenApply(enqueuedMailStream -> enqueuedMailStream.sorted(EnqueuedMail.getEnqueuedTimeComparator()));
+        return FluentFutureStream.ofNestedStreams(allBucketIds()
+            .map(bucketId -> browseOnlyEnqueuedForBucket(queueName, currentSlice, bucketId)))
+            .sorted(EnqueuedMail.getEnqueuedTimeComparator())
+            .completableFuture();
     }
 
-    private CompletableFuture<Stream<EnqueuedMail>> browseOnlyEnqueuedInOrder(
+    private CompletableFuture<Stream<EnqueuedMail>> browseOnlyEnqueuedForBucket(
         MailQueueName queueName, Slice currentSlice, BucketId bucketId) {
 
         return FluentFutureStream.of(
@@ -91,9 +90,11 @@ class BrowseHelper {
                 .completableFuture();
     }
 
-    private Stream<Slice> allSlicesFrom(Instant startingSliceInstant) {
-        Slice firstSlice = Slice.of(startingSliceInstant, configuration.getSliceWindow().getSeconds());
-        return allSlicesTill(firstSlice, clock.instant());
+    private Function<Optional<Instant>, Stream<Slice>> calculateAllSlicesFromBrowseStart() {
+        return maybeBrowseStartInstant -> maybeBrowseStartInstant
+            .map(browseStartInstant -> Slice.of(browseStartInstant, configuration.getSliceWindow()))
+            .map(startSlice -> allSlicesTill(startSlice, clock.instant()))
+            .orElse(Stream.empty());
     }
 
     private Stream<BucketId> allBucketIds() {

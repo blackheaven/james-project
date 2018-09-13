@@ -74,8 +74,8 @@ class StoreMailHelper {
     }
 
     private BucketId computedBucketId(Mail mail) {
-        int mailKeyHasCode = mail.getName().hashCode();
-        int bucketIdValue = mailKeyHasCode % configuration.getBucketCount();
+        int mailKeyHashCode = mail.getName().hashCode();
+        int bucketIdValue = mailKeyHashCode % configuration.getBucketCount();
         return BucketId.of(bucketIdValue);
     }
 }
