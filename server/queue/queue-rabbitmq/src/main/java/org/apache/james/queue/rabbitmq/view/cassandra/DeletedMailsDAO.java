@@ -76,4 +76,8 @@ class DeletedMailsDAO {
                 .setString(QUEUE_NAME, mailQueueName.asString())
                 .setString(MAIL_KEY, mailKey.getMailKey()));
     }
+
+    CompletableFuture<Boolean> isStillEnqueued(MailQueueName mailQueueName, MailKey mailKey) {
+        return checkDeleted(mailQueueName, mailKey).thenApply(b -> !b);
+    }
 }

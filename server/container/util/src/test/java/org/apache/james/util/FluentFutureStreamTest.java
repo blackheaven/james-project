@@ -181,6 +181,18 @@ public class FluentFutureStreamTest {
     }
 
     @Test
+    public void thenFilterShouldBeAppliedOnTheUnderlyingStream() {
+        assertThat(
+            FluentFutureStream.of(
+                CompletableFuture.completedFuture(
+                    Stream.of(1, 2, 3)))
+                .thenFilter(i -> CompletableFuture.completedFuture(i % 2 == 1))
+                .join()
+                .collect(Guavate.toImmutableList()))
+            .containsExactly(1, 3);
+    }
+
+    @Test
     public void thenComposeOnAllShouldTransformUnderlyingValuesAndComposeFutures() {
         assertThat(
             FluentFutureStream.of(
@@ -255,6 +267,7 @@ public class FluentFutureStreamTest {
                 .join())
             .isEmpty();
     }
+
     @Test
     public void sortShouldWork() {
         assertThat(

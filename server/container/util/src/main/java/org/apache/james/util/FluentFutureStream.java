@@ -175,6 +175,12 @@ public class FluentFutureStream<T> {
             .thenApply(stream -> stream.filter(predicate)));
     }
 
+    public FluentFutureStream<T> thenFilter(Function<T, CompletableFuture<Boolean>> futurePredicate) {
+        return thenFlatComposeOnOptional(t -> futurePredicate.apply(t)
+            .thenApply(isKept -> Optional.of(t)
+                .filter(any -> isKept)));
+    }
+
     /**
      * Reduces the underlying stream. Reduced value is supplied as a Future of optional, as no empty value is supplied.
      */

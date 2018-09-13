@@ -71,17 +71,16 @@ class BrowseHelper {
     }
 
     private FluentFutureStream<EnqueuedMail> browseOnlyEnqueuedInOrder(MailQueueName queueName, Slice currentSlice) {
-        return FluentFutureStream.ofFluentFutureStreams(allBucketIds()
+        return FluentFutureStream.ofFluentFutureStreams(
+            allBucketIds()
                 .map(bucketId -> browseOnlyEnqueuedForBucket(queueName, currentSlice, bucketId)))
             .sorted(EnqueuedMail.getEnqueuedTimeComparator());
     }
 
-    private FluentFutureStream<EnqueuedMail> browseOnlyEnqueuedForBucket(
-        MailQueueName queueName, Slice currentSlice, BucketId bucketId) {
+    private FluentFutureStream<EnqueuedMail> browseOnlyEnqueuedForBucket(MailQueueName queueName, Slice currentSlice, BucketId bucketId) {
         return FluentFutureStream.of(
-            enqueuedMailsDao
-                .selectEnqueuedMails(queueName, currentSlice, bucketId))
-                .thenFlatComposeOnOptional(mailReference -> filterDeleted(queueName, mailReference));
+            enqueuedMailsDao.selectEnqueuedMails(queueName, currentSlice, bucketId))
+                .thenFilter(mailReference -> deletedMailsDao.isStillEnqueued(queueName, mailReference.getMailKey()));
     }
 
     private Stream<Slice> calculateAllSlicesFromBrowseStart(Optional<Instant> maybeBrowseStartInstant) {
@@ -95,12 +94,5 @@ class BrowseHelper {
         return IntStream
             .range(0, configuration.getBucketCount())
             .mapToObj(BucketId::of);
-    }
-
-    private CompletableFuture<Optional<EnqueuedMail>> filterDeleted(MailQueueName mailQueueName, EnqueuedMail mailReference) {
-        return deletedMailsDao.checkDeleted(mailQueueName, mailReference.getMailKey())
-            .thenApply(wasDeleted ->
-                Optional.of(mailReference)
-                    .filter(any -> !wasDeleted));
     }
 }
