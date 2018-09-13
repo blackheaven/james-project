@@ -21,7 +21,6 @@ package org.apache.james.queue.rabbitmq.view.cassandra;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,17 +57,17 @@ class StoreMailHelper {
         EnqueuedMail enqueuedMail = convertToEnqueuedMail(mail, mailQueueName);
 
         return enqueuedMailsDao.insert(enqueuedMail)
-            .thenCompose(any -> maybeInitBrowseStart(mailQueueName, enqueuedMail.getTimeRangeStart()));
+            .thenCompose(any -> initBrowseStartIfNeeded(mailQueueName, enqueuedMail.getTimeRangeStart()));
     }
 
-    private CompletableFuture<Void> maybeInitBrowseStart(MailQueueName mailQueueName, Instant sliceStartAt) {
-        return Optional.of(initialInserted.contains(mailQueueName))
-            .filter(isInserted -> !isInserted)
-            .map(notInserted -> insertInitialBrowseStart(mailQueueName, sliceStartAt))
-            .orElse(CompletableFuture.completedFuture(null));
+    private CompletableFuture<Void> initBrowseStartIfNeeded(MailQueueName mailQueueName, Instant sliceStartAt) {
+        if (!initialInserted.contains(mailQueueName)) {
+            return tryInsertBrowseStart(mailQueueName, sliceStartAt);
+        }
+        return CompletableFuture.completedFuture(null);
     }
 
-    private CompletableFuture<Void> insertInitialBrowseStart(MailQueueName mailQueueName, Instant sliceStartAt) {
+    private CompletableFuture<Void> tryInsertBrowseStart(MailQueueName mailQueueName, Instant sliceStartAt) {
         return browseStartDao
             .insertInitialBrowseStart(mailQueueName, sliceStartAt)
             .thenAccept(any -> initialInserted.add(mailQueueName));
