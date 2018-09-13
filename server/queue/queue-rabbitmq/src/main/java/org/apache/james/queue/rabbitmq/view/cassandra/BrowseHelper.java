@@ -25,6 +25,7 @@ import static org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlice
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
@@ -74,7 +75,7 @@ class BrowseHelper {
         return FluentFutureStream.ofFluentFutureStreams(
             allBucketIds()
                 .map(bucketId -> browseOnlyEnqueuedForBucket(queueName, currentSlice, bucketId)))
-            .sorted(EnqueuedMail.getEnqueuedTimeComparator());
+            .sorted(Comparator.comparing(EnqueuedMail::getEnqueuedTime));
     }
 
     private FluentFutureStream<EnqueuedMail> browseOnlyEnqueuedForBucket(MailQueueName queueName, Slice currentSlice, BucketId bucketId) {

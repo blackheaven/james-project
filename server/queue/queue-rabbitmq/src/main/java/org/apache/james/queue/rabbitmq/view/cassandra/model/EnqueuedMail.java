@@ -20,7 +20,6 @@
 package org.apache.james.queue.rabbitmq.view.cassandra.model;
 
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.Objects;
 
 import org.apache.james.queue.rabbitmq.MailQueueName;
@@ -88,10 +87,6 @@ public class EnqueuedMail {
     public static Builder.RequireMail builder() {
         return mail -> bucketId -> timeRangeStart -> enqueuedTime -> mailKey -> mailQueueName ->
             new Builder.LastStage(mail, bucketId, timeRangeStart, enqueuedTime, mailKey, mailQueueName);
-    }
-
-    public static Comparator<EnqueuedMail> getEnqueuedTimeComparator() {
-        return Comparator.comparing(EnqueuedMail::getEnqueuedTime);
     }
 
     private final Mail mail;
