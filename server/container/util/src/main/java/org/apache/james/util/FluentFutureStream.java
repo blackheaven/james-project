@@ -47,6 +47,16 @@ public class FluentFutureStream<T> {
     }
 
     /**
+     * Constructs a FluentFutureStream from a Stream of Fluent Future of Stream.
+     *
+     * Underlying streams are flatMapped.
+     */
+    public static <T> FluentFutureStream<T> ofFluentFutureStreams(Stream<FluentFutureStream<T>> fluentFutureStreams) {
+        return ofNestedStreams(fluentFutureStreams
+            .map(fluentFutureStream -> fluentFutureStream.completableFuture));
+    }
+
+    /**
      * Constructs a FluentFutureStream from a Stream of Future of Stream.
      *
      * Underlying streams are flatMapped.
@@ -122,6 +132,17 @@ public class FluentFutureStream<T> {
     public <U> FluentFutureStream<U> thenComposeOnAll(Function<T, CompletableFuture<U>> function) {
         return FluentFutureStream.of(
             CompletableFutureUtil.thenComposeOnAll(completableFuture(), function));
+    }
+
+    /**
+     * Apply a transformation to all value of the underlying stream.
+     *
+     * As the supplied transformation produces fluent futures of stream, we need to compose then flatMap the returned values.
+     */
+    public <U> FluentFutureStream<U> thenFlatMap(Function<T, FluentFutureStream<U>> function) {
+        return FluentFutureStream.of(
+            completableFuture().thenCompose(elementStream ->
+                ofFluentFutureStreams(elementStream.map(function)).completableFuture()));
     }
 
     /**

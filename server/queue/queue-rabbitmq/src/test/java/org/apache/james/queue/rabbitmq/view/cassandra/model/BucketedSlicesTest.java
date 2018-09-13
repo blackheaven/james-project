@@ -24,8 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -63,7 +61,7 @@ class BucketedSlicesTest {
     void allSlicesTillShouldReturnSameSlicesWhenEndAtsAreInTheSameInterval() {
         Stream<Slice> allSlicesEndAtTheStartOfWindow = Slice.allSlicesTill(FIRST_SLICE, FIRST_SLICE_INSTANT_NEXT_TWO_HOUR);
         Stream<Slice> allSlicesEndAtTheMiddleOfWindow = Slice.allSlicesTill(FIRST_SLICE, FIRST_SLICE_INSTANT_NEXT_TWO_HOUR.plusSeconds(1000));
-        Stream<Slice> allSlicesEndAtTheTheEndWindow = Slice.allSlicesTill(FIRST_SLICE, FIRST_SLICE_INSTANT_NEXT_TWO_HOUR.plusSeconds(1000));
+        Stream<Slice> allSlicesEndAtTheTheEndWindow = Slice.allSlicesTill(FIRST_SLICE, FIRST_SLICE_INSTANT_NEXT_TWO_HOUR.plusSeconds(3599));
 
         Slice [] allSlicesInThreeHours = {
             FIRST_SLICE,
@@ -71,9 +69,13 @@ class BucketedSlicesTest {
             Slice.of(FIRST_SLICE_INSTANT_NEXT_TWO_HOUR, ONE_HOUR_SLICE_WINDOW)};
 
         assertThat(allSlicesEndAtTheStartOfWindow)
-            .isEqualTo(allSlicesEndAtTheMiddleOfWindow)
-            .isEqualTo(allSlicesEndAtTheTheEndWindow)
-            .isEqualTo(allSlicesInThreeHours);
+            .containsExactly(allSlicesInThreeHours);
+
+        assertThat(allSlicesEndAtTheMiddleOfWindow)
+            .containsExactly(allSlicesInThreeHours);
+
+        assertThat(allSlicesEndAtTheTheEndWindow)
+            .containsExactly(allSlicesInThreeHours);
     }
 
     @Test

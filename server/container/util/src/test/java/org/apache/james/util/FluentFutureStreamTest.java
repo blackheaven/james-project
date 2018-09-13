@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.junit.Test;
@@ -257,22 +258,76 @@ public class FluentFutureStreamTest {
     @Test
     public void sortShouldWork() {
         assertThat(
-            CompletableFutureUtil.sorted(
+            FluentFutureStream.of(
                 CompletableFutureUtil.allOfArray(
                     CompletableFuture.completedFuture(4L),
                     CompletableFuture.completedFuture(3L),
                     CompletableFuture.completedFuture(2L),
                     CompletableFuture.completedFuture(1L)
-                ),
-                Long::compareTo)
+                ))
+                .sorted(Long::compareTo)
                 .join())
             .containsExactly(1L, 2L, 3L, 4L);
     }
-     @Test
+
+    @Test
     public void sortShouldReturnEmptyWhenEmpty() {
-        assertThat(CompletableFutureUtil
-            .sorted(CompletableFutureUtil.allOfArray(), Long::compareTo)
+        CompletableFuture<Stream<Long>> completableFutureStream = CompletableFutureUtil.allOfArray();
+        assertThat(
+            FluentFutureStream.of(completableFutureStream)
+                .sorted(Long::compareTo)
                 .join())
             .isEmpty();
+    }
+
+    @Test
+    public void ofFluentFutureStreamsShouldReturnEmptyWhenEmpty() {
+        assertThat(FluentFutureStream
+            .ofFluentFutureStreams(Stream.empty()).join())
+            .isEmpty();
+    }
+
+    @Test
+    public void ofFluentFutureStreamsShouldReturnAllElementsOfNestedFluentStream() {
+        FluentFutureStream<Long> firstFluentStream = FluentFutureStream.of(
+            CompletableFutureUtil.allOfArray(
+                CompletableFuture.completedFuture(1L),
+                CompletableFuture.completedFuture(2L)));
+
+        FluentFutureStream<Long> secondFluentStream = FluentFutureStream.of(
+            CompletableFutureUtil.allOfArray(
+                CompletableFuture.completedFuture(3L),
+                CompletableFuture.completedFuture(4L)));
+
+        assertThat(FluentFutureStream
+            .ofFluentFutureStreams(Stream.of(firstFluentStream, secondFluentStream)).join())
+            .containsExactly(1L, 2L, 3L, 4L);
+    }
+
+    @Test
+    public void thenFlatMapShouldReturnEmptyWhenEmpty() {
+        FluentFutureStream<Long> emptyFluentStream = FluentFutureStream.of(CompletableFutureUtil.allOfArray());
+
+        Function<Long, FluentFutureStream<Long>> increaseOneFluentFutureMapper = number ->
+            FluentFutureStream.ofFutures(CompletableFuture.completedFuture(number + 1L));
+
+        assertThat(emptyFluentStream.thenFlatMap(increaseOneFluentFutureMapper).join())
+            .isEmpty();
+    }
+
+    @Test
+    public void thenFlatMapShouldReturnAllElementsFromFlatMap() {
+        FluentFutureStream<Long> longFluentStream = FluentFutureStream.of(
+            CompletableFutureUtil.allOfArray(
+                CompletableFuture.completedFuture(1L),
+                CompletableFuture.completedFuture(2L)));
+
+        Function<Long, FluentFutureStream<Long>> multipleFluentFutureMapper = number ->
+            FluentFutureStream.ofFutures(
+                CompletableFuture.completedFuture(number * 2),
+                CompletableFuture.completedFuture(number * 3));
+
+        assertThat(longFluentStream.thenFlatMap(multipleFluentFutureMapper).join())
+                .containsExactly(2L, 3L, 4L, 6L);
     }
 }
