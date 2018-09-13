@@ -21,7 +21,10 @@ package org.apache.james.queue.rabbitmq.view.cassandra;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 
@@ -37,6 +40,7 @@ class StoreMailHelper {
     private final BrowseStartDAO browseStartDao;
     private final CassandraMailQueueViewConfiguration configuration;
     private final Clock clock;
+    private final Set<MailQueueName> initialInserted;
 
     @Inject
     StoreMailHelper(EnqueuedMailsDAO enqueuedMailsDao,
@@ -47,13 +51,27 @@ class StoreMailHelper {
         this.browseStartDao = browseStartDao;
         this.configuration = configuration;
         this.clock = clock;
+        this.initialInserted = ConcurrentHashMap.newKeySet();
     }
 
     CompletableFuture<Void> storeMailInEnqueueTable(Mail mail, MailQueueName mailQueueName) {
         EnqueuedMail enqueuedMail = convertToEnqueuedMail(mail, mailQueueName);
 
         return enqueuedMailsDao.insert(enqueuedMail)
-            .thenCompose(any -> browseStartDao.insertInitialBrowseStart(mailQueueName, enqueuedMail.getTimeRangeStart()));
+            .thenCompose(any -> maybeInitBrowseStart(mailQueueName, enqueuedMail.getTimeRangeStart()));
+    }
+
+    private CompletableFuture<Void> maybeInitBrowseStart(MailQueueName mailQueueName, Instant sliceStartAt) {
+        return Optional.of(initialInserted.contains(mailQueueName))
+            .filter(isInserted -> !isInserted)
+            .map(notInserted -> insertInitialBrowseStart(mailQueueName, sliceStartAt))
+            .orElse(CompletableFuture.completedFuture(null));
+    }
+
+    private CompletableFuture<Void> insertInitialBrowseStart(MailQueueName mailQueueName, Instant sliceStartAt) {
+        return browseStartDao
+            .insertInitialBrowseStart(mailQueueName, sliceStartAt)
+            .thenAccept(any -> initialInserted.add(mailQueueName));
     }
 
     private EnqueuedMail convertToEnqueuedMail(Mail mail, MailQueueName mailQueueName) {
