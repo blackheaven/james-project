@@ -212,6 +212,23 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract {
             .containsExactly("2-4", "5-1", "5-2", "5-3", "5-4", "5-5");
     }
 
+    @Test
+    void browseShouldReturnCurrentlyEnqueuedMailEvenFromFutureSlices() throws Exception {
+        assertThat(IN_SLICE_6).isAfter(IN_SLICE_1);
+        ManageableMailQueue mailQueue = getManageableMailQueue();
+        int emailCount = 5;
+
+        when(clock.instant()).thenReturn(IN_SLICE_6);
+        enqueueMailsInSlice(1, emailCount);
+
+        when(clock.instant()).thenReturn(IN_SLICE_1);
+        Stream<String> names = Iterators.toStream(mailQueue.browse())
+            .map(ManageableMailQueue.MailQueueItemView::getMail)
+            .map(Mail::getName);
+
+        assertThat(names).containsExactly("1-1", "1-2", "1-3", "1-4", "1-5");
+    }
+
     @Disabled
     @Override
     public void clearShouldNotFailWhenBrowsingIterating() {

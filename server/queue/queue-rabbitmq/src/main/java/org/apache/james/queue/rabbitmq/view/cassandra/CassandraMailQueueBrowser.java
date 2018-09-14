@@ -24,7 +24,9 @@ import static org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlice
 import static org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlices.Slice.allSlicesTill;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.TemporalAmount;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Optional;
@@ -67,6 +69,7 @@ class CassandraMailQueueBrowser {
         }
     }
 
+    private static final TemporalAmount BUFFER_TIME_SLICE = Duration.ofDays(1);
     private final BrowseStartDAO browseStartDao;
     private final DeletedMailsDAO deletedMailsDao;
     private final EnqueuedMailsDAO enqueuedMailsDao;
@@ -116,7 +119,7 @@ class CassandraMailQueueBrowser {
     private Stream<Slice> allSlicesStartingAt(Optional<Instant> maybeBrowseStart) {
         return maybeBrowseStart
             .map(browseStart -> Slice.of(browseStart, configuration.getSliceWindow()))
-            .map(startSlice -> allSlicesTill(startSlice, clock.instant()))
+            .map(startSlice -> allSlicesTill(startSlice, clock.instant().plus(BUFFER_TIME_SLICE)))
             .orElse(Stream.empty());
     }
 
