@@ -26,7 +26,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.stream.Stream;
 
+import org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlices.BucketId;
 import org.junit.jupiter.api.Test;
+
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 class BucketedSlicesTest {
     
@@ -39,6 +42,18 @@ class BucketedSlicesTest {
     private static final Duration ONE_HOUR_SLICE_WINDOW = Duration.ofSeconds(ONE_HOUR_IN_SECONDS);
     private static final Slice FIRST_SLICE = Slice.of(FIRST_SLICE_INSTANT, ONE_HOUR_SLICE_WINDOW);
     private static final Slice FIRST_SLICE_NEXT_TWO_HOUR = Slice.of(FIRST_SLICE_INSTANT_NEXT_TWO_HOUR, Duration.ofSeconds(ONE_HOUR_IN_SECONDS));
+
+    @Test
+    void bucketIdShouldMatchBeanContract() {
+        EqualsVerifier.forClass(BucketId.class)
+            .verify();
+    }
+
+    @Test
+    void sliceShouldMatchBeanContract() {
+        EqualsVerifier.forClass(Slice.class)
+            .verify();
+    }
 
     @Test
     void allSlicesTillShouldReturnOnlyFirstSliceWhenEndAtInTheSameInterval() {

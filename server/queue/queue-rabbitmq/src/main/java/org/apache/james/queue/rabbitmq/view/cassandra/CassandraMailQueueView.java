@@ -19,7 +19,6 @@
 
 package org.apache.james.queue.rabbitmq.view.cassandra;
 
-import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
@@ -29,66 +28,41 @@ import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.view.api.MailQueueView;
 import org.apache.mailet.Mail;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 
 public class CassandraMailQueueView implements MailQueueView {
 
-    class CassandraMailQueueIterator implements ManageableMailQueue.MailQueueIterator {
-
-        private final Iterator<ManageableMailQueue.MailQueueItemView> iterator;
-
-        CassandraMailQueueIterator(Iterator<ManageableMailQueue.MailQueueItemView> iterator) {
-            Preconditions.checkNotNull(iterator);
-
-            this.iterator = iterator;
-        }
-
-        @Override
-        public void close() {}
-
-        @Override
-        public boolean hasNext() {
-            return iterator.hasNext();
-        }
-
-        @Override
-        public ManageableMailQueue.MailQueueItemView next() {
-            return iterator.next();
-        }
-    }
-
     public static class Factory {
-        private final StoreMailHelper storeHelper;
-        private final BrowseHelper browseHelper;
-        private final DeleteMailHelper deleteMailHelper;
+        private final CassandraMailQueueMailStore storeHelper;
+        private final CassandraMailQueueBrowser cassandraMailQueueBrowser;
+        private final CassandraMailQueueMailDelete cassandraMailQueueMailDelete;
 
         @Inject
-        public Factory(StoreMailHelper storeHelper, BrowseHelper browseHelper, DeleteMailHelper deleteMailHelper) {
+        public Factory(CassandraMailQueueMailStore storeHelper, CassandraMailQueueBrowser cassandraMailQueueBrowser, CassandraMailQueueMailDelete cassandraMailQueueMailDelete) {
             this.storeHelper = storeHelper;
-            this.browseHelper = browseHelper;
-            this.deleteMailHelper = deleteMailHelper;
+            this.cassandraMailQueueBrowser = cassandraMailQueueBrowser;
+            this.cassandraMailQueueMailDelete = cassandraMailQueueMailDelete;
         }
 
         public MailQueueView create(MailQueueName mailQueueName) {
-            return new CassandraMailQueueView(storeHelper, mailQueueName, browseHelper, deleteMailHelper);
+            return new CassandraMailQueueView(storeHelper, mailQueueName, cassandraMailQueueBrowser, cassandraMailQueueMailDelete);
         }
     }
 
-    private final StoreMailHelper storeHelper;
-    private final BrowseHelper browseHelper;
-    private final DeleteMailHelper deleteMailHelper;
+    private final CassandraMailQueueMailStore storeHelper;
+    private final CassandraMailQueueBrowser cassandraMailQueueBrowser;
+    private final CassandraMailQueueMailDelete cassandraMailQueueMailDelete;
 
     private final MailQueueName mailQueueName;
 
-    CassandraMailQueueView(StoreMailHelper storeHelper,
+    CassandraMailQueueView(CassandraMailQueueMailStore storeHelper,
                                   MailQueueName mailQueueName,
-                                  BrowseHelper browseHelper,
-                                  DeleteMailHelper deleteMailHelper) {
+                                  CassandraMailQueueBrowser cassandraMailQueueBrowser,
+                                  CassandraMailQueueMailDelete cassandraMailQueueMailDelete) {
         this.mailQueueName = mailQueueName;
         this.storeHelper = storeHelper;
-        this.browseHelper = browseHelper;
-        this.deleteMailHelper = deleteMailHelper;
+        this.cassandraMailQueueBrowser = cassandraMailQueueBrowser;
+        this.cassandraMailQueueMailDelete = cassandraMailQueueMailDelete;
     }
 
     @Override
@@ -98,13 +72,13 @@ public class CassandraMailQueueView implements MailQueueView {
 
     @Override
     public CompletableFuture<Void> deleteMail(Mail mail) {
-        return deleteMailHelper.markAsDeleted(mail, mailQueueName);
+        return cassandraMailQueueMailDelete.markAsDeleted(mail, mailQueueName);
     }
 
     @Override
     public ManageableMailQueue.MailQueueIterator browse() {
-        return new CassandraMailQueueIterator(
-            browseHelper.browse(mailQueueName)
+        return new CassandraMailQueueBrowser.CassandraMailQueueIterator(
+            cassandraMailQueueBrowser.browse(mailQueueName)
                 .join()
                 .iterator());
     }

@@ -68,14 +68,14 @@ public class DeletedMailsDAOTest {
     @Test
     public void markAsDeletedShouldWork() {
         Boolean isDeletedBeforeMark = testee
-                .checkDeleted(OUT_GOING_1, MAIL_KEY_1)
+                .isDeleted(OUT_GOING_1, MAIL_KEY_1)
                 .join();
         assertThat(isDeletedBeforeMark).isFalse();
 
         testee.markAsDeleted(OUT_GOING_1, MAIL_KEY_1).join();
 
         Boolean isDeletedAfterMark = testee
-            .checkDeleted(OUT_GOING_1, MAIL_KEY_1)
+            .isDeleted(OUT_GOING_1, MAIL_KEY_1)
             .join();
 
         assertThat(isDeletedAfterMark).isTrue();
@@ -86,7 +86,7 @@ public class DeletedMailsDAOTest {
         testee.markAsDeleted(OUT_GOING_2, MAIL_KEY_2).join();
 
         Boolean isDeleted = testee
-            .checkDeleted(OUT_GOING_1, MAIL_KEY_1)
+            .isDeleted(OUT_GOING_1, MAIL_KEY_1)
             .join();
 
         assertThat(isDeleted).isFalse();
@@ -97,7 +97,7 @@ public class DeletedMailsDAOTest {
         testee.markAsDeleted(OUT_GOING_1, MAIL_KEY_2).join();
 
         Boolean isDeleted = testee
-            .checkDeleted(OUT_GOING_1, MAIL_KEY_1)
+            .isDeleted(OUT_GOING_1, MAIL_KEY_1)
             .join();
 
         assertThat(isDeleted).isFalse();
@@ -108,7 +108,7 @@ public class DeletedMailsDAOTest {
         testee.markAsDeleted(OUT_GOING_2, MAIL_KEY_1).join();
 
         Boolean isDeleted = testee
-            .checkDeleted(OUT_GOING_1, MAIL_KEY_1)
+            .isDeleted(OUT_GOING_1, MAIL_KEY_1)
             .join();
 
         assertThat(isDeleted).isFalse();
@@ -119,7 +119,7 @@ public class DeletedMailsDAOTest {
         testee.markAsDeleted(OUT_GOING_1, MAIL_KEY_1).join();
 
         Boolean isDeleted = testee
-            .checkDeleted(OUT_GOING_1, MAIL_KEY_1)
+            .isDeleted(OUT_GOING_1, MAIL_KEY_1)
             .join();
 
         assertThat(isDeleted).isTrue();

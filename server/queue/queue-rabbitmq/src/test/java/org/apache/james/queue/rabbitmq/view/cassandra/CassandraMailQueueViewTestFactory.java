@@ -20,6 +20,7 @@
 package org.apache.james.queue.rabbitmq.view.cassandra;
 
 import java.time.Clock;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
@@ -28,18 +29,20 @@ import com.datastax.driver.core.Session;
 
 public class CassandraMailQueueViewTestFactory {
 
-    public static CassandraMailQueueView.Factory factory(Clock clock, Session session, CassandraTypesProvider typesProvider, CassandraMailQueueViewConfiguration configuration) {
+    public static CassandraMailQueueView.Factory factory(Clock clock, ThreadLocalRandom random, Session session,
+                                                         CassandraTypesProvider typesProvider,
+                                                         CassandraMailQueueViewConfiguration configuration) {
         EnqueuedMailsDAO enqueuedMailsDao = new EnqueuedMailsDAO(session, CassandraUtils.WITH_DEFAULT_CONFIGURATION, typesProvider);
         BrowseStartDAO browseStartDao = new BrowseStartDAO(session);
         DeletedMailsDAO deletedMailsDao = new DeletedMailsDAO(session);
 
-        BrowseHelper browseHelper = new BrowseHelper(browseStartDao, deletedMailsDao, enqueuedMailsDao, configuration, clock);
-        StoreMailHelper storeMailHelper = new StoreMailHelper(enqueuedMailsDao, browseStartDao, configuration, clock);
-        DeleteMailHelper deleteMailHelper = new DeleteMailHelper(deletedMailsDao, browseStartDao, browseHelper, configuration);
+        CassandraMailQueueBrowser cassandraMailQueueBrowser = new CassandraMailQueueBrowser(browseStartDao, deletedMailsDao, enqueuedMailsDao, configuration, clock);
+        CassandraMailQueueMailStore cassandraMailQueueMailStore = new CassandraMailQueueMailStore(enqueuedMailsDao, browseStartDao, configuration, clock);
+        CassandraMailQueueMailDelete cassandraMailQueueMailDelete = new CassandraMailQueueMailDelete(deletedMailsDao, browseStartDao, cassandraMailQueueBrowser, configuration, random);
 
         return new CassandraMailQueueView.Factory(
-            storeMailHelper,
-            browseHelper,
-            deleteMailHelper);
+            cassandraMailQueueMailStore,
+            cassandraMailQueueBrowser,
+            cassandraMailQueueMailDelete);
     }
 }

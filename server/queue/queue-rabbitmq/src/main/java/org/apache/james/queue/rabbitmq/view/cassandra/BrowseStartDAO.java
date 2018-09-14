@@ -81,7 +81,7 @@ class BrowseStartDAO {
 
     CompletableFuture<Optional<Instant>> findBrowseStart(MailQueueName queueName) {
         return selectOne(queueName)
-            .thenApply(optional -> optional.map(this::getInstant));
+            .thenApply(optional -> optional.map(this::getBrowseStart));
     }
 
     CompletableFuture<Void> updateBrowseStart(MailQueueName mailQueueName, Instant sliceStart) {
@@ -103,7 +103,7 @@ class BrowseStartDAO {
                 .setString(QUEUE_NAME, queueName.asString()));
     }
 
-    private Instant getInstant(Row row) {
+    private Instant getBrowseStart(Row row) {
         return row.getTimestamp(BROWSE_START).toInstant();
     }
 }

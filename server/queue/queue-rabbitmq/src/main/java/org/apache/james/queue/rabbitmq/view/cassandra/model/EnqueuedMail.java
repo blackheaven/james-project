@@ -138,6 +138,7 @@ public class EnqueuedMail {
             return Objects.equals(this.bucketId, that.bucketId)
                     && Objects.equals(this.mail, that.mail)
                     && Objects.equals(this.timeRangeStart, that.timeRangeStart)
+                    && Objects.equals(this.enqueuedTime, that.enqueuedTime)
                     && Objects.equals(this.mailKey, that.mailKey)
                     && Objects.equals(this.mailQueueName, that.mailQueueName);
         }
@@ -146,6 +147,6 @@ public class EnqueuedMail {
 
     @Override
     public final int hashCode() {
-        return Objects.hash(mail, bucketId, timeRangeStart, mailKey, mailQueueName);
+        return Objects.hash(mail, bucketId, timeRangeStart, enqueuedTime, mailKey, mailQueueName);
     }
 }

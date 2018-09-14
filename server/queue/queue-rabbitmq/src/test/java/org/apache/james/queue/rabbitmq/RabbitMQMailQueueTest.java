@@ -31,6 +31,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
@@ -110,8 +111,9 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract {
             .build();
         clock = mock(Clock.class);
         when(clock.instant()).thenReturn(Instant.parse("2007-12-03T10:15:30.00Z"));
+        ThreadLocalRandom random = ThreadLocalRandom.current();
 
-        MailQueueView mailQueueView = CassandraMailQueueViewTestFactory.factory(clock, cassandra.getConf(), cassandra.getTypesProvider(),
+        MailQueueView mailQueueView = CassandraMailQueueViewTestFactory.factory(clock, random, cassandra.getConf(), cassandra.getTypesProvider(),
             CassandraMailQueueViewConfiguration.builder()
                     .bucketCount(THREE_BUCKET_COUNT)
                     .updateBrowseStartPace(UPDATE_BROWSE_START_PACE)

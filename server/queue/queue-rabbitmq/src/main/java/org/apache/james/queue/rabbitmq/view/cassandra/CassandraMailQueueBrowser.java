@@ -26,6 +26,7 @@ import static org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlice
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
@@ -38,7 +39,33 @@ import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.view.cassandra.model.EnqueuedMail;
 import org.apache.james.util.FluentFutureStream;
 
-class BrowseHelper {
+import com.google.common.base.Preconditions;
+
+class CassandraMailQueueBrowser {
+
+    static class CassandraMailQueueIterator implements ManageableMailQueue.MailQueueIterator {
+
+        private final Iterator<ManageableMailQueue.MailQueueItemView> iterator;
+
+        CassandraMailQueueIterator(Iterator<ManageableMailQueue.MailQueueItemView> iterator) {
+            Preconditions.checkNotNull(iterator);
+
+            this.iterator = iterator;
+        }
+
+        @Override
+        public void close() {}
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        @Override
+        public ManageableMailQueue.MailQueueItemView next() {
+            return iterator.next();
+        }
+    }
 
     private final BrowseStartDAO browseStartDao;
     private final DeletedMailsDAO deletedMailsDao;
@@ -47,10 +74,10 @@ class BrowseHelper {
     private final Clock clock;
 
     @Inject
-    BrowseHelper(BrowseStartDAO browseStartDao,
-                 DeletedMailsDAO deletedMailsDao,
-                 EnqueuedMailsDAO enqueuedMailsDao,
-                 CassandraMailQueueViewConfiguration configuration, Clock clock) {
+    CassandraMailQueueBrowser(BrowseStartDAO browseStartDao,
+                              DeletedMailsDAO deletedMailsDao,
+                              EnqueuedMailsDAO enqueuedMailsDao,
+                              CassandraMailQueueViewConfiguration configuration, Clock clock) {
         this.browseStartDao = browseStartDao;
         this.deletedMailsDao = deletedMailsDao;
         this.enqueuedMailsDao = enqueuedMailsDao;
@@ -67,7 +94,7 @@ class BrowseHelper {
 
     FluentFutureStream<EnqueuedMail> browseReferences(MailQueueName queueName) {
         return FluentFutureStream.of(browseStartDao.findBrowseStart(queueName)
-            .thenApply(this::allSlicesFrom))
+            .thenApply(this::allSlicesStartingAt))
             .map(slice -> browseSlice(queueName, slice), FluentFutureStream::unboxFluentFuture);
     }
 
@@ -86,7 +113,7 @@ class BrowseHelper {
                 .thenFilter(mailReference -> deletedMailsDao.isStillEnqueued(queueName, mailReference.getMailKey()));
     }
 
-    private Stream<Slice> allSlicesFrom(Optional<Instant> maybeBrowseStart) {
+    private Stream<Slice> allSlicesStartingAt(Optional<Instant> maybeBrowseStart) {
         return maybeBrowseStart
             .map(browseStart -> Slice.of(browseStart, configuration.getSliceWindow()))
             .map(startSlice -> allSlicesTill(startSlice, clock.instant()))

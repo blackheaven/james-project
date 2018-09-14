@@ -272,7 +272,7 @@ public class FluentFutureStreamTest {
     }
 
     @Test
-    public void sortShouldWork() {
+    public void sortedShouldReturnInOrderElements() {
         assertThat(
             FluentFutureStream.of(
                 CompletableFuture.completedFuture(Stream.of(4L, 3L, 2L, 1L)))
@@ -282,7 +282,7 @@ public class FluentFutureStreamTest {
     }
 
     @Test
-    public void sortShouldReturnEmptyWhenEmpty() {
+    public void sortedShouldReturnEmptyWhenEmpty() {
         CompletableFuture<Stream<Long>> completableFutureStream = CompletableFuture.completedFuture(Stream.of());
         assertThat(
             FluentFutureStream.of(completableFutureStream)

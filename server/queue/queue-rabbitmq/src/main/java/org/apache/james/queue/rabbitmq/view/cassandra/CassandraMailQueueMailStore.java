@@ -33,7 +33,7 @@ import org.apache.james.queue.rabbitmq.view.cassandra.model.EnqueuedMail;
 import org.apache.james.queue.rabbitmq.view.cassandra.model.MailKey;
 import org.apache.mailet.Mail;
 
-class StoreMailHelper {
+class CassandraMailQueueMailStore {
 
     private final EnqueuedMailsDAO enqueuedMailsDao;
     private final BrowseStartDAO browseStartDao;
@@ -42,10 +42,10 @@ class StoreMailHelper {
     private final Set<MailQueueName> initialInserted;
 
     @Inject
-    StoreMailHelper(EnqueuedMailsDAO enqueuedMailsDao,
-                    BrowseStartDAO browseStartDao,
-                    CassandraMailQueueViewConfiguration configuration,
-                    Clock clock) {
+    CassandraMailQueueMailStore(EnqueuedMailsDAO enqueuedMailsDao,
+                                BrowseStartDAO browseStartDao,
+                                CassandraMailQueueViewConfiguration configuration,
+                                Clock clock) {
         this.enqueuedMailsDao = enqueuedMailsDao;
         this.browseStartDao = browseStartDao;
         this.configuration = configuration;

@@ -70,7 +70,7 @@ class DeletedMailsDAO {
             .setString(MAIL_KEY, mailKey.getMailKey()));
     }
 
-    CompletableFuture<Boolean> checkDeleted(MailQueueName mailQueueName, MailKey mailKey) {
+    CompletableFuture<Boolean> isDeleted(MailQueueName mailQueueName, MailKey mailKey) {
         return executor.executeReturnExists(
             selectOne.bind()
                 .setString(QUEUE_NAME, mailQueueName.asString())
@@ -78,6 +78,6 @@ class DeletedMailsDAO {
     }
 
     CompletableFuture<Boolean> isStillEnqueued(MailQueueName mailQueueName, MailKey mailKey) {
-        return checkDeleted(mailQueueName, mailKey).thenApply(b -> !b);
+        return isDeleted(mailQueueName, mailKey).thenApply(b -> !b);
     }
 }

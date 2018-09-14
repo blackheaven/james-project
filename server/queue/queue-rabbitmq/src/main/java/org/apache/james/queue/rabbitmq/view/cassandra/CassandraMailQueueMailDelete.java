@@ -21,8 +21,8 @@ package org.apache.james.queue.rabbitmq.view.cassandra;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -32,23 +32,25 @@ import org.apache.james.queue.rabbitmq.view.cassandra.model.EnqueuedMail;
 import org.apache.james.queue.rabbitmq.view.cassandra.model.MailKey;
 import org.apache.mailet.Mail;
 
-class DeleteMailHelper {
+class CassandraMailQueueMailDelete {
 
     private final DeletedMailsDAO deletedMailsDao;
     private final BrowseStartDAO browseStartDao;
-    private final BrowseHelper browseHelper;
+    private final CassandraMailQueueBrowser cassandraMailQueueBrowser;
     private final CassandraMailQueueViewConfiguration configuration;
-    private final Random random;
+    private final ThreadLocalRandom random;
 
     @Inject
-    DeleteMailHelper(DeletedMailsDAO deletedMailsDao,
-                     BrowseStartDAO browseStartDao,
-                     BrowseHelper browseHelper, CassandraMailQueueViewConfiguration configuration) {
+    CassandraMailQueueMailDelete(DeletedMailsDAO deletedMailsDao,
+                                 BrowseStartDAO browseStartDao,
+                                 CassandraMailQueueBrowser cassandraMailQueueBrowser,
+                                 CassandraMailQueueViewConfiguration configuration,
+                                 ThreadLocalRandom random) {
         this.deletedMailsDao = deletedMailsDao;
         this.browseStartDao = browseStartDao;
-        this.browseHelper = browseHelper;
+        this.cassandraMailQueueBrowser = cassandraMailQueueBrowser;
         this.configuration = configuration;
-        this.random = new Random();
+        this.random = random;
     }
 
     CompletableFuture<Void> markAsDeleted(Mail mail, MailQueueName mailQueueName) {
@@ -60,19 +62,19 @@ class DeleteMailHelper {
     private void maybeUpdateBrowseStart(MailQueueName mailQueueName) {
         if (shouldUpdateBrowseStart()) {
             findNewBrowseStart(mailQueueName)
-                .thenCompose(newBrowseStart -> setNewBrowseStart(mailQueueName, newBrowseStart))
+                .thenCompose(newBrowseStart -> updateNewBrowseStart(mailQueueName, newBrowseStart))
                 .join();
         }
     }
 
     private CompletableFuture<Optional<Instant>> findNewBrowseStart(MailQueueName mailQueueName) {
-        return browseHelper.browseReferences(mailQueueName)
+        return cassandraMailQueueBrowser.browseReferences(mailQueueName)
             .map(EnqueuedMail::getTimeRangeStart)
             .completableFuture()
             .thenApply(Stream::findFirst);
     }
 
-    private CompletableFuture<Void> setNewBrowseStart(MailQueueName mailQueueName, Optional<Instant> maybeNewBrowseStart) {
+    private CompletableFuture<Void> updateNewBrowseStart(MailQueueName mailQueueName, Optional<Instant> maybeNewBrowseStart) {
         return maybeNewBrowseStart
             .map(newBrowseStartInstant -> browseStartDao.updateBrowseStart(mailQueueName, newBrowseStartInstant))
             .orElse(CompletableFuture.completedFuture(null));
