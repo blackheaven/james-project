@@ -28,60 +28,41 @@ import java.time.Instant;
 import java.util.stream.Stream;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
+import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.view.cassandra.model.EnqueuedMail;
 import org.apache.james.queue.rabbitmq.view.cassandra.model.MailKey;
 import org.apache.mailet.base.test.FakeMail;
 import org.assertj.core.api.SoftAssertions;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class EnqueuedMailsDaoTest {
+class EnqueuedMailsDaoTest {
 
     private static final MailQueueName OUT_GOING_1 = MailQueueName.fromString("OUT_GOING_1");
     private static final MailKey MAIL_KEY_1 = MailKey.of("mailkey1");
     private static int BUCKET_ID_VALUE = 10;
-    private static BucketId BUCKET_ID = BucketId.of(BUCKET_ID_VALUE);
+    private static final BucketId BUCKET_ID = BucketId.of(BUCKET_ID_VALUE);
     private static final Instant NOW = Instant.now();
     private static final Slice SLICE_OF_NOW = Slice.of(NOW, Duration.ofSeconds(100));
 
-    @ClassRule
-    public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    private static CassandraCluster cassandra;
+    @RegisterExtension
+    static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(CassandraMailQueueViewModule.MODULE);
 
     private EnqueuedMailsDAO testee;
 
-    @BeforeClass
-    public static void setUpClass() {
-        cassandra = CassandraCluster.create(CassandraMailQueueViewModule.MODULE, cassandraServer.getHost());
-    }
-
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp(CassandraCluster cassandra) {
         testee = new EnqueuedMailsDAO(
             cassandra.getConf(),
             CassandraUtils.WITH_DEFAULT_CONFIGURATION,
             cassandra.getTypesProvider());
     }
 
-    @After
-    public void tearDown() {
-        cassandra.clearTables();
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        cassandra.closeCluster();
-    }
-
     @Test
-    public void insertShouldWork() throws Exception {
+    void insertShouldWork() throws Exception {
         testee.insert(EnqueuedMail.builder()
                 .mail(FakeMail.builder()
                     .name(MAIL_KEY_1.getMailKey())
@@ -102,7 +83,7 @@ public class EnqueuedMailsDaoTest {
     }
 
     @Test
-    public void selectEnqueuedMailsShouldWork() throws Exception {
+    void selectEnqueuedMailsShouldWork() throws Exception {
         testee.insert(EnqueuedMail.builder()
                 .mail(FakeMail.builder()
                     .name(MAIL_KEY_1.getMailKey())

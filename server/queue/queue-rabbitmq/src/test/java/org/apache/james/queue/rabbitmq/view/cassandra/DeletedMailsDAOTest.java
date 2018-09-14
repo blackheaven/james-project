@@ -22,51 +22,32 @@ package org.apache.james.queue.rabbitmq.view.cassandra;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
+import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.view.cassandra.model.MailKey;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class DeletedMailsDAOTest {
+class DeletedMailsDAOTest {
 
     private static final MailQueueName OUT_GOING_1 = MailQueueName.fromString("OUT_GOING_1");
     private static final MailQueueName OUT_GOING_2 = MailQueueName.fromString("OUT_GOING_2");
     private static final MailKey MAIL_KEY_1 = MailKey.of("mailkey1");
     private static final MailKey MAIL_KEY_2 = MailKey.of("mailkey2");
 
-    @ClassRule
-    public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    private static CassandraCluster cassandra;
+    @RegisterExtension
+    static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(CassandraMailQueueViewModule.MODULE);
 
     private DeletedMailsDAO testee;
 
-    @BeforeClass
-    public static void setUpClass() {
-        cassandra = CassandraCluster.create(CassandraMailQueueViewModule.MODULE, cassandraServer.getHost());
-    }
-
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp(CassandraCluster cassandra) {
         testee = new DeletedMailsDAO(cassandra.getConf());
     }
 
-    @After
-    public void tearDown() {
-        cassandra.clearTables();
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        cassandra.closeCluster();
-    }
-
     @Test
-    public void markAsDeletedShouldWork() {
+    void markAsDeletedShouldWork() {
         Boolean isDeletedBeforeMark = testee
                 .isDeleted(OUT_GOING_1, MAIL_KEY_1)
                 .join();
@@ -82,7 +63,7 @@ public class DeletedMailsDAOTest {
     }
 
     @Test
-    public void checkDeletedShouldReturnFalseWhenTableDoesntContainBothMailQueueAndMailKey() {
+    void checkDeletedShouldReturnFalseWhenTableDoesntContainBothMailQueueAndMailKey() {
         testee.markAsDeleted(OUT_GOING_2, MAIL_KEY_2).join();
 
         Boolean isDeleted = testee
@@ -93,7 +74,7 @@ public class DeletedMailsDAOTest {
     }
 
     @Test
-    public void checkDeletedShouldReturnFalseWhenTableContainsMailQueueButNotMailKey() {
+    void checkDeletedShouldReturnFalseWhenTableContainsMailQueueButNotMailKey() {
         testee.markAsDeleted(OUT_GOING_1, MAIL_KEY_2).join();
 
         Boolean isDeleted = testee
@@ -104,7 +85,7 @@ public class DeletedMailsDAOTest {
     }
 
     @Test
-    public void checkDeletedShouldReturnFalseWhenTableContainsMailKeyButNotMailQueue() {
+    void checkDeletedShouldReturnFalseWhenTableContainsMailKeyButNotMailQueue() {
         testee.markAsDeleted(OUT_GOING_2, MAIL_KEY_1).join();
 
         Boolean isDeleted = testee
@@ -115,7 +96,7 @@ public class DeletedMailsDAOTest {
     }
 
     @Test
-    public void checkDeletedShouldReturnTrueWhenTableContainsMailItem() {
+    void checkDeletedShouldReturnTrueWhenTableContainsMailItem() {
         testee.markAsDeleted(OUT_GOING_1, MAIL_KEY_1).join();
 
         Boolean isDeleted = testee

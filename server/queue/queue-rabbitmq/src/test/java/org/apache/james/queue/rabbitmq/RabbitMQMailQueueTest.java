@@ -44,7 +44,7 @@ import org.apache.james.backend.rabbitmq.RabbitMQConfiguration;
 import org.apache.james.backend.rabbitmq.RabbitMQConnectionFactory;
 import org.apache.james.backend.rabbitmq.ReusableDockerRabbitMQExtension;
 import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraExtension;
+import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
 import org.apache.james.blob.api.HashBlobId;
@@ -64,38 +64,32 @@ import org.apache.james.util.streams.Iterators;
 import org.apache.mailet.Mail;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.nurkiewicz.asyncretry.AsyncRetryExecutor;
 
-@ExtendWith({ReusableDockerRabbitMQExtension.class, DockerCassandraExtension.class})
+@ExtendWith(ReusableDockerRabbitMQExtension.class)
 public class RabbitMQMailQueueTest implements ManageableMailQueueContract {
     private static final HashBlobId.Factory BLOB_ID_FACTORY = new HashBlobId.Factory();
-    public static final int THREE_BUCKET_COUNT = 3;
-    public static final int UPDATE_BROWSE_START_PACE = 2;
-    public static final Duration ONE_HOUR_SLICE_WINDOW = Duration.ofHours(1);
-    public static final String SPOOL = "spool";
+    private static final int THREE_BUCKET_COUNT = 3;
+    private static final int UPDATE_BROWSE_START_PACE = 2;
+    private static final Duration ONE_HOUR_SLICE_WINDOW = Duration.ofHours(1);
+    private static final String SPOOL = "spool";
 
-    private static CassandraCluster cassandra;
+    @RegisterExtension
+    static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(CassandraModule.aggregateModules(
+        CassandraBlobModule.MODULE,
+        CassandraMailQueueViewModule.MODULE));
 
     private RabbitMQMailQueueFactory mailQueueFactory;
     private Clock clock;
 
-    @BeforeAll
-    static void setUpClass(DockerCassandraExtension.DockerCassandra dockerCassandra) {
-        cassandra = CassandraCluster.create(
-            CassandraModule.aggregateModules(
-                CassandraBlobModule.MODULE,
-                CassandraMailQueueViewModule.MODULE),
-            dockerCassandra.getHost());
-    }
-
     @BeforeEach
-    void setup(DockerRabbitMQ rabbitMQ) throws IOException, TimeoutException, URISyntaxException {
+    void setup(DockerRabbitMQ rabbitMQ, CassandraCluster cassandra) throws IOException, TimeoutException, URISyntaxException {
         CassandraBlobsDAO blobsDAO = new CassandraBlobsDAO(cassandra.getConf(), CassandraConfiguration.DEFAULT_CONFIGURATION, BLOB_ID_FACTORY);
         Store<MimeMessage, MimeMessagePartsId> mimeMessageStore = MimeMessageStore.factory(blobsDAO).mimeMessageStore();
 
@@ -137,12 +131,12 @@ public class RabbitMQMailQueueTest implements ManageableMailQueueContract {
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown(CassandraCluster cassandra) {
         cassandra.clearTables();
     }
 
     @AfterAll
-    static void tearDownClass() {
+    static void tearDownClass(CassandraCluster cassandra) {
         cassandra.closeCluster();
     }
 

@@ -25,50 +25,31 @@ import java.time.Instant;
 import java.util.Optional;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.backends.cassandra.DockerCassandraRule;
+import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.queue.rabbitmq.MailQueueName;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class BrowseStartDAOTest {
+class BrowseStartDAOTest {
 
     private static final MailQueueName OUT_GOING_1 = MailQueueName.fromString("OUT_GOING_1");
     private static final MailQueueName OUT_GOING_2 = MailQueueName.fromString("OUT_GOING_2");
-    private static Instant NOW = Instant.now();
-    private static Instant NOW_PLUS_TEN_SECONDS = NOW.plusSeconds(10);
+    private static final Instant NOW = Instant.now();
+    private static final Instant NOW_PLUS_TEN_SECONDS = NOW.plusSeconds(10);
 
-    @ClassRule
-    public static DockerCassandraRule cassandraServer = new DockerCassandraRule();
-    private static CassandraCluster cassandra;
+    @RegisterExtension
+    static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(CassandraMailQueueViewModule.MODULE);
 
     private BrowseStartDAO testee;
 
-    @BeforeClass
-    public static void setUpClass() {
-        cassandra = CassandraCluster.create(CassandraMailQueueViewModule.MODULE, cassandraServer.getHost());
-    }
-
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp(CassandraCluster cassandra) {
         testee = new BrowseStartDAO(cassandra.getConf());
     }
 
-    @After
-    public void tearDown() {
-        cassandra.clearTables();
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        cassandra.closeCluster();
-    }
-
     @Test
-    public void findBrowseStartShouldReturnEmptyWhenTableDoesntContainQueueName() {
+    void findBrowseStartShouldReturnEmptyWhenTableDoesntContainQueueName() {
         testee.updateBrowseStart(OUT_GOING_1, NOW).join();
 
         Optional<Instant> firstEnqueuedItemFromQueue2 = testee.findBrowseStart(OUT_GOING_2).join();
@@ -77,7 +58,7 @@ public class BrowseStartDAOTest {
     }
 
     @Test
-    public void findBrowseStartShouldReturnInstantWhenTableContainsQueueName() {
+    void findBrowseStartShouldReturnInstantWhenTableContainsQueueName() {
         testee.updateBrowseStart(OUT_GOING_1, NOW).join();
         testee.updateBrowseStart(OUT_GOING_2, NOW).join();
 
@@ -87,7 +68,7 @@ public class BrowseStartDAOTest {
     }
 
     @Test
-    public void updateFirstEnqueuedTimeShouldWork() {
+    void updateFirstEnqueuedTimeShouldWork() {
         testee.updateBrowseStart(OUT_GOING_1, NOW).join();
 
         assertThat(testee.selectOne(OUT_GOING_1).join())
@@ -95,7 +76,7 @@ public class BrowseStartDAOTest {
     }
 
     @Test
-    public void insertInitialBrowseStartShouldInsertFirstInstant() {
+    void insertInitialBrowseStartShouldInsertFirstInstant() {
         testee.insertInitialBrowseStart(OUT_GOING_1, NOW).join();
         testee.insertInitialBrowseStart(OUT_GOING_1, NOW_PLUS_TEN_SECONDS).join();
 
