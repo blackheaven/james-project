@@ -72,7 +72,7 @@ public class CassandraMailQueueView implements MailQueueView {
 
     @Override
     public CompletableFuture<Void> deleteMail(Mail mail) {
-        return cassandraMailQueueMailDelete.markAsDeleted(mail, mailQueueName);
+        return cassandraMailQueueMailDelete.considerDeleted(mail, mailQueueName);
     }
 
     @Override

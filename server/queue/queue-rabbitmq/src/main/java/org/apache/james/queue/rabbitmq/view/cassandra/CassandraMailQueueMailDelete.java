@@ -53,7 +53,7 @@ class CassandraMailQueueMailDelete {
         this.random = random;
     }
 
-    CompletableFuture<Void> markAsDeleted(Mail mail, MailQueueName mailQueueName) {
+    CompletableFuture<Void> considerDeleted(Mail mail, MailQueueName mailQueueName) {
         return deletedMailsDao
             .markAsDeleted(mailQueueName, MailKey.fromMail(mail))
             .thenRunAsync(() -> maybeUpdateBrowseStart(mailQueueName));

@@ -85,9 +85,9 @@ class CassandraMailQueueMailStore {
     }
 
     private Instant currentSliceStartInstant() {
-        long sliceSide = configuration.getSliceWindowInSecond();
-        long sliceId = clock.instant().getEpochSecond() / sliceSide;
-        return Instant.ofEpochSecond(sliceId * sliceSide);
+        long sliceSize = configuration.getSliceWindow().getSeconds();
+        long sliceId = clock.instant().getEpochSecond() / sliceSize;
+        return Instant.ofEpochSecond(sliceId * sliceSize);
     }
 
     private BucketId computedBucketId(Mail mail) {
