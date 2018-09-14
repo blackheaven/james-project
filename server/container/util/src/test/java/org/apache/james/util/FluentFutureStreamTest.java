@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.junit.Test;
@@ -72,11 +71,12 @@ public class FluentFutureStreamTest {
     @Test
     public void ofNestedStreamsShouldConstructAFluentFutureStreamWhenProvidedAStreamOfFutureOfStream() {
         assertThat(
-            FluentFutureStream.ofNestedStreams(
+            FluentFutureStream.<Stream<Integer>, Integer>of(
                 Stream.of(
                     CompletableFuture.completedFuture(Stream.of(1, 2)),
                     CompletableFuture.completedFuture(Stream.of()),
-                    CompletableFuture.completedFuture(Stream.of(3))))
+                    CompletableFuture.completedFuture(Stream.of(3))),
+                    FluentFutureStream::unboxStream)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(1, 2, 3);
@@ -86,12 +86,13 @@ public class FluentFutureStreamTest {
     @Test
     public void ofOptionalsShouldConstructAFluentFutureStreamWhenProvidedAStreamOfFutureOfOptionals() {
         assertThat(
-            FluentFutureStream.ofOptionals(
+            FluentFutureStream.<Optional<Integer>, Integer>of(
                 Stream.of(
                     CompletableFuture.completedFuture(Optional.of(1)),
                     CompletableFuture.completedFuture(Optional.of(2)),
                     CompletableFuture.completedFuture(Optional.empty()),
-                    CompletableFuture.completedFuture(Optional.of(3))))
+                    CompletableFuture.completedFuture(Optional.of(3))),
+                    FluentFutureStream::unboxOptional)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(1, 2, 3);
@@ -127,7 +128,7 @@ public class FluentFutureStreamTest {
             FluentFutureStream.of(
                 CompletableFuture.completedFuture(
                     Stream.of(1, 2, 3)))
-                .flatMap(i -> Stream.of(i, i + 1))
+                .map(i -> Stream.of(i, i + 1), FluentFutureStream::unboxStream)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(1, 2, 2, 3, 3, 4);
@@ -139,8 +140,9 @@ public class FluentFutureStreamTest {
             FluentFutureStream.of(
                 CompletableFuture.completedFuture(
                     Stream.of(1, 2, 3)))
-                .flatMapOptional(i -> Optional.of(i + 1)
-                    .filter(j -> j % 2 == 0))
+                .map(i -> Optional.of(i + 1)
+                    .filter(j -> j % 2 == 0),
+                    FluentFutureStream::unboxOptional)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(2, 4);
@@ -198,7 +200,7 @@ public class FluentFutureStreamTest {
             FluentFutureStream.of(
                 CompletableFuture.completedFuture(
                     Stream.of(1, 2, 3)))
-                .thenComposeOnAll(i -> CompletableFuture.completedFuture(i + 1))
+                .map(i -> CompletableFuture.completedFuture(i + 1), FluentFutureStream::unboxFuture)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(2, 3, 4);
@@ -210,7 +212,7 @@ public class FluentFutureStreamTest {
             FluentFutureStream.of(
                 CompletableFuture.completedFuture(
                     Stream.of(1, 2, 3)))
-                .thenFlatCompose(i -> CompletableFuture.completedFuture(Stream.of(i, i + 1)))
+                .map(i -> FluentFutureStream.of(CompletableFuture.completedFuture(Stream.of(i, i + 1))), FluentFutureStream::unboxFluentFuture)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(1, 2, 2, 3, 3, 4);
@@ -222,8 +224,9 @@ public class FluentFutureStreamTest {
             FluentFutureStream.of(
                 CompletableFuture.completedFuture(
                     Stream.of(1, 2, 3)))
-                .thenFlatComposeOnOptional(i -> CompletableFuture.completedFuture(Optional.of(i + 1)
-                    .filter(j -> j % 2 == 0)))
+                .map(i -> CompletableFuture.completedFuture(
+                    Optional.of(i + 1).filter(j -> j % 2 == 0)),
+                    FluentFutureStream::unboxFutureOptional)
                 .join()
                 .collect(Guavate.toImmutableList()))
             .containsExactly(2, 4);
@@ -272,12 +275,7 @@ public class FluentFutureStreamTest {
     public void sortShouldWork() {
         assertThat(
             FluentFutureStream.of(
-                CompletableFutureUtil.allOfArray(
-                    CompletableFuture.completedFuture(4L),
-                    CompletableFuture.completedFuture(3L),
-                    CompletableFuture.completedFuture(2L),
-                    CompletableFuture.completedFuture(1L)
-                ))
+                CompletableFuture.completedFuture(Stream.of(4L, 3L, 2L, 1L)))
                 .sorted(Long::compareTo)
                 .join())
             .containsExactly(1L, 2L, 3L, 4L);
@@ -285,62 +283,11 @@ public class FluentFutureStreamTest {
 
     @Test
     public void sortShouldReturnEmptyWhenEmpty() {
-        CompletableFuture<Stream<Long>> completableFutureStream = CompletableFutureUtil.allOfArray();
+        CompletableFuture<Stream<Long>> completableFutureStream = CompletableFuture.completedFuture(Stream.of());
         assertThat(
             FluentFutureStream.of(completableFutureStream)
                 .sorted(Long::compareTo)
                 .join())
             .isEmpty();
-    }
-
-    @Test
-    public void ofFluentFutureStreamsShouldReturnEmptyWhenEmpty() {
-        assertThat(FluentFutureStream
-            .ofFluentFutureStreams(Stream.empty()).join())
-            .isEmpty();
-    }
-
-    @Test
-    public void ofFluentFutureStreamsShouldReturnAllElementsOfNestedFluentStream() {
-        FluentFutureStream<Long> firstFluentStream = FluentFutureStream.of(
-            CompletableFutureUtil.allOfArray(
-                CompletableFuture.completedFuture(1L),
-                CompletableFuture.completedFuture(2L)));
-
-        FluentFutureStream<Long> secondFluentStream = FluentFutureStream.of(
-            CompletableFutureUtil.allOfArray(
-                CompletableFuture.completedFuture(3L),
-                CompletableFuture.completedFuture(4L)));
-
-        assertThat(FluentFutureStream
-            .ofFluentFutureStreams(Stream.of(firstFluentStream, secondFluentStream)).join())
-            .containsExactly(1L, 2L, 3L, 4L);
-    }
-
-    @Test
-    public void thenFlatMapShouldReturnEmptyWhenEmpty() {
-        FluentFutureStream<Long> emptyFluentStream = FluentFutureStream.of(CompletableFutureUtil.allOfArray());
-
-        Function<Long, FluentFutureStream<Long>> increaseOneFluentFutureMapper = number ->
-            FluentFutureStream.ofFutures(CompletableFuture.completedFuture(number + 1L));
-
-        assertThat(emptyFluentStream.thenFlatMap(increaseOneFluentFutureMapper).join())
-            .isEmpty();
-    }
-
-    @Test
-    public void thenFlatMapShouldReturnAllElementsFromFlatMap() {
-        FluentFutureStream<Long> longFluentStream = FluentFutureStream.of(
-            CompletableFutureUtil.allOfArray(
-                CompletableFuture.completedFuture(1L),
-                CompletableFuture.completedFuture(2L)));
-
-        Function<Long, FluentFutureStream<Long>> multipleFluentFutureMapper = number ->
-            FluentFutureStream.ofFutures(
-                CompletableFuture.completedFuture(number * 2),
-                CompletableFuture.completedFuture(number * 3));
-
-        assertThat(longFluentStream.thenFlatMap(multipleFluentFutureMapper).join())
-                .containsExactly(2L, 3L, 4L, 6L);
     }
 }
