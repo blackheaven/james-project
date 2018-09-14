@@ -37,15 +37,15 @@ public class CassandraMailQueueViewConfiguration {
 
         @FunctionalInterface
         interface RequireSliceWindow {
-            LastStage sliceWindow(Duration sliceWindow);
+            ReadyToBuild sliceWindow(Duration sliceWindow);
         }
 
-        class LastStage {
+        class ReadyToBuild {
             private final int bucketCount;
             private final int updateBrowseStartPace;
             private final Duration sliceWindow;
 
-            private LastStage(int bucketCount, int updateBrowseStartPace, Duration sliceWindow) {
+            private ReadyToBuild(int bucketCount, int updateBrowseStartPace, Duration sliceWindow) {
                 this.bucketCount = bucketCount;
                 this.updateBrowseStartPace = updateBrowseStartPace;
                 this.sliceWindow = sliceWindow;
@@ -62,7 +62,7 @@ public class CassandraMailQueueViewConfiguration {
     }
 
     public static Builder.RequireBucketCount builder() {
-        return bucketCount -> updateBrowseStartPace -> sliceWindow -> new Builder.LastStage(bucketCount, updateBrowseStartPace, sliceWindow);
+        return bucketCount -> updateBrowseStartPace -> sliceWindow -> new Builder.ReadyToBuild(bucketCount, updateBrowseStartPace, sliceWindow);
     }
 
     private final int bucketCount;
@@ -87,9 +87,5 @@ public class CassandraMailQueueViewConfiguration {
 
     public Duration getSliceWindow() {
         return sliceWindow;
-    }
-
-    public long getSliceWindowInSecond() {
-        return sliceWindow.getSeconds();
     }
 }
