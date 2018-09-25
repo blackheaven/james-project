@@ -21,6 +21,7 @@ package org.apache.james.queue.rabbitmq.view.cassandra.model;
 
 import static org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlices.Slice;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -56,6 +57,12 @@ class BucketedSlicesTest {
     }
 
     @Test
+    void bucketIdShouldThrowWhenValueIsNegative() {
+        assertThatThrownBy(() -> BucketId.of(-1))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void allSlicesTillShouldReturnOnlyFirstSliceWhenEndAtInTheSameInterval() {
         assertThat(Slice.allSlicesTill(FIRST_SLICE, FIRST_SLICE_INSTANT.plusSeconds(ONE_HOUR_IN_SECONDS - 1)))
             .containsOnly(FIRST_SLICE);
@@ -76,7 +83,7 @@ class BucketedSlicesTest {
     void allSlicesTillShouldReturnSameSlicesWhenEndAtsAreInTheSameInterval() {
         Stream<Slice> allSlicesEndAtTheStartOfWindow = Slice.allSlicesTill(FIRST_SLICE, FIRST_SLICE_INSTANT_NEXT_TWO_HOUR);
         Stream<Slice> allSlicesEndAtTheMiddleOfWindow = Slice.allSlicesTill(FIRST_SLICE, FIRST_SLICE_INSTANT_NEXT_TWO_HOUR.plusSeconds(1000));
-        Stream<Slice> allSlicesEndAtTheTheEndWindow = Slice.allSlicesTill(FIRST_SLICE, FIRST_SLICE_INSTANT_NEXT_TWO_HOUR.plusSeconds(ONE_HOUR_IN_SECONDS - 1));
+        Stream<Slice> allSlicesEndAtTheEndWindow = Slice.allSlicesTill(FIRST_SLICE, FIRST_SLICE_INSTANT_NEXT_TWO_HOUR.plusSeconds(ONE_HOUR_IN_SECONDS - 1));
 
         Slice [] allSlicesInThreeHours = {
             FIRST_SLICE,
@@ -89,7 +96,7 @@ class BucketedSlicesTest {
         assertThat(allSlicesEndAtTheMiddleOfWindow)
             .containsExactly(allSlicesInThreeHours);
 
-        assertThat(allSlicesEndAtTheTheEndWindow)
+        assertThat(allSlicesEndAtTheEndWindow)
             .containsExactly(allSlicesInThreeHours);
     }
 
