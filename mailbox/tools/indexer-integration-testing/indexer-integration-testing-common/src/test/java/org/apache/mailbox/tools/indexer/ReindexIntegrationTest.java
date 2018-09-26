@@ -19,38 +19,26 @@
 
 package org.apache.james.cli;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import java.io.IOException;
 
 import org.apache.james.GuiceJamesServer;
-import org.apache.james.MemoryJmapTestRule;
-import org.apache.james.mailbox.indexer.ReIndexer;
 import org.apache.james.mailbox.model.MailboxConstants;
-import org.apache.james.mailbox.model.MailboxPath;
-import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
-import org.apache.james.modules.server.JMXServerModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.google.inject.name.Names;
-
-public class ReindexCommandIntegrationTest {
+public abstract class ReindexIntegrationTest {
     public static final String USER = "user";
-    private ReIndexer reIndexer;
 
     @Rule
-    public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
     private GuiceJamesServer guiceJamesServer;
+
+    protected abstract GuiceJamesServer createJmapServer() throws IOException;
 
     @Before
     public void setUp() throws Exception {
-        reIndexer = mock(ReIndexer.class);
-        guiceJamesServer = memoryJmap.jmapServer(new JMXServerModule(),
-            binder -> binder.bind(ListeningMessageSearchIndex.class).toInstance(mock(ListeningMessageSearchIndex.class)))
-            .overrideWith(binder -> binder.bind(ReIndexer.class)
-                .annotatedWith(Names.named("reindexer")).toInstance(reIndexer));
+        guiceJamesServer = createJmapServer();
         guiceJamesServer.start();
     }
 
@@ -60,18 +48,14 @@ public class ReindexCommandIntegrationTest {
     }
 
     @Test
-    public void reindexAllShouldWork() throws Exception {
+    public void reindexAllShouldWorkOnHeavyLoad() throws Exception {
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "reindexall"});
-
-        verify(reIndexer).reIndex();
     }
 
     @Test
-    public void reindexMailboxShouldWork() throws Exception {
+    public void reindexMailboxShouldWorkOnHeavyLoad() throws Exception {
         String mailbox = "mailbox";
         ServerCmd.doMain(new String[] {"-h", "127.0.0.1", "-p", "9999", "reindexmailbox", MailboxConstants.USER_NAMESPACE, USER, mailbox});
-
-        verify(reIndexer).reIndex(MailboxPath.forUser(USER, mailbox));
     }
 
 }
