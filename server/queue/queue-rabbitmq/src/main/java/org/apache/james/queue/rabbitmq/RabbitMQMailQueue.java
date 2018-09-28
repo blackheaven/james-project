@@ -47,22 +47,18 @@ public class RabbitMQMailQueue implements ManageableMailQueue {
 
     private final MailQueueName name;
     private final MetricFactory metricFactory;
-    private final GaugeRegistry gaugeRegistry;
     private final Enqueuer enqueuer;
     private final Dequeuer dequeuer;
     private final MailQueueView mailQueueView;
 
     RabbitMQMailQueue(MetricFactory metricFactory, MailQueueName name,
-                      GaugeRegistry gaugeRegistry, Enqueuer enqueuer, Dequeuer dequeuer,
+                      Enqueuer enqueuer, Dequeuer dequeuer,
                       MailQueueView mailQueueView) {
         this.metricFactory = metricFactory;
         this.name = name;
-        this.gaugeRegistry = gaugeRegistry;
         this.enqueuer = enqueuer;
         this.dequeuer = dequeuer;
         this.mailQueueView = mailQueueView;
-
-        this.gaugeRegistry.register(QUEUE_SIZE_METRIC_NAME_PREFIX + name.asString(), this::getSize);
     }
 
     @Override
