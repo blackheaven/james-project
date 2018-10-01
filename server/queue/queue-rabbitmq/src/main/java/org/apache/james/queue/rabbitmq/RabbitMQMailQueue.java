@@ -19,17 +19,8 @@
 
 package org.apache.james.queue.rabbitmq;
 
-import java.time.Clock;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
-import javax.inject.Inject;
-import javax.mail.internet.MimeMessage;
-
-import org.apache.james.blob.api.BlobId;
-import org.apache.james.blob.api.Store;
-import org.apache.james.blob.mail.MimeMessagePartsId;
-import org.apache.james.metrics.api.GaugeRegistry;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.rabbitmq.view.api.DeleteCondition;
@@ -39,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
-import com.google.common.annotations.VisibleForTesting;
 
 public class RabbitMQMailQueue implements ManageableMailQueue {
 
