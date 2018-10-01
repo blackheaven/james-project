@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import org.apache.james.util.OptionalUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import feign.Feign;
 import feign.Logger;
 import feign.RequestLine;
@@ -48,7 +49,6 @@ class RabbitMQManagementApi {
         List<MessageQueue> listQueues();
     }
 
-
     private final Api api;
 
     RabbitMQManagementApi(URI rabbitManagementUri, RabbitMQManagementCredentials credentials) throws MalformedURLException {
@@ -67,7 +67,8 @@ class RabbitMQManagementApi {
             .stream()
             .map(x -> x.name)
             .map(MailQueueName::fromRabbitWorkQueueName)
-            .flatMap(OptionalUtils::toStream);
+            .flatMap(OptionalUtils::toStream)
+            .distinct();
     }
 
 }
