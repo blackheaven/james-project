@@ -18,10 +18,12 @@
  ****************************************************************/
 package org.apache.james.backend.rabbitmq;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.james.util.docker.Images;
@@ -34,6 +36,8 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 
+import com.github.fge.lambdas.Throwing;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.rabbitmq.client.Address;
 import com.rabbitmq.client.ConnectionFactory;
@@ -168,6 +172,34 @@ public class DockerRabbitMQ {
         LOGGER.debug("reset: {}", stdout);
 
         startApp();
+        removeAllQueues();
+    }
+
+    private void removeAllQueues() throws UnsupportedOperationException, IOException, InterruptedException {
+        listQueues()
+            .forEach(Throwing.consumer(this::removeQueue));
+    }
+    
+    private Stream<String> listQueues() throws UnsupportedOperationException, IOException, InterruptedException {
+        String stdout = container()
+            .execInContainer("rabbitmqadmin", "--vhost=localhost --username='" + DEFAULT_RABBITMQ_USERNAME + "' --password='" + DEFAULT_RABBITMQ_PASSWORD + "' -f tsv -q list queues name")
+            .getStdout();
+        LOGGER.debug("list_queues: {}", stdout);
+        System.out.println("list_queues: " + stdout);
+        return Splitter
+                .on('\n')
+                .trimResults()
+                .omitEmptyStrings()
+                .splitToList(stdout)
+                .stream();
+    }
+    
+    private void removeQueue(String name) throws UnsupportedOperationException, IOException, InterruptedException {
+        String stdout = container()
+            .execInContainer("rabbitmqadmin", "delete queue name='" + name + "'")
+            .getStdout();
+        LOGGER.debug("drop_queue: {}", stdout);
+        System.out.println("drop_queue: " + stdout);
     }
 
     public Address address() {
