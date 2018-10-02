@@ -22,6 +22,8 @@ package org.apache.james.queue.api;
 import static org.apache.james.queue.api.Mails.defaultMail;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.junit.jupiter.api.Test;
 
@@ -34,52 +36,52 @@ public interface PriorityManageableMailQueueContract extends ManageableMailQueue
     default void browseShouldBeOrderedByPriority() throws Exception {
         getManageableMailQueue().enQueue(defaultMail()
             .name("name3")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, 3)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, AttributeValue.of(3)))
             .build());
 
         getManageableMailQueue().enQueue(defaultMail()
             .name("name9")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, 9)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, AttributeValue.of(9)))
             .build());
 
         getManageableMailQueue().enQueue(defaultMail()
             .name("name1")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, 1)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, AttributeValue.of(1)))
             .build());
 
         getManageableMailQueue().enQueue(defaultMail()
             .name("name8")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, 8)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, AttributeValue.of(8)))
             .build());
 
         getManageableMailQueue().enQueue(defaultMail()
             .name("name6")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, 6)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, AttributeValue.of(6)))
             .build());
 
         getManageableMailQueue().enQueue(defaultMail()
             .name("name0")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, 0)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, AttributeValue.of(0)))
             .build());
 
         getManageableMailQueue().enQueue(defaultMail()
             .name("name7")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, 7)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, AttributeValue.of(7)))
             .build());
 
         getManageableMailQueue().enQueue(defaultMail()
             .name("name4")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, 4)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, AttributeValue.of(4)))
             .build());
 
         getManageableMailQueue().enQueue(defaultMail()
             .name("name2")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, 2)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, AttributeValue.of(2)))
             .build());
 
         getManageableMailQueue().enQueue(defaultMail()
             .name("name5")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, 5)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, AttributeValue.of(5)))
             .build());
 
         assertThat(getManageableMailQueue().browse())

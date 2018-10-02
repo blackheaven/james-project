@@ -27,6 +27,7 @@ import org.apache.james.queue.api.MailQueue.MailQueueItem;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.RawMailQueueItemDecoratorFactory;
 import org.apache.james.queue.memory.MemoryMailQueueFactory;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,9 +69,9 @@ public class MailSpoolTest {
         mailSpool.send(mail, new MailMetadata(MESSAGE_ID, USERNAME));
 
         MailQueueItem actual = myQueue.deQueue();
-        assertThat(actual.getMail().getAttribute(MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE))
+        assertThat(AttributeUtils.getValueAndCastFromMail(actual.getMail(), MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE, String.class))
             .isEqualTo(USERNAME);
-        assertThat(actual.getMail().getAttribute(MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE))
+        assertThat(AttributeUtils.getValueAndCastFromMail(actual.getMail(), MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, String.class))
             .isEqualTo(MESSAGE_ID.serialize());
     }
 

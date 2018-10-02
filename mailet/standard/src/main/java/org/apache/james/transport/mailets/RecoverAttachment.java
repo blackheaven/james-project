@@ -25,12 +25,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
@@ -90,8 +93,8 @@ public class RecoverAttachment extends GenericMailet {
     @Override
     public void service(Mail mail) throws MailetException {
         @SuppressWarnings("unchecked")
-        Map<String, byte[]> attachments = (Map<String, byte[]>) mail.getAttribute(attributeName);
-        if (attachments != null) {
+        Optional<Map<String, byte[]>> attachments = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(attributeName), (Class<Map<String, byte[]>>)(Object) Map.class);
+        if (attachments.isPresent()) {
 
             MimeMessage message;
             try {
@@ -101,7 +104,7 @@ public class RecoverAttachment extends GenericMailet {
                         "Could not retrieve message from Mail object", e);
             }
 
-            Iterator<byte[]> i = attachments.values().iterator();
+            Iterator<byte[]> i = attachments.get().values().iterator();
             try {
                 while (i.hasNext()) {
                     byte[] bytes = i.next();

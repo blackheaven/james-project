@@ -23,12 +23,15 @@ package org.apache.james.transport.matchers;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.mail.MessagingException;
 
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MatcherConfig;
 import org.apache.mailet.base.GenericMatcher;
@@ -49,7 +52,7 @@ import org.apache.mailet.base.GenericMatcher;
  **/
 public class HasMailAttributeWithValueRegex extends GenericMatcher {
     
-    private String attributeName;
+    private AttributeName attributeName;
     private Pattern pattern   = null;
 
     @Override
@@ -62,7 +65,7 @@ public class HasMailAttributeWithValueRegex extends GenericMatcher {
         String condition = conf.getCondition();
         int idx = condition.indexOf(',');
         if (idx != -1) {
-            attributeName = condition.substring(0,idx).trim();
+            attributeName = AttributeName.of(condition.substring(0,idx).trim());
             String patternString = condition.substring(idx + 1, condition.length()).trim();
             try {
                 pattern = Pattern.compile(patternString);
@@ -83,12 +86,17 @@ public class HasMailAttributeWithValueRegex extends GenericMatcher {
      **/
     @Override
     public Collection<MailAddress> match(Mail mail) throws MessagingException {
-        Serializable obj = mail.getAttribute(attributeName);
-        //to be a little more generic the toString of the value is what is matched against
-        if (obj != null && pattern.matcher(obj.toString()).matches()) {
-            return mail.getRecipients();
-        } 
-        return null;
+        return AttributeUtils
+                .getValueAndCastFromMail(mail, attributeName, Serializable.class)
+                .flatMap(obj -> {
+                    //to be a little more generic the toString of the value is what is matched against
+                    if (pattern.matcher(obj.toString()).matches()) {
+                        return Optional.of(mail.getRecipients());
+                    } else {
+                        return Optional.empty();
+                    }
+                })
+                .orElse(null);
     }
     
 }

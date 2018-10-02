@@ -22,6 +22,8 @@ package org.apache.james.transport.matchers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +54,7 @@ public class SMTPIsAuthNetworkTest {
     public void matchShouldReturnAddressesWhenAuthorizedNetwork() throws Exception {
         Mail mail = FakeMail.builder()
             .recipient(recipient)
-            .attribute(SMTPIsAuthNetwork.SMTP_AUTH_NETWORK_NAME, "true")
+            .attribute(new Attribute(SMTPIsAuthNetwork.SMTP_AUTH_NETWORK_NAME, AttributeValue.of("true")))
             .build();
 
         assertThat(testee.match(mail))
@@ -63,7 +65,7 @@ public class SMTPIsAuthNetworkTest {
     public void matchShouldReturnEmptyWhenNonAuthorizedNetwork() throws Exception {
         Mail mail = FakeMail.builder()
             .recipient(recipient)
-            .attribute(SMTPIsAuthNetwork.SMTP_AUTH_NETWORK_NAME, "false")
+            .attribute(new Attribute(SMTPIsAuthNetwork.SMTP_AUTH_NETWORK_NAME, AttributeValue.of("false")))
             .build();
 
         assertThat(testee.match(mail))

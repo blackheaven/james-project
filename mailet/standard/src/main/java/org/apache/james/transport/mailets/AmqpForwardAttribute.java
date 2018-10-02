@@ -20,17 +20,14 @@
 package org.apache.james.transport.mailets;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
-import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.GenericMailet;
@@ -90,12 +87,12 @@ public class AmqpForwardAttribute extends GenericMailet {
                     + " parameter was provided.");
         }
         routingKey = getInitParameter(ROUTING_KEY_PARAMETER_NAME, ROUTING_KEY_DEFAULT_VALUE);
-        String attribute = getInitParameter(ATTRIBUTE_PARAMETER_NAME);
-        if (Strings.isNullOrEmpty(attribute)) {
+        String rawAttribute = getInitParameter(ATTRIBUTE_PARAMETER_NAME);
+        if (Strings.isNullOrEmpty(rawAttribute)) {
             throw new MailetException("No value for " + ATTRIBUTE_PARAMETER_NAME
                     + " parameter was provided.");
         }
-        this.attribute = AttributeName.of(attribute);
+        attribute = AttributeName.of(rawAttribute);
         connectionFactory = new ConnectionFactory();
         try {
             connectionFactory.setUri(uri);
@@ -123,7 +120,6 @@ public class AmqpForwardAttribute extends GenericMailet {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private Stream<byte[]> getAttributeContent(Mail mail) throws MailetException {
         return mail.getAttribute(attribute)
             .map(Attribute::getValue)

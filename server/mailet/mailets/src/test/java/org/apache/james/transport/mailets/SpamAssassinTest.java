@@ -170,7 +170,9 @@ public class SpamAssassinTest {
                 .stream()
                 .map(PerRecipientHeaders.Header::getName)
                 .collect(Guavate.toImmutableList()))
-            .contains(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME, SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME);
+            .contains(
+                    SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME.asString(),
+                    SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME.asString());
     }
 
     @Test
@@ -198,12 +200,12 @@ public class SpamAssassinTest {
             .isEqualTo(new PerRecipientHeaders()
                 .addHeaderForRecipient(
                     PerRecipientHeaders.Header.builder()
-                        .name(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME)
+                        .name(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME.asString())
                         .value("NO"),
                     new MailAddress("user1@exemple.com"))
                 .addHeaderForRecipient(
                     PerRecipientHeaders.Header.builder()
-                        .name(SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME)
+                        .name(SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME.asString())
                         .value("No, hits=3 required=5"),
                     new MailAddress("user1@exemple.com")));
     }
@@ -233,12 +235,12 @@ public class SpamAssassinTest {
             .isEqualTo(new PerRecipientHeaders()
                 .addHeaderForRecipient(
                     PerRecipientHeaders.Header.builder()
-                        .name(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME)
+                        .name(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME.asString())
                         .value("YES"),
                     new MailAddress("user1@exemple.com"))
                 .addHeaderForRecipient(
                     PerRecipientHeaders.Header.builder()
-                        .name(SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME)
+                        .name(SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME.asString())
                         .value("Yes, hits=1000 required=5"),
                     new MailAddress("user1@exemple.com")));
     }

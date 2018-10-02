@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
@@ -34,6 +35,9 @@ import org.apache.james.core.MailAddress;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.util.ClassLoaderUtils;
 import org.apache.james.util.MimeMessageUtil;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.MailAddressFixture;
 import org.apache.mailet.base.test.FakeMail;
@@ -79,7 +83,7 @@ public class ICALToJsonAttributeTest {
         expectedException.expect(MessagingException.class);
 
         testee.init(FakeMailetConfig.builder()
-            .setProperty(ICALToJsonAttribute.SOURCE_ATTRIBUTE_NAME, "")
+            .setProperty(ICALToJsonAttribute.SOURCE_ATTRIBUTE_NAME.asString(), "")
             .build());
     }
 
@@ -88,7 +92,7 @@ public class ICALToJsonAttributeTest {
         expectedException.expect(MessagingException.class);
 
         testee.init(FakeMailetConfig.builder()
-            .setProperty(ICALToJsonAttribute.RAW_SOURCE_ATTRIBUTE_NAME, "")
+            .setProperty(ICALToJsonAttribute.RAW_SOURCE_ATTRIBUTE_NAME.asString(), "")
             .build());
     }
 
@@ -97,7 +101,7 @@ public class ICALToJsonAttributeTest {
         expectedException.expect(MessagingException.class);
 
         testee.init(FakeMailetConfig.builder()
-            .setProperty(ICALToJsonAttribute.DESTINATION_ATTRIBUTE_NAME, "")
+            .setProperty(ICALToJsonAttribute.DESTINATION_ATTRIBUTE_NAME.asString(), "")
             .build());
     }
 
@@ -107,9 +111,9 @@ public class ICALToJsonAttributeTest {
         String source = "mySource";
         String raw = "myRaw";
         testee.init(FakeMailetConfig.builder()
-            .setProperty(ICALToJsonAttribute.SOURCE_ATTRIBUTE_NAME, source)
-            .setProperty(ICALToJsonAttribute.DESTINATION_ATTRIBUTE_NAME, destination)
-            .setProperty(ICALToJsonAttribute.RAW_SOURCE_ATTRIBUTE_NAME, raw)
+            .setProperty(ICALToJsonAttribute.SOURCE_ATTRIBUTE_NAME.asString(), source)
+            .setProperty(ICALToJsonAttribute.DESTINATION_ATTRIBUTE_NAME.asString(), destination)
+            .setProperty(ICALToJsonAttribute.RAW_SOURCE_ATTRIBUTE_NAME.asString(), raw)
             .build());
 
         assertThat(testee.getSourceAttributeName()).isEqualTo(source);
@@ -127,8 +131,8 @@ public class ICALToJsonAttributeTest {
             .build();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME))
-            .isNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME))
+            .isEmpty();
     }
 
     @Test
@@ -138,12 +142,12 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(MailAddressFixture.OTHER_AT_JAMES)
-            .attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, "wrong type")
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of("wrong type")))
             .build();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME))
-            .isNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME))
+            .isEmpty();
     }
 
     @Test
@@ -153,12 +157,12 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(MailAddressFixture.OTHER_AT_JAMES)
-            .attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, "wrong type")
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of("wrong type")))
             .build();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME))
-            .isNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME))
+            .isEmpty();
     }
 
     @Test
@@ -169,12 +173,12 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(MailAddressFixture.OTHER_AT_JAMES)
-            .attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, wrongParametrizedMap)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(wrongParametrizedMap)))
             .build();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME))
-            .isNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME))
+            .isEmpty();
     }
 
     @Test
@@ -185,12 +189,12 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(MailAddressFixture.OTHER_AT_JAMES)
-            .attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, wrongParametrizedMap)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(wrongParametrizedMap)))
             .build();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME))
-            .isNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME))
+            .isEmpty();
     }
 
     @Test
@@ -202,15 +206,16 @@ public class ICALToJsonAttributeTest {
         ImmutableMap<String, Calendar> icals = ImmutableMap.of("key", calendar);
         Mail mail = FakeMail.builder()
             .recipient(MailAddressFixture.OTHER_AT_JAMES)
-            .attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, icals)
-            .attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, icals)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
             .build();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME))
-            .isNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME))
+            .isEmpty();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void serviceShouldAttachEmptyListWhenNoRecipient() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
@@ -221,12 +226,12 @@ public class ICALToJsonAttributeTest {
         ImmutableMap<String, byte[]> rawIcals = ImmutableMap.of("key", ics);
         Mail mail = FakeMail.builder()
             .sender(SENDER)
-            .attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, icals)
-            .attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, rawIcals)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
             .build();
         testee.service(mail);
 
-        assertThat((Map<?,?>) mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME))
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME, (Class<Map<?,?>>)(Object) Map.class))
             .isEmpty();
     }
 
@@ -243,14 +248,15 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(recipient)
-            .attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, icals)
-            .attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, rawIcals)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
             .build();
         testee.service(mail);
 
-        Map<String, byte[]> jsons = (Map<String, byte[]>) mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME);
-        assertThat(jsons).hasSize(1);
-        assertThatJson(new String(jsons.values().iterator().next(), StandardCharsets.UTF_8))
+        Optional<Map<String, byte[]>> jsons = AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME, (Class<Map<String, byte[]>>)(Object) Map.class);
+        assertThat(jsons).isPresent();
+        assertThat(jsons.get()).hasSize(1);
+        assertThatJson(new String(jsons.get().values().iterator().next(), StandardCharsets.UTF_8))
             .isEqualTo("{" +
                 "\"ical\": \"" + toJsonValue(ics) + "\"," +
                 "\"sender\": \"" + SENDER.asString() + "\"," +
@@ -279,14 +285,15 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipients(MailAddressFixture.OTHER_AT_JAMES, MailAddressFixture.ANY_AT_JAMES2)
-            .attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, icals)
-            .attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, rawIcals)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
             .build();
         testee.service(mail);
 
-        Map<String, byte[]> jsons = (Map<String, byte[]>) mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME);
-        assertThat(jsons).hasSize(2);
-        List<String> actual = toSortedValueList(jsons);
+        Optional<Map<String, byte[]>> jsons = AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME, (Class<Map<String, byte[]>>)(Object) Map.class);
+        assertThat(jsons).isPresent();
+        assertThat(jsons.get()).hasSize(2);
+        List<String> actual = toSortedValueList(jsons.get());
 
         assertThatJson(actual.get(0)).isEqualTo("{" +
             "\"ical\": \"" + toJsonValue(ics) + "\"," +
@@ -325,14 +332,15 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(recipient)
-            .attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, icals)
-            .attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, rawIcals)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
             .build();
         testee.service(mail);
 
-        Map<String, byte[]> jsons = (Map<String, byte[]>) mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME);
-        assertThat(jsons).hasSize(2);
-        List<String> actual = toSortedValueList(jsons);
+        Optional<Map<String, byte[]>> jsons = AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME, (Class<Map<String, byte[]>>)(Object) Map.class);
+        assertThat(jsons).isPresent();
+        assertThat(jsons.get()).hasSize(2);
+        List<String> actual = toSortedValueList(jsons.get());
 
         assertThatJson(actual.get(0)).isEqualTo("{" +
             "\"ical\": \"" + toJsonValue(ics2) + "\"," +
@@ -371,14 +379,15 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(recipient)
-            .attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, icals)
-            .attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, rawIcals)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
             .build();
         testee.service(mail);
 
-        Map<String, byte[]> jsons = (Map<String, byte[]>) mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME);
-        assertThat(jsons).hasSize(1);
-        List<String> actual = toSortedValueList(jsons);
+        Optional<Map<String, byte[]>> jsons = AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME, (Class<Map<String, byte[]>>)(Object) Map.class);
+        assertThat(jsons).isPresent();
+        assertThat(jsons.get()).hasSize(1);
+        List<String> actual = toSortedValueList(jsons.get());
 
         assertThatJson(actual.get(0)).isEqualTo("{" +
             "\"ical\": \"" + toJsonValue(ics) + "\"," +
@@ -407,14 +416,15 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(recipient)
-            .attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, icals)
-            .attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, rawIcals)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
             .build();
         testee.service(mail);
 
-        Map<String, byte[]> jsons = (Map<String, byte[]>) mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME);
-        assertThat(jsons).hasSize(1);
-        List<String> actual = toSortedValueList(jsons);
+        Optional<Map<String, byte[]>> jsons = AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME, (Class<Map<String, byte[]>>)(Object) Map.class);
+        assertThat(jsons).isPresent();
+        assertThat(jsons.get()).hasSize(1);
+        List<String> actual = toSortedValueList(jsons.get());
 
         assertThatJson(actual.get(0)).isEqualTo("{" +
             "\"ical\": \"" + toJsonValue(ics) + "\"," +
@@ -444,14 +454,15 @@ public class ICALToJsonAttributeTest {
             .recipient(recipient)
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                 .addFrom(from))
-            .attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, icals)
-            .attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, rawIcals)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
             .build();
         testee.service(mail);
 
-        Map<String, byte[]> jsons = (Map<String, byte[]>) mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME);
-        assertThat(jsons).hasSize(1);
-        assertThatJson(new String(jsons.values().iterator().next(), StandardCharsets.UTF_8))
+        Optional<Map<String, byte[]>> jsons = AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME, (Class<Map<String, byte[]>>)(Object) Map.class);
+        assertThat(jsons).isPresent();
+        assertThat(jsons.get()).hasSize(1);
+        assertThatJson(new String(jsons.get().values().iterator().next(), StandardCharsets.UTF_8))
             .isEqualTo("{" +
                 "\"ical\": \"" + toJsonValue(ics) + "\"," +
                 "\"sender\": \"" + from + "\"," +
@@ -478,14 +489,15 @@ public class ICALToJsonAttributeTest {
             .sender(SENDER)
             .recipient(recipient)
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, icals)
-            .attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, rawIcals)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
             .build();
         testee.service(mail);
 
-        Map<String, byte[]> jsons = (Map<String, byte[]>) mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME);
-        assertThat(jsons).hasSize(1);
-        assertThatJson(new String(jsons.values().iterator().next(), StandardCharsets.UTF_8))
+        Optional<Map<String, byte[]>> jsons = AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME, (Class<Map<String, byte[]>>)(Object) Map.class);
+        assertThat(jsons).isPresent();
+        assertThat(jsons.get()).hasSize(1);
+        assertThatJson(new String(jsons.get().values().iterator().next(), StandardCharsets.UTF_8))
             .isEqualTo("{" +
                 "\"ical\": \"" + toJsonValue(ics) + "\"," +
                 "\"sender\": \"" + SENDER.asString() + "\"," +
@@ -513,14 +525,15 @@ public class ICALToJsonAttributeTest {
             .recipient(recipient)
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                 .addFrom(from))
-            .attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, icals)
-            .attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, rawIcals)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
             .build();
         testee.service(mail);
 
-        Map<String, byte[]> jsons = (Map<String, byte[]>) mail.getAttribute(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME);
-        assertThat(jsons).hasSize(1);
-        assertThatJson(new String(jsons.values().iterator().next(), StandardCharsets.UTF_8))
+        Optional<Map<String, byte[]>> jsons = AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME, (Class<Map<String, byte[]>>)(Object) Map.class);
+        assertThat(jsons).isPresent();
+        assertThat(jsons.get()).hasSize(1);
+        assertThatJson(new String(jsons.get().values().iterator().next(), StandardCharsets.UTF_8))
             .isEqualTo("{" +
                 "\"ical\": \"" + toJsonValue(ics) + "\"," +
                 "\"sender\": \"" + from + "\"," +

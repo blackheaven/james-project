@@ -18,19 +18,25 @@
  ****************************************************************/
 package org.apache.james.queue.api;
 
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
+
 /**
  * Supports Mail Priority handling
  */
 public interface MailPrioritySupport {
 
     /** Handle mail with lowest priority */
-    int LOW_PRIORITY = 0;
+    Integer LOW_PRIORITY = 0;
+    AttributeValue<Integer> LOW_PRIORITY_ATTRIBUTE_VALUE = AttributeValue.of(LOW_PRIORITY);
 
     /** Handle mail with normal priority (this is the default) */
-    int NORMAL_PRIORITY = 5;
+    Integer NORMAL_PRIORITY = 5;
+    AttributeValue<Integer> NORMAL_PRIORITY_ATTRIBUTE_VALUE = AttributeValue.of(NORMAL_PRIORITY);
 
     /** Handle mail with highest priority */
-    int HIGH_PRIORITY = 9;
+    Integer HIGH_PRIORITY = 9;
+    AttributeValue<Integer> HIGH_PRIORITY_ATTRIBUTE_VALUE = AttributeValue.of(HIGH_PRIORITY);
 
     /**
      * Attribute name for support if priority. If the attribute is set and
@@ -39,4 +45,5 @@ public interface MailPrioritySupport {
      * handled).
      */
     String MAIL_PRIORITY = "MAIL_PRIORITY";
+    AttributeName MAIL_PRIORITY_ATTRIBUTE_NAME = AttributeName.of(MAIL_PRIORITY);
 }

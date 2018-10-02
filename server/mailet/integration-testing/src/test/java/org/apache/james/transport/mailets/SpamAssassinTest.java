@@ -113,8 +113,8 @@ public class SpamAssassinTest {
 
         assertThat(messageReader.readFirstMessageHeaders())
             .contains(
-                SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME,
-                SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME);
+                SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME.asString(),
+                SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME.asString());
     }
 
     @Test
@@ -159,8 +159,8 @@ public class SpamAssassinTest {
 
         assertThat(messageReader.readFirstMessageHeaders())
             .contains(
-                SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME,
-                SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME);
+                SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME.asString(),
+                SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME.asString());
 
         messageReader.disconnect()
             .connect(LOCALHOST_IP, jamesServer.getProbe(ImapGuiceProbe.class).getImapPort())
@@ -170,8 +170,8 @@ public class SpamAssassinTest {
 
         assertThat(messageReader.readFirstMessageHeaders())
             .contains(
-                SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME,
-                SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME);
+                SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME.asString(),
+                SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME.asString());
     }
 
     private FakeMail.Builder mailWithContent(String textContent, String... recipients) throws MessagingException {

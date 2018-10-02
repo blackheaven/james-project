@@ -24,6 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import javax.mail.MessagingException;
 
 import org.apache.james.util.MimeMessageUtil;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
@@ -68,7 +70,7 @@ public class ICALToHeadersTest {
         String attribute = "attribute";
         testee.init(FakeMailetConfig.builder()
             .mailetName("ICALToHeader")
-            .setProperty(ICALToHeader.ATTRIBUTE_PROPERTY, attribute)
+            .setProperty(ICALToHeader.ATTRIBUTE_PROPERTY.asString(), attribute)
             .build());
 
         assertThat(testee.getAttribute()).isEqualTo(attribute);
@@ -80,7 +82,7 @@ public class ICALToHeadersTest {
 
         testee.init(FakeMailetConfig.builder()
             .mailetName("ICALToHeader")
-            .setProperty(ICALToHeader.ATTRIBUTE_PROPERTY, "")
+            .setProperty(ICALToHeader.ATTRIBUTE_PROPERTY.asString(), "")
             .build());
     }
 
@@ -101,7 +103,7 @@ public class ICALToHeadersTest {
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, "This is the wrong type")
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of("This is the wrong type")))
             .build();
 
         testee.service(mail);
@@ -118,7 +120,7 @@ public class ICALToHeadersTest {
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, wrongParametrizedMap)
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(wrongParametrizedMap)))
             .build();
 
         testee.service(mail);
@@ -136,7 +138,7 @@ public class ICALToHeadersTest {
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, icals)
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(icals)))
             .build();
 
         testee.service(mail);
@@ -159,7 +161,7 @@ public class ICALToHeadersTest {
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, icals)
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(icals)))
             .build();
 
         testee.service(mail);
@@ -184,7 +186,7 @@ public class ICALToHeadersTest {
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, icals)
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(icals)))
             .build();
 
         testee.service(mail);
@@ -200,7 +202,7 @@ public class ICALToHeadersTest {
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, icals)
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(icals)))
             .build();
 
         testee.service(mail);

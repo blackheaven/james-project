@@ -35,6 +35,8 @@ import org.apache.james.protocols.smtp.hook.HookReturnCode;
 import org.apache.james.smtpserver.JamesMessageHook;
 import org.apache.james.spamassassin.SpamAssassinInvoker;
 import org.apache.james.spamassassin.SpamAssassinResult;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
 import org.apache.mailet.Mail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,8 +129,8 @@ public class SpamAssassinHandler implements JamesMessageHook, ProtocolHandler {
             SpamAssassinResult result = sa.scanMail(message);
 
             // Add the headers
-            for (String key : result.getHeadersAsAttribute().keySet()) {
-                mail.setAttribute(key, result.getHeadersAsAttribute().get(key));
+            for (AttributeName key : result.getHeadersAsAttribute().keySet()) {
+                mail.setAttribute(new Attribute(key, result.getHeadersAsAttribute().get(key)));
             }
 
             // Check if rejectionHits was configured

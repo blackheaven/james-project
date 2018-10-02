@@ -47,6 +47,8 @@ import org.apache.james.queue.jms.JMSMailQueue;
 import org.apache.james.server.core.MimeMessageCopyOnWriteProxy;
 import org.apache.james.server.core.MimeMessageInputStream;
 import org.apache.james.server.core.MimeMessageSource;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,9 +80,9 @@ import org.slf4j.LoggerFactory;
  * http://activemq.apache.org/how-can-i-support-priority-queues.html</a>
  * <p>
  * </p>
- * For this just add a {@link Mail} attribute with name {@link #MAIL_PRIORITY}
- * to it. It should use one of the following value {@link #LOW_PRIORITY},
- * {@link #NORMAL_PRIORITY}, {@link #HIGH_PRIORITY}
+ * For this just add a {@link Mail} attribute with name {@link #MAIL_PRIORITY_ATTRIBUTE_NAME}
+ * to it. It should use one of the following value {@link #LOW_PRIORITY_ATTRIBUTE_VALUE},
+ * {@link #NORMAL_PRIORITY_ATTRIBUTE_VALUE}, {@link #HIGH_PRIORITY_ATTRIBUTE_VALUE}
  * <p>
  * </p>
  * To have a good throughput you should use a caching connection factory. </p>
@@ -119,8 +121,8 @@ public class ActiveMQMailQueue extends JMSMailQueue implements ActiveMQSupport {
                 BlobMessage blobMessage = (BlobMessage) message;
                 try {
                     // store URL and queueName for later usage
-                    mail.setAttribute(JAMES_BLOB_URL, blobMessage.getURL());
-                    mail.setAttribute(JAMES_QUEUE_NAME, queueName);
+                    mail.setAttribute(new Attribute(JAMES_BLOB_URL, AttributeValue.of(blobMessage.getURL())));
+                    mail.setAttribute(new Attribute(JAMES_QUEUE_NAME, AttributeValue.of(queueName)));
                 } catch (MalformedURLException e) {
                     // Ignore on error
                     LOGGER.debug("Unable to get url from blobmessage for mail {}", mail.getName());

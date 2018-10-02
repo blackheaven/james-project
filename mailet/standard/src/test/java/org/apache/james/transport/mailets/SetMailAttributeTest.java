@@ -25,6 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import javax.mail.MessagingException;
 
 import org.apache.james.util.MimeMessageUtil;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.Mailet;
 import org.apache.mailet.base.test.FakeMailetConfig;
@@ -55,8 +59,10 @@ class SetMailAttributeTest {
         
         mailet.service(mail);
 
-        assertThat(mail.getAttribute("org.apache.james.junit1")).isEqualTo("true");
-        assertThat(mail.getAttribute("org.apache.james.junit2")).isEqualTo("happy");
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("org.apache.james.junit1"), String.class))
+            .isEqualTo("true");
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("org.apache.james.junit2"), String.class))
+            .isEqualTo("happy");
     }
     
     @Test
@@ -71,7 +77,7 @@ class SetMailAttributeTest {
         
         mailet.service(mail);
 
-        assertThat(mail.getAttributeNames()).isEmpty();
+        assertThat(mail.attributeNames()).isEmpty();
     }
     
     @Test
@@ -84,10 +90,11 @@ class SetMailAttributeTest {
         mailet.init(mailetConfig);
         
         Mail mail = MailUtil.createMockMail2Recipients(MimeMessageUtil.defaultMimeMessage());
-        mail.setAttribute("org.apache.james.junit1", "foo");
+        mail.setAttribute(new Attribute(AttributeName.of("org.apache.james.junit1"), AttributeValue.of("foo")));
         
         mailet.service(mail);
 
-        assertThat(mail.getAttribute("org.apache.james.junit1")).isEqualTo("bar");
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("org.apache.james.junit1"), String.class))
+            .isEqualTo("bar");
     }
 }

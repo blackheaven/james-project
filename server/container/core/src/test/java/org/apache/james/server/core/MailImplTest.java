@@ -33,6 +33,9 @@ import javax.mail.internet.MimeMessage;
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.MaybeSender;
 import org.apache.james.core.builder.MimeMessageBuilder;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.MailAddressFixture;
 import org.apache.mailet.base.test.MailUtil;
@@ -163,7 +166,7 @@ public class MailImplTest {
     public void setAttributeShouldThrowOnNullAttributeName() throws MessagingException {
         MailImpl mail = new MailImpl();
 
-        assertThatThrownBy(() -> mail.setAttribute(null, "toto"))
+        assertThatThrownBy(() -> mail.setAttribute(new Attribute(AttributeName.of(null), AttributeValue.of("toto"))))
             .isInstanceOf(NullPointerException.class);
     }
 

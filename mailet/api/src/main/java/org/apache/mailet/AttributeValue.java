@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.util.streams.Iterators;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -168,6 +167,10 @@ public class AttributeValue<T> {
 
     public JsonNode toJson() {
         return serializer.serialize(value);
+    }
+
+    public T getValue() {
+        return value;
     }
 
     @Override

@@ -23,6 +23,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Collection;
 
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.PerRecipientHeaders;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.Before;
@@ -106,7 +109,7 @@ public class IsMarkedAsSpamTest {
                     .value("Yes, hits=6.8 required=5.0")
                     .build(),
                 new MailAddress("to@james.org"))
-            .attribute("org.apache.james.spamassassin.status", "Yes, hits=6.8 required=5.0")
+            .attribute(new Attribute(AttributeName.of("org.apache.james.spamassassin.status"), AttributeValue.of("Yes, AttributeValue.of(hits=6.8 required=5.0")))
             .build();
 
         Collection<MailAddress> matches = matcher.match(mail);
