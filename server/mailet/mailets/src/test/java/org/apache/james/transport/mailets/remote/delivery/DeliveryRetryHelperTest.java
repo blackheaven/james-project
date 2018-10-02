@@ -22,6 +22,8 @@ package org.apache.james.transport.mailets.remote.delivery;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.transport.mailets.remote.delivery.DeliveryRetriesHelper;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.Test;
 
@@ -66,7 +68,9 @@ public class DeliveryRetryHelperTest {
 
     @Test
     public void retrieveRetriesShouldBeZeroOnInvalidValue() throws Exception {
-        FakeMail mail = FakeMail.builder().attribute(DeliveryRetriesHelper.DELIVERY_RETRY_COUNT, "invalid").build();
+        FakeMail mail = FakeMail.builder()
+            .attribute(new Attribute(DeliveryRetriesHelper.DELIVERY_RETRY_COUNT, AttributeValue.of("invalid")))
+            .build();
 
         assertThat(DeliveryRetriesHelper.retrieveRetries(mail))
             .isEqualTo(0);
@@ -74,7 +78,9 @@ public class DeliveryRetryHelperTest {
 
     @Test
     public void incrementRetriesShouldWorkOnInvalidMails() throws Exception {
-        FakeMail mail = FakeMail.builder().attribute(DeliveryRetriesHelper.DELIVERY_RETRY_COUNT, "invalid").build();
+        FakeMail mail = FakeMail.builder()
+            .attribute(new Attribute(DeliveryRetriesHelper.DELIVERY_RETRY_COUNT, AttributeValue.of("invalid")))
+            .build();
 
         DeliveryRetriesHelper.incrementRetries(mail);
 

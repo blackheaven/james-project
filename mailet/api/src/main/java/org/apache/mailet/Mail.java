@@ -23,14 +23,19 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.MailAddress;
+import org.apache.james.util.streams.Iterators;
 import org.apache.mailet.PerRecipientHeaders.Header;
+
+import com.github.steveash.guavate.Guavate;
 
 /**
  * <p>Wraps a MimeMessage with additional routing and processing information.
@@ -76,9 +81,9 @@ public interface Mail extends Serializable, Cloneable {
     String DEFAULT = "root";
     String ERROR = "error";
     String TRANSPORT = "transport";
-    String SMTP_AUTH_USER_ATTRIBUTE_NAME = "org.apache.james.SMTPAuthUser";
-    String SENT_BY_MAILET = "org.apache.james.SentByMailet";
-    String MAILET_ERROR_ATTRIBUTE_NAME = "org.apache.james.MailetError";
+    AttributeName SMTP_AUTH_USER_ATTRIBUTE_NAME = AttributeName.of("org.apache.james.SMTPAuthUser");
+    AttributeName SENT_BY_MAILET = AttributeName.of("org.apache.james.SentByMailet");
+    AttributeName MAILET_ERROR_ATTRIBUTE_NAME = AttributeName.of("org.apache.james.MailetError");
     /**
      * Returns the name of this message.
      * 
@@ -302,4 +307,12 @@ public interface Mail extends Serializable, Cloneable {
      * @since Mailet API v2.3
      */
     void setLastUpdated(Date lastUpdated);
+
+    default Map<AttributeName, Attribute> attributesMap() {
+        return Iterators.toStream(attributeNames())
+            .map(name -> getAttribute(name).map(attribute -> Pair.of(name, attribute)))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
+    }
 }

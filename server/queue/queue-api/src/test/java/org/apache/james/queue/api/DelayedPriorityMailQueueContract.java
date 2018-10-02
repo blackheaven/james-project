@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.TimeUnit;
 
+import org.apache.mailet.Attribute;
 import org.junit.jupiter.api.Test;
 
 public interface DelayedPriorityMailQueueContract extends DelayedMailQueueContract, PriorityMailQueueContract {
@@ -35,14 +36,14 @@ public interface DelayedPriorityMailQueueContract extends DelayedMailQueueContra
     default void delayedHighPriorityMailShouldBeDeQueuedBeforeLowPriorityNonDelayedMailAfterDelayExpiracy() throws Exception {
         getMailQueue().enQueue(defaultMail()
             .name("name1")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, MailPrioritySupport.LOW_PRIORITY)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, MailPrioritySupport.LOW_PRIORITY_ATTRIBUTE_VALUE))
             .build());
 
         int delay = 1;
         TimeUnit unit = TimeUnit.SECONDS;
         getMailQueue().enQueue(defaultMail()
             .name("name2")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, MailPrioritySupport.HIGH_PRIORITY)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, MailPrioritySupport.HIGH_PRIORITY_ATTRIBUTE_VALUE))
             .build(),
             delay,
             unit);
@@ -62,14 +63,14 @@ public interface DelayedPriorityMailQueueContract extends DelayedMailQueueContra
     default void delayedHighPriorityMailShouldBeDeQueuedAfterNonDelayedMail() throws Exception {
         getMailQueue().enQueue(defaultMail()
             .name("name1")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, MailPrioritySupport.LOW_PRIORITY)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, MailPrioritySupport.LOW_PRIORITY_ATTRIBUTE_VALUE))
             .build());
 
         int delay = 1;
         TimeUnit unit = TimeUnit.SECONDS;
         getMailQueue().enQueue(defaultMail()
             .name("name2")
-            .attribute(MailPrioritySupport.MAIL_PRIORITY, MailPrioritySupport.HIGH_PRIORITY)
+            .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, MailPrioritySupport.HIGH_PRIORITY_ATTRIBUTE_VALUE))
             .build(),
             delay,
             unit);

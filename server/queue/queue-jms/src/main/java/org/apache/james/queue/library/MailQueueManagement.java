@@ -18,7 +18,6 @@
  ****************************************************************/
 package org.apache.james.queue.library;
 
-import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,6 +42,8 @@ import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.api.ManageableMailQueue.MailQueueItemView;
 import org.apache.james.queue.api.ManageableMailQueue.MailQueueIterator;
 import org.apache.james.queue.api.ManageableMailQueue.Type;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 
 /**
@@ -153,15 +154,15 @@ public class MailQueueManagement extends StandardMBean implements MailQueueManag
             map.put(names[7], m.getRemoteHost());
             map.put(names[8], m.getErrorMessage());
             Map<String, String> attrs = new HashMap<>();
-            Iterator<String> attrNames = m.getAttributeNames();
+            Iterator<AttributeName> attrNames = m.attributeNames();
             while (attrNames.hasNext()) {
-                String attrName = attrNames.next();
-                String attrValueString = null;
-                Serializable attrValue = m.getAttribute(attrName);
-                if (attrValue != null) {
-                    attrValueString = attrValue.toString();
-                }
-                attrs.put(attrName, attrValueString);
+                AttributeName attrName = attrNames.next();
+                String attrValueString = AttributeUtils
+                        .getAttributeValueFromMail(m, attrName)
+                        .map(Object::toString)
+                        .orElse(null);
+
+                attrs.put(attrName.asString(), attrValueString);
             }
             map.put(names[9], attrs.toString());
             map.put(names[10], nextDelivery);

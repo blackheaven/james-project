@@ -27,6 +27,10 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.GenericMailet;
@@ -52,20 +56,21 @@ public class MimeDecodingMailet extends GenericMailet {
 
     public static final String ATTRIBUTE_PARAMETER_NAME = "attribute";
 
-    private String attribute;
+    private AttributeName attribute;
 
     @Override
     public void init() throws MessagingException {
-        attribute = getInitParameter(ATTRIBUTE_PARAMETER_NAME);
-        if (Strings.isNullOrEmpty(attribute)) {
+        String attributeRaw = getInitParameter(ATTRIBUTE_PARAMETER_NAME);
+        if (Strings.isNullOrEmpty(attributeRaw)) {
             throw new MailetException("No value for " + ATTRIBUTE_PARAMETER_NAME
                     + " parameter was provided.");
         }
+        attribute = AttributeName.of(attributeRaw);
     }
 
     @Override
     public void service(Mail mail) throws MessagingException {
-        if (mail.getAttribute(attribute) == null) {
+        if (!AttributeUtils.getAttributeValueFromMail(mail, attribute).isPresent()) {
             return;
         }
 
@@ -76,18 +81,22 @@ public class MimeDecodingMailet extends GenericMailet {
                 extractedMimeContentByName.put(entry.getKey(), maybeContent.get());
             }
         }
-        mail.setAttribute(attribute, extractedMimeContentByName.build());
+        mail.setAttribute(new Attribute(attribute, AttributeValue.of(extractedMimeContentByName.build())));
     }
 
     @SuppressWarnings("unchecked")
     private Map<String, byte[]> getAttributeContent(Mail mail) throws MailetException {
-        Serializable attributeContent = mail.getAttribute(attribute);
-        if (! (attributeContent instanceof Map)) {
-            LOGGER.debug("Invalid attribute found into attribute {} class Map expected but {} found.",
-                    attribute, attributeContent.getClass());
+        Optional<Serializable> attributeContent = AttributeUtils.getValueAndCastFromMail(mail, attribute, Serializable.class);
+        if (!attributeContent.isPresent()) {
             return ImmutableMap.of();
         }
-        return (Map<String, byte[]>) attributeContent;
+        Serializable attributeContentExtracted = attributeContent.get();
+        if (! (attributeContentExtracted instanceof Map)) {
+            LOGGER.debug("Invalid attribute found into attribute {} class Map expected but {} found.",
+                    attribute, attributeContentExtracted.getClass());
+            return ImmutableMap.of();
+        }
+        return (Map<String, byte[]>) attributeContentExtracted;
     }
 
     private Optional<byte[]> extractContent(Object rawMime) throws MessagingException {

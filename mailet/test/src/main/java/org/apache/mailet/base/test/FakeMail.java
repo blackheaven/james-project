@@ -54,7 +54,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -138,6 +137,11 @@ public class FakeMail implements Mail, Serializable {
             perRecipientHeaders = new PerRecipientHeaders();
         }
 
+        public Builder attribute(Attribute attribute) {
+            this.attributes.put(attribute.getName(), attribute.getValue());
+            return this;
+        }
+
         public Builder size(long size) {
             this.size = Optional.of(size);
             return this;
@@ -211,16 +215,6 @@ public class FakeMail implements Mail, Serializable {
 
         public Builder lastUpdated(Date lastUpdated) {
             this.lastUpdated = Optional.of(lastUpdated);
-            return this;
-        }
-
-        public Builder attribute(String name, Serializable object) {
-            this.attributes.put(AttributeName.of(name), AttributeValue.of(object));
-            return this;
-        }
-
-        public Builder attributes(Map<String, Serializable> attributes) {
-            attributes.forEach((key, value) -> attribute(key, value));
             return this;
         }
 
@@ -373,7 +367,7 @@ public class FakeMail implements Mail, Serializable {
 
     @Override
     public Serializable getAttribute(String name) {
-        return (Serializable) attributes.get(name).value();
+        return (Serializable) attributes.get(AttributeName.of(name)).getValue();
     }
 
     @Override
@@ -398,7 +392,7 @@ public class FakeMail implements Mail, Serializable {
 
     @Override
     public Serializable removeAttribute(String name) {
-        AttributeValue<?> previous = attributes.remove(name);
+        AttributeValue<?> previous = attributes.remove(AttributeName.of(name));
         return (Serializable) Optional.ofNullable(previous).map(AttributeValue::value).orElse(null);
     }
 

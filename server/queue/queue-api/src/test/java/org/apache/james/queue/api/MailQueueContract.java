@@ -33,6 +33,7 @@ import java.time.Duration;
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +45,10 @@ import org.apache.james.core.MailAddress;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.junit.ExecutorExtension;
 import org.apache.james.util.concurrency.ConcurrentTestRunner;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders;
 import org.apache.mailet.base.test.FakeMail;
@@ -131,15 +136,15 @@ public interface MailQueueContract {
 
     @Test
     default void queueShouldPreserveMailAttribute() throws Exception {
-        String attributeName = "any";
-        String attributeValue = "value";
+        AttributeName attributeName = AttributeName.of("any");
+        AttributeValue<String> attributeValue = AttributeValue.of("value");
         enQueue(defaultMail()
-            .attribute(attributeName, attributeValue)
+            .attribute(new Attribute(attributeName, attributeValue))
             .build());
 
         MailQueue.MailQueueItem mailQueueItem = getMailQueue().deQueue();
         assertThat(mailQueueItem.getMail().getAttribute(attributeName))
-            .isEqualTo(attributeValue);
+            .isEqualTo(Optional.of(attributeValue));
     }
 
     @Test
@@ -232,14 +237,14 @@ public interface MailQueueContract {
 
     @Test
     default void queueShouldPreserveNonStringMailAttribute() throws Exception {
-        String attributeName = "any";
+        AttributeName attributeName = AttributeName.of("any");
         SerializableAttribute attributeValue = new SerializableAttribute("value");
         enQueue(defaultMail()
-                .attribute(attributeName, attributeValue)
+                .attribute(new Attribute(attributeName, AttributeValue.of(attributeValue)))
                 .build());
 
         MailQueue.MailQueueItem mailQueueItem = getMailQueue().deQueue();
-        assertThat(mailQueueItem.getMail().getAttribute(attributeName))
+        assertThat(AttributeUtils.getValueAndCastFromMail(mailQueueItem.getMail(), attributeName, SerializableAttribute.class))
                 .isInstanceOf(SerializableAttribute.class)
                 .isEqualTo(attributeValue);
     }

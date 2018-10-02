@@ -26,6 +26,9 @@ import java.util.Map;
 
 import javax.mail.MessagingException;
 
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.GenericMailet;
@@ -47,7 +50,7 @@ import com.google.common.collect.ImmutableMap;
  */
 public class SetMailAttribute extends GenericMailet {
 
-    private ImmutableMap<String, String> entries;
+    private ImmutableMap<AttributeName, AttributeValue<?>> entries;
     
     @Override
     public String getMailetInfo() {
@@ -56,20 +59,20 @@ public class SetMailAttribute extends GenericMailet {
 
     @Override
     public void init() throws MailetException {
-        ImmutableMap.Builder<String, String> attributes = ImmutableMap.builder();
+        ImmutableMap.Builder<AttributeName, AttributeValue<?>> attributes = ImmutableMap.builder();
         Iterator<String> iter = getInitParameterNames();
         while (iter.hasNext()) {
             String name = iter.next();
             String value = getInitParameter(name);
-            attributes.put(name, value);
+            attributes.put(AttributeName.of(name), AttributeValue.of(value));
         }
         entries = attributes.build();
     }
 
     @Override
     public void service(Mail mail) throws MessagingException {
-        for (Map.Entry<String, String> entry : entries.entrySet()) {
-            mail.setAttribute(entry.getKey(), entry.getValue());
+        for (Map.Entry<AttributeName, AttributeValue<?>> entry : entries.entrySet()) {
+            mail.setAttribute(new Attribute(entry.getKey(), entry.getValue()));
         }
     }
     

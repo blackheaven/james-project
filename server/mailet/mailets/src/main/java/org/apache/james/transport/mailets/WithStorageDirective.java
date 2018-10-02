@@ -25,6 +25,9 @@ import javax.mail.MessagingException;
 import org.apache.james.core.MailAddress;
 import org.apache.james.transport.mailets.delivery.MailStore;
 import org.apache.james.user.api.UsersRepository;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 
@@ -77,10 +80,8 @@ public class WithStorageDirective extends GenericMailet {
 
     public ThrowingConsumer<MailAddress> addStorageDirective(Mail mail) {
         return recipient -> {
-            String attributeNameForUser = MailStore.DELIVERY_PATH_PREFIX + usersRepository.getUser(recipient);
-            mail.setAttribute(
-                attributeNameForUser,
-                targetFolderName);
+            AttributeName attributeNameForUser = AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + usersRepository.getUser(recipient));
+            mail.setAttribute(new Attribute(attributeNameForUser, AttributeValue.of(targetFolderName)));
         };
 
     }

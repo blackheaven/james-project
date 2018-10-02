@@ -35,6 +35,7 @@ import javax.mail.internet.NewsAddress;
 
 import org.apache.james.core.MailAddress;
 import org.apache.james.transport.mailets.managesieve.ManageSieveMailet;
+import org.apache.mailet.AttributeName;
 import org.apache.mailet.Mail;
 import org.apache.mailet.Mailet;
 import org.apache.mailet.MailetConfig;
@@ -79,8 +80,8 @@ public class InstrumentationMailet implements Mailet {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Mail named: " + mail.getName());
 
-            for (Iterator<String> it = mail.getAttributeNames(); it.hasNext();) {
-                String attributeName = it.next();
+            for (Iterator<AttributeName> it = mail.attributeNames(); it.hasNext();) {
+                String attributeName = it.next().asString();
                 LOGGER.info("Attribute " + attributeName);
             }
             LOGGER.info("Message size: " + mail.getMessageSize());

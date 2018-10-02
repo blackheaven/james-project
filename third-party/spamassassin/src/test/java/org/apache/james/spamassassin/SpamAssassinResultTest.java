@@ -21,6 +21,7 @@ package org.apache.james.spamassassin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.apache.mailet.AttributeValue;
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,8 +63,8 @@ public class SpamAssassinResultTest {
         softly.assertThat(spamAssassinResult.getRequiredHits()).isEqualTo(requiredHits);
         softly.assertThat(spamAssassinResult.getHeadersAsAttribute())
             .containsAllEntriesOf(ImmutableMap.of(
-                SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME, "YES",
-                SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME, "Yes, hits=1.1 required=5.0"));
+                SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME, AttributeValue.of("YES"),
+                SpamAssassinResult.STATUS_MAIL_ATTRIBUTE_NAME, AttributeValue.of("Yes, hits=1.1 required=5.0")));
     }
 
     @Test
@@ -77,7 +78,7 @@ public class SpamAssassinResultTest {
             .build();
 
         assertThat(spamAssassinResult.getHeadersAsAttribute())
-            .containsEntry(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME, "YES");
+            .containsEntry(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME, AttributeValue.of("YES"));
     }
 
     @Test
@@ -91,6 +92,6 @@ public class SpamAssassinResultTest {
             .build();
 
         assertThat(spamAssassinResult.getHeadersAsAttribute())
-            .containsEntry(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME, "NO");
+            .containsEntry(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME, AttributeValue.of("NO"));
     }
 }

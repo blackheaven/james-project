@@ -43,6 +43,9 @@ import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.transport.mailets.redirect.SpecialAddress;
 import org.apache.james.util.MimeMessageUtil;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.DateFormats;
 import org.apache.mailet.base.MailAddressFixture;
@@ -158,7 +161,7 @@ public class DSNBounceTest {
         MailAddress senderMailAddress = new MailAddress("sender@domain.com");
         FakeMail mail = FakeMail.builder()
                 .sender(senderMailAddress)
-                .attribute("delivery-error", "Delivery error")
+                .attribute(new Attribute(AttributeName.of("delivery-error"), AttributeValue.of("Delivery error")))
                 .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                     .setText("My content"))
                 .name(MAILET_NAME)
@@ -199,7 +202,7 @@ public class DSNBounceTest {
         MailAddress senderMailAddress = new MailAddress("sender@domain.com");
         FakeMail mail = FakeMail.builder()
                 .sender(senderMailAddress)
-                .attribute("delivery-error", "Delivery error")
+                .attribute(new Attribute(AttributeName.of("delivery-error"), AttributeValue.of("Delivery error")))
                 .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                     .setText("My content"))
                 .name(MAILET_NAME)
@@ -238,7 +241,7 @@ public class DSNBounceTest {
         MailAddress senderMailAddress = new MailAddress("sender@domain.com");
         FakeMail mail = FakeMail.builder()
                 .sender(senderMailAddress)
-                .attribute("delivery-error", "Delivery error")
+                .attribute(new Attribute(AttributeName.of("delivery-error"), AttributeValue.of("Delivery error")))
                 .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                     .setText("My content"))
                 .name(MAILET_NAME)
@@ -277,7 +280,7 @@ public class DSNBounceTest {
         dsnBounce.init(mailetConfig);
 
         FakeMail mail = FakeMail.builder()
-                .attribute("delivery-error", "Delivery error")
+                .attribute(new Attribute(AttributeName.of("delivery-error"), AttributeValue.of("Delivery error")))
                 .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                     .setText("My content"))
                 .name(MAILET_NAME)
@@ -300,7 +303,7 @@ public class DSNBounceTest {
         dsnBounce.init(mailetConfig);
 
         FakeMail mail = FakeMail.builder()
-                .attribute("delivery-error", "Delivery error")
+                .attribute(new Attribute(AttributeName.of("delivery-error"), AttributeValue.of("Delivery error")))
                 .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                     .setText("My content"))
                 .name(MAILET_NAME)
@@ -324,7 +327,7 @@ public class DSNBounceTest {
         dsnBounce.init(mailetConfig);
 
         FakeMail mail = FakeMail.builder()
-                .attribute("delivery-error", "Delivery error")
+                .attribute(new Attribute(AttributeName.of("delivery-error"), AttributeValue.of("Delivery error")))
                 .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                     .setText("My content"))
                 .name(MAILET_NAME)

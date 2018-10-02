@@ -19,12 +19,8 @@
 
 package org.apache.james.server.core;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OptionalDataException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -37,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,8 +44,6 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.ParseException;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.lifecycle.api.Disposable;
@@ -122,7 +115,7 @@ public class MailImpl implements Disposable, Mail {
         private Optional<String> state;
         private Optional<String> errorMessage;
         private Optional<Date> lastUpdated;
-        private Map<String, Serializable> attributes;
+        private Map<AttributeName, AttributeValue<?>> attributes;
         private Optional<String> remoteAddr;
         private Optional<String> remoteHost;
         private PerRecipientHeaders perRecipientHeaders;
@@ -208,11 +201,11 @@ public class MailImpl implements Disposable, Mail {
         }
 
         public Builder attribute(String name, Serializable object) {
-            this.attributes.put(name, object);
+            this.attributes.put(AttributeName.of(name), AttributeValue.of(object));
             return this;
         }
 
-        public Builder attributes(Map<String, Serializable> attributes) {
+        public Builder attributes(Map<AttributeName, AttributeValue<?>> attributes) {
             this.attributes.putAll(attributes);
             return this;
         }
@@ -246,7 +239,7 @@ public class MailImpl implements Disposable, Mail {
             state.ifPresent(mail::setState);
             errorMessage.ifPresent(mail::setErrorMessage);
             lastUpdated.ifPresent(mail::setLastUpdated);
-            mail.setAttributesRaw(new HashMap<>(attributes));
+            mail.setAttributes(new HashMap<>(attributes));
             remoteAddr.ifPresent(mail::setRemoteAddr);
             remoteHost.ifPresent(mail::setRemoteHost);
             mail.perRecipientSpecificHeaders.addAll(perRecipientHeaders);
@@ -395,7 +388,6 @@ public class MailImpl implements Disposable, Mail {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private MailImpl(Mail mail, String newName) throws MessagingException {
         this(newName, mail.getSender(), mail.getRecipients(), mail.getMessage());
         setRemoteHost(mail.getRemoteHost());
@@ -696,6 +688,10 @@ public class MailImpl implements Disposable, Mail {
                     x -> x.getValue().value()));
     }
 
+    public void setAttributes(Map<AttributeName, AttributeValue<?>> attr) {
+        this.attributes = attr;
+    }
+
     /**
      * <p>
      * This method is necessary, when Mail repositories needs to deal explicitly
@@ -782,27 +778,6 @@ public class MailImpl implements Disposable, Mail {
     @Override
     public boolean hasAttributes() {
         return !attributes.isEmpty();
-    }
-
-    /**
-     * This methods provide cloning for serializable objects. Mail Attributes
-     * are Serializable but not Clonable so we need a deep copy
-     *
-     * @param o Object to be cloned
-     * @return the cloned Object
-     * @throws IOException
-     * @throws ClassNotFoundException
-     */
-    private static Object cloneSerializableObject(Object o) throws IOException, ClassNotFoundException {
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        try (ObjectOutputStream out = new ObjectOutputStream(b)) {
-            out.writeObject(o);
-            out.flush();
-        }
-        ByteArrayInputStream bi = new ByteArrayInputStream(b.toByteArray());
-        try (ObjectInputStream in = new ObjectInputStream(bi)) {
-            return in.readObject();
-        }
     }
 
     /**

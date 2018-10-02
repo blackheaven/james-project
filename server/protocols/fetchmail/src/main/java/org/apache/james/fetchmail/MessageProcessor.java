@@ -36,6 +36,9 @@ import org.apache.james.core.MailAddress;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.server.core.MailImpl;
 import org.apache.james.user.api.UsersRepositoryException;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.RFC2822Headers;
 import org.slf4j.Logger;
@@ -1229,44 +1232,44 @@ public class MessageProcessor extends ProcessorAbstract {
      * @param aMail a Mail instance
      */
     protected void addMailAttributes(Mail aMail) throws MessagingException {
-        aMail.setAttribute(getAttributePrefix() + "taskName", getFetchTaskName());
+        aMail.setAttribute(new Attribute(AttributeName.of(getAttributePrefix() + "taskName"), AttributeValue.of(getFetchTaskName())));
 
-        aMail.setAttribute(getAttributePrefix() + "folderName", getMessageIn().getFolder().getFullName());
+        aMail.setAttribute(new Attribute(AttributeName.of(getAttributePrefix() + "folderName"), AttributeValue.of(getMessageIn().getFolder().getFullName())));
 
         if (isRemoteRecipient()) {
-            aMail.setAttribute(getAttributePrefix() + "isRemoteRecipient", null);
+            aMail.setAttribute(new Attribute(AttributeName.of(getAttributePrefix() + "isRemoteRecipient"), AttributeValue.of((String) null)));
         }
 
         if (isUserUndefined()) {
-            aMail.setAttribute(getAttributePrefix() + "isUserUndefined", true);
+            aMail.setAttribute(new Attribute(AttributeName.of(getAttributePrefix() + "isUserUndefined"), AttributeValue.of(true)));
         }
 
         if (isBlacklistedRecipient()) {
-            aMail.setAttribute(getAttributePrefix() + "isBlacklistedRecipient", true);
+            aMail.setAttribute(new Attribute(AttributeName.of(getAttributePrefix() + "isBlacklistedRecipient"), AttributeValue.of(true)));
         }
 
         if (isRecipientNotFound()) {
-            aMail.setAttribute(getAttributePrefix() + "isRecipientNotFound", true);
+            aMail.setAttribute(new Attribute(AttributeName.of(getAttributePrefix() + "isRecipientNotFound"), AttributeValue.of(true)));
         }
 
         if (isMaxMessageSizeExceeded()) {
-            aMail.setAttribute(getAttributePrefix() + "isMaxMessageSizeExceeded", Integer.toString(getMessageIn().getSize()));
+            aMail.setAttribute(new Attribute(AttributeName.of(getAttributePrefix() + "isMaxMessageSizeExceeded"), AttributeValue.of(Integer.toString(getMessageIn().getSize()))));
         }
 
         if (isRemoteReceivedHeaderInvalid()) {
-            aMail.setAttribute(getAttributePrefix() + "isRemoteReceivedHeaderInvalid", true);
+            aMail.setAttribute(new Attribute(AttributeName.of(getAttributePrefix() + "isRemoteReceivedHeaderInvalid"), AttributeValue.of(true)));
         }
 
         if (isDefaultSenderLocalPart()) {
-            aMail.setAttribute(getAttributePrefix() + "isDefaultSenderLocalPart", true);
+            aMail.setAttribute(new Attribute(AttributeName.of(getAttributePrefix() + "isDefaultSenderLocalPart"), AttributeValue.of(true)));
         }
 
         if (isDefaultSenderDomainPart()) {
-            aMail.setAttribute(getAttributePrefix() + "isDefaultSenderDomainPart", true);
+            aMail.setAttribute(new Attribute(AttributeName.of(getAttributePrefix() + "isDefaultSenderDomainPart"), AttributeValue.of(true)));
         }
 
         if (isDefaultRemoteAddress()) {
-            aMail.setAttribute(getAttributePrefix() + "isDefaultRemoteAddress", true);
+            aMail.setAttribute(new Attribute(AttributeName.of(getAttributePrefix() + "isDefaultRemoteAddress"), AttributeValue.of(true)));
         }
     }
 

@@ -23,6 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.james.user.memory.MemoryUsersRepository;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.base.MailAddressFixture;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
@@ -71,10 +75,12 @@ public class WithStorageDirectiveTest {
 
         testee.service(mail);
 
-        softly.assertThat(mail.getAttributeNames())
-            .containsOnly("DeliveryPath_recipient2@localhost", "DeliveryPath_recipient1@localhost");
-        softly.assertThat(mail.getAttribute("DeliveryPath_recipient1@localhost")).isEqualTo(targetFolderName);
-        softly.assertThat(mail.getAttribute("DeliveryPath_recipient2@localhost")).isEqualTo(targetFolderName);
+        softly.assertThat(mail.attributeNames())
+            .containsOnly(AttributeName.of("DeliveryPath_recipient2@localhost"), AttributeName.of("DeliveryPath_recipient1@localhost"));
+        softly.assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("DeliveryPath_recipient1@localhost"), String.class))
+            .isEqualTo(targetFolderName);
+        softly.assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("DeliveryPath_recipient2@localhost"), String.class))
+            .isEqualTo(targetFolderName);
     }
 
     @Test
@@ -90,7 +96,7 @@ public class WithStorageDirectiveTest {
 
         testee.service(mail);
 
-        assertThat(mail.getAttributeNames())
+        assertThat(mail.attributeNames())
             .isEmpty();
     }
 
@@ -103,15 +109,17 @@ public class WithStorageDirectiveTest {
 
         FakeMail mail = FakeMail.builder()
             .recipients(MailAddressFixture.RECIPIENT1, MailAddressFixture.RECIPIENT2)
-            .attribute("DeliveryPath_recipient2@localhost", "otherFolder")
+            .attribute(new Attribute(AttributeName.of("DeliveryPath_recipient2@localhost"), AttributeValue.of("otherFolder")))
             .build();
 
         testee.service(mail);
 
-        softly.assertThat(mail.getAttributeNames())
-            .containsOnly("DeliveryPath_recipient2@localhost", "DeliveryPath_recipient1@localhost");
-        softly.assertThat(mail.getAttribute("DeliveryPath_recipient1@localhost")).isEqualTo(targetFolderName);
-        softly.assertThat(mail.getAttribute("DeliveryPath_recipient2@localhost")).isEqualTo(targetFolderName);
+        softly.assertThat(mail.attributeNames())
+            .containsOnly(AttributeName.of("DeliveryPath_recipient2@localhost"), AttributeName.of("DeliveryPath_recipient1@localhost"));
+        softly.assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("DeliveryPath_recipient1@localhost"), String.class))
+            .isEqualTo(targetFolderName);
+        softly.assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("DeliveryPath_recipient2@localhost"), String.class))
+            .isEqualTo(targetFolderName);
     }
 
 }

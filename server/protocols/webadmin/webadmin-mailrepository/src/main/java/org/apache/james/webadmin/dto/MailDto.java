@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
-
 import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -42,6 +40,7 @@ import org.apache.james.mime4j.util.MimeUtil;
 import org.apache.james.util.mime.MessageContentExtractor;
 import org.apache.james.util.mime.MessageContentExtractor.MessageContent;
 import org.apache.james.util.streams.Iterators;
+import org.apache.mailet.AttributeName;
 import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders;
 
@@ -172,8 +171,8 @@ public class MailDto {
             return Optional.empty();
         }
 
-        return Optional.of(Iterators.toStream(mail.getAttributeNames())
-            .collect(Guavate.toImmutableMap(Function.identity(), attributeName -> mail.getAttribute(attributeName).toString())));
+        return Optional.of(Iterators.toStream(mail.attributeNames())
+            .collect(Guavate.toImmutableMap(AttributeName::asString, attributeName -> mail.getAttribute(attributeName).toString())));
     }
 
     private final String name;

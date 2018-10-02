@@ -26,10 +26,13 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import javax.mail.MessagingException;
 
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
 
@@ -69,12 +72,12 @@ public class IsX509CertificateSubject extends GenericMatcher {
     public Collection<MailAddress> match(Mail mail) throws MessagingException {
         List<X509Certificate> certificates;
         
-        Object obj = mail.getAttribute(sourceAttribute);
-        if (obj != null) {
-            if (obj instanceof X509Certificate) {
-                certificates = Collections.singletonList((X509Certificate)obj);
+        Optional<?> obj = AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(sourceAttribute));
+        if (obj.isPresent()) {
+            if (obj.get() instanceof X509Certificate) {
+                certificates = Collections.singletonList((X509Certificate)obj.get());
             } else {
-                certificates = (List<X509Certificate>) obj;
+                certificates = (List<X509Certificate>) obj.get();
             }
 
             boolean valid = false;

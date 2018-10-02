@@ -19,7 +19,6 @@
 
 package org.apache.james.queue.rabbitmq;
 
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
@@ -35,8 +34,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.blob.mail.MimeMessagePartsId;
 import org.apache.james.core.MailAddress;
 import org.apache.james.server.core.MailImpl;
-import org.apache.james.util.SerializationUtil;
-import org.apache.james.util.streams.Iterators;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders;
 
@@ -79,10 +79,13 @@ class MailReferenceDTO {
     }
 
     private static ImmutableMap<String, String> serializedAttributes(Mail mail) {
-        return Iterators.toStream(mail.getAttributeNames())
-            .collect(Guavate.toImmutableMap(
-                name -> name,
-                name -> SerializationUtil.serialize(mail.getAttribute(name))));
+        Map<AttributeName, Attribute> attributesMap = mail.attributesMap();
+        return attributesMap
+                .keySet()
+                .stream()
+                .collect(Guavate.toImmutableMap(
+                    AttributeName::asString,
+                    name -> attributesMap.get(name).getValue().toJson().toString()));
     }
 
     private final ImmutableList<String> recipients;
@@ -203,7 +206,7 @@ class MailReferenceDTO {
             .ifPresent(mail::setLastUpdated);
 
         attributes
-            .forEach((name, value) -> mail.setAttribute(name, SerializationUtil.<Serializable>deserialize(value)));
+            .forEach((name, value) -> mail.setAttribute(new Attribute(AttributeName.of(name), AttributeValue.of(value))));
 
         mail.addAllSpecificHeaderForRecipient(retrievePerRecipientHeaders());
 

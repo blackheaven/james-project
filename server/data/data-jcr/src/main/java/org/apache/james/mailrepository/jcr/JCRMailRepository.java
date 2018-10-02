@@ -25,7 +25,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -62,6 +61,10 @@ import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.lib.AbstractMailRepository;
 import org.apache.james.server.core.MailImpl;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -546,16 +549,16 @@ public class JCRMailRepository extends AbstractMailRepository implements MailRep
         PropertyIterator iterator = node.getProperties("jamesattr:*");
         while (iterator.hasNext()) {
             Property property = iterator.nextProperty();
-            String name = Text.unescapeIllegalJcrChars(property.getName().substring("jamesattr:".length()));
+            AttributeName name = AttributeName.of(Text.unescapeIllegalJcrChars(property.getName().substring("jamesattr:".length())));
             if (property.getType() == PropertyType.BINARY) {
                 try (InputStream input = property.getStream()) {
                     ObjectInputStream stream = new ObjectInputStream(input);
-                    mail.setAttribute(name, (Serializable) stream.readObject());
+                    mail.setAttribute(new Attribute(name, AttributeValue.of(stream.readObject())));
                 } catch (ClassNotFoundException e) {
                     throw new IOException(e.getMessage());
                 }
             } else {
-                mail.setAttribute(name, property.getString());
+                mail.setAttribute(new Attribute(name, AttributeValue.of(property.getString())));
             }
         }
     }
@@ -573,11 +576,11 @@ public class JCRMailRepository extends AbstractMailRepository implements MailRep
      *             if an IO error occurs
      */
     private void setAttributes(Node node, Mail mail) throws RepositoryException, IOException {
-        Iterator<String> iterator = mail.getAttributeNames();
+        Iterator<AttributeName> iterator = mail.attributeNames();
         while (iterator.hasNext()) {
-            String name = iterator.next();
-            Object value = mail.getAttribute(name);
-            name = "jamesattr:" + Text.escapeIllegalJcrChars(name);
+            AttributeName attributeName = iterator.next();
+            Object value = AttributeUtils.getAttributeValueFromMail(mail, attributeName).orElse(null);
+            String name = "jamesattr:" + Text.escapeIllegalJcrChars(attributeName.asString());
             if (value instanceof String || value == null) {
                 node.setProperty(name, (String) value);
             } else {

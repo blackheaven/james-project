@@ -31,6 +31,7 @@ import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.metrics.api.TimeMetric;
 import org.apache.james.queue.api.MailPrioritySupport;
 import org.apache.james.queue.api.MailQueue;
+import org.apache.mailet.Attribute;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetContext;
 import org.slf4j.Logger;
@@ -167,7 +168,7 @@ public class DeliveryRunnable implements Runnable {
 
         if (configuration.isUsePriority()) {
             // Use lowest priority for retries. See JAMES-1311
-            mail.setAttribute(MailPrioritySupport.MAIL_PRIORITY, MailPrioritySupport.LOW_PRIORITY);
+            mail.setAttribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, MailPrioritySupport.LOW_PRIORITY_ATTRIBUTE_VALUE));
         }
         queue.enQueue(mail, delay, TimeUnit.MILLISECONDS);
     }

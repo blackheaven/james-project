@@ -28,6 +28,9 @@ import javax.mail.MessagingException;
 import org.apache.james.core.MailAddress;
 import org.apache.james.dlp.api.DLPConfigurationItem;
 import org.apache.james.dlp.api.DLPConfigurationStore;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
 
@@ -36,7 +39,7 @@ import com.google.common.collect.ImmutableList;
 
 public class Dlp extends GenericMatcher {
 
-    public static final String DLP_MATCHED_RULE = "DlpMatchedRule";
+    public static final AttributeName DLP_MATCHED_RULE = AttributeName.of("DlpMatchedRule");
 
     private final DlpRulesLoader rulesLoader;
 
@@ -63,7 +66,7 @@ public class Dlp extends GenericMatcher {
     }
 
     private void setRuleIdAsMailAttribute(Mail mail, DLPConfigurationItem.Id ruleId) {
-        mail.setAttribute(DLP_MATCHED_RULE, ruleId.asString());
+        mail.setAttribute(new Attribute(DLP_MATCHED_RULE, AttributeValue.of(ruleId.asString())));
     }
 
     private Optional<DLPConfigurationItem.Id> findFirstMatchingRule(Mail mail) {
