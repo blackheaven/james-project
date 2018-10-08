@@ -84,7 +84,7 @@ public class PostDequeueDecorator extends MailQueueItemDecorator {
             Optional<MessageId> messageId = AttributeUtils.getValueAndCastFromMail(getMail(), MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, String.class).map(id -> messageIdFactory.fromString(id));
             Optional<String> username = AttributeUtils.getValueAndCastFromMail(getMail(), MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE, String.class);
             if (messageId.isPresent() && username.isPresent()
-                    && !AttributeUtils.getAttributeValueFromMail(getMail(), AttributeName.of(IS_DELIVERED)).isPresent()) {
+                    && !getMail().getAttribute(AttributeName.of(IS_DELIVERED)).isPresent()) {
                 try {
                     MailboxSession mailboxSession = mailboxManager.createSystemSession(username.get());
                     moveFromOutboxToSentWithSeenFlag(messageId.get(), mailboxSession);
@@ -106,20 +106,22 @@ public class PostDequeueDecorator extends MailQueueItemDecorator {
     private boolean checkMessageIdAttribute() {
         return AttributeUtils
                 .getAttributeValueFromMail(getMail(), MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE)
-                .map(messageId -> {
-                    if (messageId instanceof String) {
-                        try {
-                            messageIdFactory.fromString((String) messageId);
-                            return true;
-                        } catch (Exception e) {
-                            LOG.error("Invalid messageId: {}", messageId, e);
-                        }
-                    } else if (messageId != null) {
-                        LOG.error("Non-String messageId {} has type {}", messageId, messageId.getClass());
-                    }
-                    return false;
-                })
+                .map(this::checkMessageIdString)
                 .orElse(false);
+    }
+
+    private Boolean checkMessageIdString(Object messageId) {
+        if (messageId instanceof String) {
+            try {
+                messageIdFactory.fromString((String) messageId);
+                return true;
+            } catch (Exception e) {
+                LOG.error("Invalid messageId: {}", messageId, e);
+            }
+        } else if (messageId != null) {
+            LOG.error("Non-String messageId {} has type {}", messageId, messageId.getClass());
+        }
+        return false;
     }
 
     private boolean checkUsernameAttribute() {

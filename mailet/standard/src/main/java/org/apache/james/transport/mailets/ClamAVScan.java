@@ -42,7 +42,6 @@ import javax.mail.internet.MimeMessage;
 import org.apache.james.core.MailAddress;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
-import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
@@ -592,7 +591,7 @@ public class ClamAVScan extends GenericMailet {
     public void service(Mail mail) throws MessagingException {
 
         // if already checked no action
-        if (AttributeUtils.getAttributeValueFromMail(mail, MAIL_ATTRIBUTE_NAME).isPresent()) {
+        if (mail.getAttribute(MAIL_ATTRIBUTE_NAME).isPresent()) {
             return;
         }
 

@@ -96,7 +96,7 @@ public class ICALToHeader extends GenericMailet {
 
     @Override
     public void service(Mail mail) throws MessagingException {
-        if (!AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(attribute)).isPresent()) {
+        if (!mail.getAttribute(AttributeName.of(attribute)).isPresent()) {
             return;
         }
         try {

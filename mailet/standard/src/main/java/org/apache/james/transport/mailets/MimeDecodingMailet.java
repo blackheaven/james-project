@@ -70,7 +70,7 @@ public class MimeDecodingMailet extends GenericMailet {
 
     @Override
     public void service(Mail mail) throws MessagingException {
-        if (!AttributeUtils.getAttributeValueFromMail(mail, attribute).isPresent()) {
+        if (!mail.getAttribute(attribute).isPresent()) {
             return;
         }
 
