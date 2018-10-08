@@ -87,7 +87,7 @@ public abstract class AbstractRecipientRewriteTable extends GenericMailet {
      */
     @Override
     public void service(Mail mail) throws MessagingException {
-        if (AttributeUtils.getAttributeValueFromMail(mail, MARKER).isPresent()) {
+        if (mail.getAttribute(MARKER).isPresent()) {
             mail.removeAttribute(MARKER);
             return;
         }

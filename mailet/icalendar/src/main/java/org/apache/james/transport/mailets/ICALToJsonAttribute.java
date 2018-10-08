@@ -150,10 +150,10 @@ public class ICALToJsonAttribute extends GenericMailet {
 
     @Override
     public void service(Mail mail) throws MessagingException {
-        if (!AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(sourceAttributeName)).isPresent()) {
+        if (!mail.getAttribute(AttributeName.of(sourceAttributeName)).isPresent()) {
             return;
         }
-        if (!AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(rawSourceAttributeName)).isPresent()) {
+        if (!mail.getAttribute(AttributeName.of(rawSourceAttributeName)).isPresent()) {
             return;
         }
         Optional<String> sender = retrieveSender(mail);

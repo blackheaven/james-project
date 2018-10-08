@@ -38,7 +38,6 @@ import org.apache.james.managesieve.util.SettableSession;
 import org.apache.james.sieverepository.api.SieveRepository;
 import org.apache.james.transport.mailets.managesieve.transcode.MessageToCoreToMessage;
 import org.apache.james.user.api.UsersRepository;
-import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
@@ -134,7 +133,7 @@ public class ManageSieveMailet extends GenericMailet implements MessageToCoreToM
 
         // Update the Session for the current mail and execute
         SettableSession session = new SettableSession();
-        if (AttributeUtils.getAttributeValueFromMail(mail, Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME).isPresent()) {
+        if (mail.getAttribute(Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME).isPresent()) {
             session.setState(Session.State.AUTHENTICATED);
         } else {
             session.setState(Session.State.UNAUTHENTICATED);
