@@ -57,6 +57,7 @@ public class Attribute {
         }
         return false;
     }
+
     @Override
     public final int hashCode() {
         return Objects.hash(name, value);
