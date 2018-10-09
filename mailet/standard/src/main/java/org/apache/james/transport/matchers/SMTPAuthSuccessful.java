@@ -22,6 +22,7 @@
 package org.apache.james.transport.matchers;
 
 import java.util.Collection;
+
 import org.apache.james.core.MailAddress;
 import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;

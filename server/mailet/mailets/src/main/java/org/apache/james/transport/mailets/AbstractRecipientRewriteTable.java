@@ -44,7 +44,6 @@ import org.apache.james.rrt.lib.UserRewritter;
 import org.apache.james.server.core.MailImpl;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
-import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
