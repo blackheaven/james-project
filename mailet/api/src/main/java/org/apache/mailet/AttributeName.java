@@ -21,6 +21,8 @@ package org.apache.mailet;
 
 import java.util.Objects;
 
+import com.google.common.base.Preconditions;
+
 /** 
  * Strong typing for attribute name, which represent the name of an attribute store in a mail.
  * 
@@ -30,6 +32,7 @@ public class AttributeName {
     private final String name;
 
     public static AttributeName of(String name) {
+        Preconditions.checkNotNull(name, "AttributeName should not be null");
         return new AttributeName(name);
     }
 
