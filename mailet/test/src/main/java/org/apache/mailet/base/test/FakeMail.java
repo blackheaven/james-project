@@ -409,7 +409,7 @@ public class FakeMail implements Mail, Serializable {
 
     @Override
     public Optional<Attribute> getAttribute(AttributeName name) {
-        throw new RuntimeException("to be implemented");
+        return Optional.ofNullable(attributes.get(name)).map(value -> new Attribute(name, value));
     }
 
     @Override
@@ -419,7 +419,7 @@ public class FakeMail implements Mail, Serializable {
 
     @Override
     public Iterator<AttributeName> attributeNames() {
-        throw new RuntimeException("to be implemented");
+        return attributes.keySet().iterator();
     }
 
     @Override
@@ -435,7 +435,8 @@ public class FakeMail implements Mail, Serializable {
 
     @Override
     public Attribute removeAttribute(AttributeName attributeName) {
-        throw new RuntimeException("to be implemented");
+        AttributeValue<?> previous = attributes.remove(attributeName);
+        return Optional.ofNullable(previous).map(value -> new Attribute(attributeName, value)).orElse(null);
     }
 
     @Override
@@ -451,7 +452,8 @@ public class FakeMail implements Mail, Serializable {
 
     @Override
     public Attribute setAttribute(Attribute attribute) {
-        throw new RuntimeException("to be implemented");
+        AttributeValue<?> previous = this.attributes.put(attribute.getName(), attribute.getValue());
+        return Optional.ofNullable(previous).map(value -> new Attribute(attribute.getName(), value)).orElse(null);
     }
 
     @Override
