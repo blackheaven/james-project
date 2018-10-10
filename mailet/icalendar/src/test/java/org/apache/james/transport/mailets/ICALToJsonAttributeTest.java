@@ -74,8 +74,8 @@ public class ICALToJsonAttributeTest {
     public void initShouldSetAttributesWhenAbsent() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
-        assertThat(testee.getSourceAttributeName()).isEqualTo(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME);
-        assertThat(testee.getDestinationAttributeName()).isEqualTo(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME);
+        assertThat(testee.getSourceAttributeName()).isEqualTo(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME.asString());
+        assertThat(testee.getDestinationAttributeName()).isEqualTo(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME.asString());
     }
 
     @Test
@@ -231,8 +231,9 @@ public class ICALToJsonAttributeTest {
             .build();
         testee.service(mail);
 
-        assertThat(AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME, (Class<Map<?,?>>)(Object) Map.class))
-            .isEmpty();
+        Optional<Map<?, ?>> result = AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME, (Class<Map<?,?>>)(Object) Map.class);
+        assertThat(result).isPresent();
+        assertThat(result.get()).isEmpty();
     }
 
     @SuppressWarnings("unchecked")

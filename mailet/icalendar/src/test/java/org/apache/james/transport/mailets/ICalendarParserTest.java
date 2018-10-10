@@ -152,8 +152,9 @@ public class ICalendarParserTest {
 
         mailet.service(mail);
 
-        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DESTINATION_CUSTOM_ATTRIBUTE), (Class<Map<?, ?>>)(Object) Map.class))
-            .isEmpty();
+        Optional<Map<?, ?>> result = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DESTINATION_CUSTOM_ATTRIBUTE), (Class<Map<?, ?>>)(Object) Map.class);
+        assertThat(result).isPresent();
+        assertThat(result.get()).isEmpty();
     }
 
     @Test
