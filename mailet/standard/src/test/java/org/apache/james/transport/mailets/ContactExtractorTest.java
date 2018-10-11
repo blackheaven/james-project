@@ -121,7 +121,7 @@ public class ContactExtractorTest {
         String expectedMessage = "{\"userEmail\" : \"" + SENDER + "\", \"emails\" : [ \"" + TO + "\" ]}";
         mailet.service(mail);
 
-        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class))
+        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class).get())
             .isEqualTo(expectedMessage);
     }
 
@@ -141,7 +141,7 @@ public class ContactExtractorTest {
         String expectedMessage = "{\"userEmail\" : \"" + SENDER + "\", \"emails\" : [ \"To <" + TO + ">\" ]}";
         mailet.service(mail);
 
-        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class))
+        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class).get())
             .isEqualTo(expectedMessage);
     }
 
@@ -161,7 +161,7 @@ public class ContactExtractorTest {
         String expectedMessage = "{\"userEmail\" : \"" + SENDER + "\", \"emails\" : [ \"Benoît TELLIER <tellier@linagora.com>\" ]}";
         mailet.service(mail);
 
-        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class))
+        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class).get())
             .isEqualTo(expectedMessage);
     }
 
@@ -182,7 +182,7 @@ public class ContactExtractorTest {
         String expectedMessage = "{\"userEmail\" : \"" + SENDER + "\", \"emails\" : [ \"\\\"recip >> Frédéric RECIPIENT\\\" <frecipient@example.com>\" ]}";
         mailet.service(mail);
 
-        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class))
+        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class).get())
             .isEqualTo(expectedMessage);
     }
 
@@ -203,7 +203,7 @@ public class ContactExtractorTest {
         String expectedMessage = "{\"userEmail\" : \"" + SENDER + "\", \"emails\" : [ \"User 1 <user1@example.com>\", \"\\\"recip >> Frédéric RECIPIENT\\\" <frecipient@example.com>\" ]}";
         mailet.service(mail);
 
-        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class))
+        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class).get())
             .isEqualTo(expectedMessage);
     }
 
@@ -224,7 +224,7 @@ public class ContactExtractorTest {
         String expectedMessage = "{\"userEmail\" : \"" + SENDER + "\", \"emails\" : [ \"\\\"User, the first one\\\" <user1@example.com>\" ]}";
         mailet.service(mail);
 
-        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class))
+        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class).get())
             .isEqualTo(expectedMessage);
     }
 
@@ -244,7 +244,7 @@ public class ContactExtractorTest {
         String expectedMessage = "{\"userEmail\" : \"" + SENDER + "\", \"emails\" : [ \"To <" + TO + ">\" ]}";
         mailet.service(mail);
 
-        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class))
+        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class).get())
             .isEqualTo(expectedMessage);
     }
 
@@ -264,7 +264,7 @@ public class ContactExtractorTest {
         String expectedMessage = "{\"userEmail\" : \"" + SENDER + "\", \"emails\" : [ \"To <" + TO + ">\" ]}";
         mailet.service(mail);
 
-        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class))
+        assertThatJson(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(ATTRIBUTE), String.class).get())
             .isEqualTo(expectedMessage);
     }
 
@@ -281,8 +281,8 @@ public class ContactExtractorTest {
 
         mailet.service(mail);
 
-        assertThatJson(AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(ATTRIBUTE)))
-            .isEqualTo(null);
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(ATTRIBUTE)))
+            .isEmpty();
     }
 
     @Test

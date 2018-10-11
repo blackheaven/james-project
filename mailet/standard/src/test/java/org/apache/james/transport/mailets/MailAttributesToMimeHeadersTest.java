@@ -139,7 +139,7 @@ class MailAttributesToMimeHeadersTest {
     void shouldAddAttributeIntoHeadersWhenHeaderAlreadyPresent() throws MessagingException {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
                 .mailetName("Test")
-                .setProperty("simplemapping", MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
+                .setProperty("simplemapping", MAIL_ATTRIBUTE_NAME1.asString() + "; " + HEADER_NAME1)
                 .build();
         mailet.init(mailetConfig);
 
