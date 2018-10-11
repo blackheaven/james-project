@@ -756,6 +756,7 @@ public class MailImpl implements Disposable, Mail {
 
     @Override
     public Attribute setAttribute(Attribute attribute) {
+        Preconditions.checkNotNull(attribute.getName().asString(), "AttributeName should not be null");
         AttributeValue<?> previous = this.attributes.put(attribute.getName(), attribute.getValue());
         return Optional.ofNullable(previous).map(value -> new Attribute(attribute.getName(), value)).orElse(null);
     }
