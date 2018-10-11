@@ -18,8 +18,6 @@
  ****************************************************************/
 package org.apache.mailet;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -31,9 +29,4 @@ public class AttributeNameTest {
         EqualsVerifier.forClass(AttributeName.class).verify();
     }
 
-    @Test
-    public void attributeOfShouldThrowOnNullAttributeName() {
-        assertThatThrownBy(() -> AttributeName.of(null))
-            .isInstanceOf(NullPointerException.class);
-    }
 }
