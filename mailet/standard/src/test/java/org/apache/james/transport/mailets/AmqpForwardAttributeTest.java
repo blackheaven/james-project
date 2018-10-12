@@ -167,7 +167,7 @@ class AmqpForwardAttributeTest {
         when(connectionFactory.newConnection()).thenReturn(connection);
         mailet.setConnectionFactory(connectionFactory);
         Mail mail = mock(Mail.class);
-        when(mail.getAttribute(MAIL_ATTRIBUTE)).thenReturn(null);
+        when(mail.getAttribute(MAIL_ATTRIBUTE)).thenReturn(Optional.empty());
 
         mailet.service(mail);
 
@@ -251,7 +251,7 @@ class AmqpForwardAttributeTest {
         when(connectionFactory.newConnection()).thenReturn(connection);
         mailet.setConnectionFactory(connectionFactory);
         Mail mail = mock(Mail.class);
-        when(mail.getAttribute(MAIL_ATTRIBUTE)).thenReturn(Optional.of(new Attribute(MAIL_ATTRIBUTE, AttributeValue.of(ImmutableList.of(ATTACHMENT_CONTENT)))));
+        when(mail.getAttribute(MAIL_ATTRIBUTE)).thenReturn(Optional.of(new Attribute(MAIL_ATTRIBUTE, AttributeValue.of(ImmutableList.of(AttributeValue.of(ATTACHMENT_CONTENT))))));
         BasicProperties expectedProperties = new AMQP.BasicProperties();
 
         mailet.service(mail);

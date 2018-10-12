@@ -22,6 +22,8 @@ package org.apache.james.transport.mailets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Optional;
+
 import javax.mail.MessagingException;
 
 import org.apache.james.util.MimeMessageUtil;
@@ -60,9 +62,9 @@ class SetMailAttributeTest {
         mailet.service(mail);
 
         assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("org.apache.james.junit1"), String.class))
-            .isEqualTo("true");
+            .isEqualTo(Optional.of("true"));
         assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("org.apache.james.junit2"), String.class))
-            .isEqualTo("happy");
+            .isEqualTo(Optional.of("happy"));
     }
     
     @Test
@@ -95,6 +97,6 @@ class SetMailAttributeTest {
         mailet.service(mail);
 
         assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("org.apache.james.junit1"), String.class))
-            .isEqualTo("bar");
+            .isEqualTo(Optional.of("bar"));
     }
 }

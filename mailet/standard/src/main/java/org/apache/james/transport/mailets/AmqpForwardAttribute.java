@@ -23,11 +23,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.GenericMailet;
@@ -108,32 +110,33 @@ public class AmqpForwardAttribute extends GenericMailet {
 
     @Override
     public void service(Mail mail) throws MailetException {
-        Stream<byte[]> content = getAttributeContent(mail);
-        try {
-            sendContent(content);
-        } catch (IOException e) {
-            LOGGER.error("IOException while writing to AMQP: {}", e.getMessage(), e);
-        } catch (TimeoutException e) {
-            LOGGER.error("TimeoutException while writing to AMQP: {}", e.getMessage(), e);
-        } catch (AlreadyClosedException e) {
-            LOGGER.error("AlreadyClosedException while writing to AMQP: {}", e.getMessage(), e);
-        }
+        getAttributeContent(mail)
+            .ifPresent(content -> {
+                try {
+                    sendContent(content);
+                } catch (IOException e) {
+                    LOGGER.error("IOException while writing to AMQP: {}", e.getMessage(), e);
+                } catch (TimeoutException e) {
+                    LOGGER.error("TimeoutException while writing to AMQP: {}", e.getMessage(), e);
+                } catch (AlreadyClosedException e) {
+                    LOGGER.error("AlreadyClosedException while writing to AMQP: {}", e.getMessage(), e);
+                }
+            });
     }
 
-    private Stream<byte[]> getAttributeContent(Mail mail) throws MailetException {
+    private Optional<Stream<byte[]>> getAttributeContent(Mail mail) throws MailetException {
         return mail.getAttribute(attribute)
             .map(Attribute::getValue)
             .map(x -> x.value())
-            .map(Throwing.function(this::toByteStream).sneakyThrow())
-            .orElse(Stream.of());
+            .map(Throwing.function(this::toByteStream).sneakyThrow());
     }
 
     private Stream<byte[]> toByteStream(Object attributeContent) throws MailetException {
         if (attributeContent instanceof Map) {
-            return ((Map<String, byte[]>) attributeContent).values().stream();
+            return ((Map<String, AttributeValue<byte[]>>) attributeContent).values().stream().map(AttributeValue::getValue);
         }
         if (attributeContent instanceof List) {
-            return ((List<byte[]>) attributeContent).stream();
+            return ((List<AttributeValue<byte[]>>) attributeContent).stream().map(AttributeValue::getValue);
         }
         if (attributeContent instanceof String) {
             return Stream.of(((String) attributeContent).getBytes(StandardCharsets.UTF_8));
