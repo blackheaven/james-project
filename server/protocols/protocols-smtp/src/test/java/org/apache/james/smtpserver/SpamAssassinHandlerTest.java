@@ -22,6 +22,7 @@ import static org.apache.james.spamassassin.SpamAssassinResult.STATUS_MAIL_ATTRI
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -36,6 +37,7 @@ import org.apache.james.smtpserver.fastfail.SpamAssassinHandler;
 import org.apache.james.spamassassin.SpamAssassinResult;
 import org.apache.james.spamassassin.mock.MockSpamd;
 import org.apache.james.spamassassin.mock.MockSpamdTestRule;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.Rule;
@@ -120,8 +122,8 @@ public class SpamAssassinHandlerTest {
         HookResult response = handler.onMessage(session, mockedMail);
 
         assertThat(HookReturnCode.declined()).describedAs("Email was not rejected").isEqualTo(response.getResult());
-        assertThat("NO").describedAs("email was not spam").isEqualTo(mockedMail.getAttribute(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME));
-        assertThat(mockedMail.getAttribute(STATUS_MAIL_ATTRIBUTE_NAME)).withFailMessage("spam hits").isNotNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mockedMail, SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME)).describedAs("email was not spam").isEqualTo(Optional.of("NO"));
+        assertThat(mockedMail.getAttribute(STATUS_MAIL_ATTRIBUTE_NAME)).withFailMessage("spam hits").isPresent();
 
     }
 
@@ -137,8 +139,8 @@ public class SpamAssassinHandlerTest {
         HookResult response = handler.onMessage(session, mockedMail);
 
         assertThat(HookReturnCode.declined()).describedAs("Email was not rejected").isEqualTo(response.getResult());
-        assertThat("YES").describedAs("email was spam").isEqualTo(mockedMail.getAttribute(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME));
-        assertThat(mockedMail.getAttribute(STATUS_MAIL_ATTRIBUTE_NAME)).withFailMessage("spam hits").isNotNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mockedMail, SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME)).describedAs("email was spam").isEqualTo(Optional.of("YES"));
+        assertThat(mockedMail.getAttribute(STATUS_MAIL_ATTRIBUTE_NAME)).withFailMessage("spam hits").isPresent();
     }
 
     @Test
@@ -153,7 +155,7 @@ public class SpamAssassinHandlerTest {
         HookResult response = handler.onMessage(session, mockedMail);
 
         assertThat(HookReturnCode.deny()).describedAs("Email was rejected").isEqualTo(response.getResult());
-        assertThat("YES").describedAs("email was spam").isEqualTo(mockedMail.getAttribute(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME));
-        assertThat(mockedMail.getAttribute(STATUS_MAIL_ATTRIBUTE_NAME)).withFailMessage("spam hits").isNotNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mockedMail, SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME)).describedAs("email was spam").isEqualTo(Optional.of("YES"));
+        assertThat(mockedMail.getAttribute(STATUS_MAIL_ATTRIBUTE_NAME)).withFailMessage("spam hits").isPresent();
     }
 }
