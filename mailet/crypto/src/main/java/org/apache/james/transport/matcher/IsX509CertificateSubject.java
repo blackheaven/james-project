@@ -26,7 +26,6 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import javax.mail.MessagingException;
 
@@ -70,36 +69,34 @@ public class IsX509CertificateSubject extends GenericMatcher {
     @Override
     @SuppressWarnings("unchecked")
     public Collection<MailAddress> match(Mail mail) throws MessagingException {
-        List<X509Certificate> certificates;
-        
-        Optional<?> obj = AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(sourceAttribute));
-        if (obj.isPresent()) {
-            if (obj.get() instanceof X509Certificate) {
-                certificates = Collections.singletonList((X509Certificate)obj.get());
-            } else {
-                certificates = (List<X509Certificate>) obj.get();
-            }
+        return AttributeUtils
+                .getAttributeValueFromMail(mail, AttributeName.of(sourceAttribute))
+                .map(obj -> {
+                    List<X509Certificate> certificates;
+                    if (obj instanceof X509Certificate) {
+                        certificates = Collections.singletonList((X509Certificate)obj);
+                    } else {
+                        certificates = (List<X509Certificate>) obj;
+                    }
 
-            boolean valid = false;
+                    boolean valid = false;
 
-            for (X509Certificate cert : certificates) {
-                // Here I should use the method getSubjectX500Principal, but
-                // that would break the compatibility with jdk13.
-                Principal prin = cert.getSubjectDN();
-                // TODO: Maybe here a more strong check should be done ...
-                if ((prin.toString().indexOf(check)) > 0) {
-                    valid = true;
-                }
-            }
+                    for (X509Certificate cert : certificates) {
+                        // Here I should use the method getSubjectX500Principal, but
+                        // that would break the compatibility with jdk13.
+                        Principal prin = cert.getSubjectDN();
+                        // TODO: Maybe here a more strong check should be done ...
+                        if ((prin.toString().indexOf(check)) > 0) {
+                            valid = true;
+                        }
+                    }
 
-            if (valid) {
-                return mail.getRecipients();
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
+                    if (valid) {
+                        return mail.getRecipients();
+                    } else {
+                        return null;
+                    }
+                }).orElseGet(null);
     }
 
 }

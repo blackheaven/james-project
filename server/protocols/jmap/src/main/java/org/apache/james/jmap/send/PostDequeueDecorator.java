@@ -125,8 +125,10 @@ public class PostDequeueDecorator extends MailQueueItemDecorator {
     }
 
     private boolean checkUsernameAttribute() {
-        Optional<?> username = AttributeUtils.getAttributeValueFromMail(getMail(), MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE);
-        return username.isPresent() && (username.get() instanceof String);
+        return AttributeUtils
+                .getAttributeValueFromMail(getMail(), MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE)
+                .map(username -> username instanceof String)
+                .orElse(false);
     }
 
     private void moveFromOutboxToSentWithSeenFlag(MessageId messageId, MailboxSession mailboxSession) throws MailQueueException, MailboxException {

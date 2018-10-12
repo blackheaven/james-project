@@ -156,26 +156,29 @@ public class ICALToJsonAttribute extends GenericMailet {
         if (!mail.getAttribute(AttributeName.of(rawSourceAttributeName)).isPresent()) {
             return;
         }
-        Optional<String> sender = retrieveSender(mail);
-        if (!sender.isPresent()) {
-            LOGGER.info("Skipping {} because no sender and no from", mail.getName());
-            return;
-        }
-        try {
-            getCalendarMap(mail)
-                .ifPresent(calendars -> {
-                    getRawCalendarMap(mail)
-                        .ifPresent(rawCalendars -> {
-                            Map<String, byte[]> jsonsInByteForm = calendars.entrySet()
-                                .stream()
-                                .flatMap(calendar -> toJson(calendar, rawCalendars, mail, sender.get()))
-                                .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
-                            mail.setAttribute(new Attribute(AttributeName.of(destinationAttributeName), AttributeValue.of(jsonsInByteForm)));
+
+        retrieveSender(mail)
+            .map(sender -> {
+                try {
+                    getCalendarMap(mail)
+                        .ifPresent(calendars -> {
+                            getRawCalendarMap(mail)
+                                .ifPresent(rawCalendars -> {
+                                    Map<String, byte[]> jsonsInByteForm = calendars.entrySet()
+                                        .stream()
+                                        .flatMap(calendar -> toJson(calendar, rawCalendars, mail, sender))
+                                        .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
+                                    mail.setAttribute(new Attribute(AttributeName.of(destinationAttributeName), AttributeValue.of(jsonsInByteForm)));
+                                });
                         });
-                });
-        } catch (ClassCastException e) {
-            LOGGER.error("Received a mail with {} not being an ICAL object for mail {}", sourceAttributeName, mail.getName(), e);
-        }
+                } catch (ClassCastException e) {
+                    LOGGER.error("Received a mail with {} not being an ICAL object for mail {}", sourceAttributeName, mail.getName(), e);
+                }
+                return null;
+            }).orElseGet(() -> {
+                LOGGER.info("Skipping {} because no sender and no from", mail.getName());
+                return null;
+            });
     }
 
     @SuppressWarnings("unchecked")

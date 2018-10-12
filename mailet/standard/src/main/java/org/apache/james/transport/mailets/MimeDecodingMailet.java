@@ -76,27 +76,27 @@ public class MimeDecodingMailet extends GenericMailet {
 
         ImmutableMap.Builder<String, byte[]> extractedMimeContentByName = ImmutableMap.builder();
         for (Map.Entry<String, byte[]> entry: getAttributeContent(mail).entrySet()) {
-            Optional<byte[]> maybeContent = extractContent(entry.getValue());
-            if (maybeContent.isPresent()) {
-                extractedMimeContentByName.put(entry.getKey(), maybeContent.get());
-            }
+            extractContent(entry.getValue())
+                .ifPresent(content -> extractedMimeContentByName.put(entry.getKey(), content));
         }
         mail.setAttribute(new Attribute(attribute, AttributeValue.of(extractedMimeContentByName.build())));
     }
 
-    @SuppressWarnings("unchecked")
     private Map<String, byte[]> getAttributeContent(Mail mail) throws MailetException {
-        Optional<Serializable> attributeContent = AttributeUtils.getValueAndCastFromMail(mail, attribute, Serializable.class);
-        if (!attributeContent.isPresent()) {
-            return ImmutableMap.of();
-        }
-        Serializable attributeContentExtracted = attributeContent.get();
-        if (! (attributeContentExtracted instanceof Map)) {
+        return AttributeUtils
+                .getValueAndCastFromMail(mail, attribute, Serializable.class)
+                .map(this::castAttributeContent)
+                .orElse(ImmutableMap.<String, byte[]>of());
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, byte[]> castAttributeContent(Serializable attributeContent) {
+        if (! (attributeContent instanceof Map)) {
             LOGGER.debug("Invalid attribute found into attribute {} class Map expected but {} found.",
-                    attribute, attributeContentExtracted.getClass());
+                    attribute, attributeContent.getClass());
             return ImmutableMap.of();
         }
-        return (Map<String, byte[]>) attributeContentExtracted;
+        return (Map<String, byte[]>) attributeContent;
     }
 
     private Optional<byte[]> extractContent(Object rawMime) throws MessagingException {
