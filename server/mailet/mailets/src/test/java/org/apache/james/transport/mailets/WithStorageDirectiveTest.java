@@ -78,9 +78,9 @@ public class WithStorageDirectiveTest {
         softly.assertThat(mail.attributeNames())
             .containsOnly(AttributeName.of("DeliveryPath_recipient2@localhost"), AttributeName.of("DeliveryPath_recipient1@localhost"));
         softly.assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("DeliveryPath_recipient1@localhost"), String.class))
-            .isEqualTo(targetFolderName);
+            .contains(targetFolderName);
         softly.assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("DeliveryPath_recipient2@localhost"), String.class))
-            .isEqualTo(targetFolderName);
+            .contains(targetFolderName);
     }
 
     @Test
@@ -117,9 +117,9 @@ public class WithStorageDirectiveTest {
         softly.assertThat(mail.attributeNames())
             .containsOnly(AttributeName.of("DeliveryPath_recipient2@localhost"), AttributeName.of("DeliveryPath_recipient1@localhost"));
         softly.assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("DeliveryPath_recipient1@localhost"), String.class))
-            .isEqualTo(targetFolderName);
+            .contains(targetFolderName);
         softly.assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("DeliveryPath_recipient2@localhost"), String.class))
-            .isEqualTo(targetFolderName);
+            .contains(targetFolderName);
     }
 
 }

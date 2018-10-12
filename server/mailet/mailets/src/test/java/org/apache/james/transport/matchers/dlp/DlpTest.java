@@ -524,7 +524,7 @@ class DlpTest {
         dlp.match(mail);
 
         assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("DlpMatchedRule"), String.class))
-                .isEqualTo("should match sender");
+            .contains("should match sender");
     }
 
 }

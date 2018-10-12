@@ -117,7 +117,8 @@ public class WithPriorityTest {
         Mail mail = FakeMail.builder().build();
         mailet.service(mail);
 
-        assertThat(AttributeUtils.getValueAndCastFromMail(mail, MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, Integer.class)).isEqualTo(7);
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, Integer.class))
+            .contains(7);
     }
 
     @Test
@@ -133,6 +134,7 @@ public class WithPriorityTest {
                 .build();
         mailet.service(mail);
 
-        assertThat(AttributeUtils.getValueAndCastFromMail(mail, MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, Integer.class)).isEqualTo(7);
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, Integer.class))
+            .contains(7);
     }
 }
