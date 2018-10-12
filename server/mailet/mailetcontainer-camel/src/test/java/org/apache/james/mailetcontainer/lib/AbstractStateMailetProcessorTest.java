@@ -234,7 +234,7 @@ public abstract class AbstractStateMailetProcessorTest {
         processor.service(mail);
 
         // the source mail should have captured the exception which was thrown
-        assertThat(AttributeUtils.getAttributeValueFromMail(mail, Mail.MAILET_ERROR_ATTRIBUTE_NAME).getClass())
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, Mail.MAILET_ERROR_ATTRIBUTE_NAME).get().getClass())
             .isEqualTo(MessagingException.class);
         latch.await();
         processor.destroy();
