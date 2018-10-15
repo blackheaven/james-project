@@ -355,7 +355,10 @@ public class DSNBounce extends GenericMailet implements RedirectNotify {
         }
         buffer.append(LINE_BREAK).append(LINE_BREAK);
         buffer.append("Error message:").append(LINE_BREAK);
-        buffer.append(AttributeUtils.getValueAndCastFromMail(originalMail, AttributeName.of("delivery-error"), String.class)).append(LINE_BREAK);
+        AttributeUtils
+           .getValueAndCastFromMail(originalMail, AttributeName.of("delivery-error"), String.class)
+           .ifPresent(error -> buffer.append(error));
+        buffer.append(LINE_BREAK);
         buffer.append(LINE_BREAK);
 
         MimeBodyPart bodyPart = new MimeBodyPart();
