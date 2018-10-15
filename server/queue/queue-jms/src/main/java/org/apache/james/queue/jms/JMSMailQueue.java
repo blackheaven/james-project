@@ -77,6 +77,7 @@ import org.threeten.extra.Temporals;
 import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
 /**
@@ -341,7 +342,10 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
             .forEach((attributeName, attribute) ->
                 props.put(attributeName.asString(), attribute.getValue().toJson().toString()));
 
-        props.put(JAMES_MAIL_ATTRIBUTE_NAMES, joiner.join(mail.attributeNames()));
+        ImmutableList<String> attributesNames = org.apache.james.util.streams.Iterators.toStream(mail.attributeNames())
+                .map(AttributeName::asString)
+                .collect(ImmutableList.toImmutableList());
+        props.put(JAMES_MAIL_ATTRIBUTE_NAMES, joiner.join(attributesNames));
         props.put(JAMES_MAIL_SENDER, sender);
         props.put(JAMES_MAIL_STATE, mail.getState());
 
