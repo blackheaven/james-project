@@ -477,7 +477,7 @@ class JMAPFilteringTest {
         testSystem.getJmapFiltering().service(mail);
 
         assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
-                .isEqualTo(RECIPIENT_1_MAILBOX_1);
+                .contains(RECIPIENT_1_MAILBOX_1);
     }
 
     @ParameterizedTest(name = "CONTAINS should not match for field {1}: {0}")
@@ -508,7 +508,7 @@ class JMAPFilteringTest {
         testSystem.getJmapFiltering().service(mail);
 
         assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
-            .isEqualTo(RECIPIENT_1_MAILBOX_1);
+            .contains(RECIPIENT_1_MAILBOX_1);
     }
 
 
@@ -541,7 +541,7 @@ class JMAPFilteringTest {
         testSystem.getJmapFiltering().service(mail);
 
         assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
-            .isEqualTo(RECIPIENT_1_MAILBOX_1);
+            .contains(RECIPIENT_1_MAILBOX_1);
     }
 
     @ParameterizedTest(name = "EXACTLY-EQUALS should not match for field {1}: {0}")
@@ -572,7 +572,7 @@ class JMAPFilteringTest {
         testSystem.getJmapFiltering().service(mail);
 
         assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
-            .isEqualTo(RECIPIENT_1_MAILBOX_1);
+            .contains(RECIPIENT_1_MAILBOX_1);
     }
 
     @ParameterizedTest(name = "NOT_EXACTLY_EQUALS should not match for field {1}: {0}")
@@ -626,7 +626,7 @@ class JMAPFilteringTest {
             testSystem.getJmapFiltering().service(mail);
 
             assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
-                .isEqualTo("RECIPIENT_1_MAILBOX_3");
+                .contains("RECIPIENT_1_MAILBOX_3");
         }
 
         @Test
@@ -652,7 +652,7 @@ class JMAPFilteringTest {
             testSystem.getJmapFiltering().service(mail);
 
             assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
-                .isEqualTo("RECIPIENT_1_MAILBOX_1");
+                .contains("RECIPIENT_1_MAILBOX_1");
         }
 
         @Test
@@ -680,7 +680,7 @@ class JMAPFilteringTest {
             testSystem.getJmapFiltering().service(mail);
 
             assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
-                .isEqualTo("RECIPIENT_1_MAILBOX_1");
+                .contains("RECIPIENT_1_MAILBOX_1");
         }
 
         @Test
@@ -787,7 +787,7 @@ class JMAPFilteringTest {
             testSystem.getJmapFiltering().service(mail);
 
             assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
-                .isEqualTo(RECIPIENT_1_MAILBOX_1);
+                .contains(RECIPIENT_1_MAILBOX_1);
         }
 
         @Test
@@ -810,7 +810,7 @@ class JMAPFilteringTest {
             testSystem.getJmapFiltering().service(mail);
 
             assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
-                .isEqualTo(RECIPIENT_1_MAILBOX_1);
+                .contains(RECIPIENT_1_MAILBOX_1);
         }
     }
 }
