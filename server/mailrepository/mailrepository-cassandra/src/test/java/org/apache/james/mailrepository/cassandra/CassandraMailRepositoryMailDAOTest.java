@@ -75,6 +75,7 @@ class CassandraMailRepositoryMailDAOTest {
         PerRecipientHeaders.Header header = PerRecipientHeaders.Header.builder().name("headerName").value("headerValue").build();
         AttributeName attributeName = AttributeName.of("att1");
         AttributeValue<Collection<AttributeValue<?>>> attributeValue = AttributeValue.of(ImmutableList.of(AttributeValue.of("value1"), AttributeValue.of("value2")));
+        Attribute attribute = new Attribute(attributeName, attributeValue);
 
         testee.store(URL,
             FakeMail.builder()
@@ -86,7 +87,7 @@ class CassandraMailRepositoryMailDAOTest {
                 .remoteAddr(remoteAddr)
                 .remoteHost(remoteHost)
                 .addHeaderForRecipient(header, MailAddressFixture.RECIPIENT1)
-                .attribute(new Attribute(attributeName, attributeValue))
+                .attribute(attribute)
                 .build(),
             blobIdHeader,
             blobIdBody)
@@ -104,7 +105,7 @@ class CassandraMailRepositoryMailDAOTest {
             softly.assertThat(partialMail.getRemoteAddr()).isEqualTo(remoteAddr);
             softly.assertThat(partialMail.getRemoteHost()).isEqualTo(remoteHost);
             softly.assertThat(partialMail.attributeNames()).containsOnly(attributeName);
-            softly.assertThat(partialMail.getAttribute(attributeName)).isEqualTo(attributeValue);
+            softly.assertThat(partialMail.getAttribute(attributeName)).contains(attribute);
             softly.assertThat(partialMail.getPerRecipientSpecificHeaders().getRecipientsWithSpecificHeaders())
                     .containsOnly(MailAddressFixture.RECIPIENT1);
             softly.assertThat(partialMail.getPerRecipientSpecificHeaders().getHeadersForRecipient(MailAddressFixture.RECIPIENT1))
