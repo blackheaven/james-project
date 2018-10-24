@@ -54,11 +54,15 @@ import com.google.common.collect.ImmutableMap;
  */
 public interface Serializer<T> {
     JsonNode serialize(T object);
+
     Optional<T> deserialize(JsonNode json);
+
     String getName();
     
     class Registry {
+
         private static ImmutableMap<String, Serializer<?>> serializers;
+
         static {
             serializers = Stream.<Serializer<?>>of(
                     BOOLEAN_SERIALIZER,
