@@ -616,7 +616,7 @@ public class JDBCMailRepository extends AbstractMailRepository {
             }
             // Determine whether attributes are used and retrieve them
             PreparedStatement retrieveMessageAttr = null;
-            HashMap<String, Object> attributes = null;
+            Map<String, Object> attributes = null;
             if (jdbcMailAttributesReady) {
                 String retrieveMessageAttrSql = sqlQueries.getSqlString("retrieveMessageAttributesSQL", false);
                 ResultSet rsMessageAttr = null;
@@ -641,7 +641,7 @@ public class JDBCMailRepository extends AbstractMailRepository {
                             if (serializedAttr != null) {
                                 ByteArrayInputStream bais = new ByteArrayInputStream(serializedAttr);
                                 ObjectInputStream ois = new ObjectInputStream(bais);
-                                attributes = (HashMap<String, Object>) ois.readObject();
+                                attributes = (Map<String, Object>) ois.readObject();
                                 ois.close();
                             }
                         } catch (IOException ioe) {
