@@ -40,8 +40,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.DoubleNode;
+import com.fasterxml.jackson.databind.node.FloatNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.LongNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableList;
@@ -68,6 +71,9 @@ public interface Serializer<T> {
                     BOOLEAN_SERIALIZER,
                     STRING_SERIALIZER,
                     INT_SERIALIZER,
+                    LONG_SERIALIZER,
+                    FLOAT_SERIALIZER,
+                    DOUBLE_SERIALIZER,
                     URL_SERIALIZER,
                     new CollectionSerializer<>(),
                     new MapSerializer<>(),
@@ -163,6 +169,90 @@ public interface Serializer<T> {
     }
 
     Serializer<Integer> INT_SERIALIZER = new IntSerializer();
+
+    class LongSerializer implements Serializer<Long> {
+        @Override
+        public JsonNode serialize(Long object) {
+            return LongNode.valueOf(object);
+        }
+
+        @Override
+        public Optional<Long> deserialize(JsonNode json) {
+            if (json instanceof LongNode) {
+                return Optional.of(json.asLong());
+            } else {
+                return Optional.empty();
+            }
+        }
+
+        @Override
+        public String getName() {
+            return "LongSerializer";
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return this.getClass() == other.getClass();
+        }
+    }
+
+    Serializer<Long> LONG_SERIALIZER = new LongSerializer();
+
+    class FloatSerializer implements Serializer<Float> {
+        @Override
+        public JsonNode serialize(Float object) {
+            return FloatNode.valueOf(object);
+        }
+
+        @Override
+        public Optional<Float> deserialize(JsonNode json) {
+            if (json instanceof FloatNode) {
+                return Optional.of(json.floatValue());
+            } else {
+                return Optional.empty();
+            }
+        }
+
+        @Override
+        public String getName() {
+            return "FloatSerializer";
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return this.getClass() == other.getClass();
+        }
+    }
+
+    Serializer<Float> FLOAT_SERIALIZER = new FloatSerializer();
+
+    class DoubleSerializer implements Serializer<Double> {
+        @Override
+        public JsonNode serialize(Double object) {
+            return DoubleNode.valueOf(object);
+        }
+
+        @Override
+        public Optional<Double> deserialize(JsonNode json) {
+            if (json instanceof DoubleNode) {
+                return Optional.of(json.asDouble());
+            } else {
+                return Optional.empty();
+            }
+        }
+
+        @Override
+        public String getName() {
+            return "DoubleSerializer";
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return this.getClass() == other.getClass();
+        }
+    }
+
+    Serializer<Double> DOUBLE_SERIALIZER = new DoubleSerializer();
 
     class UrlSerializer implements Serializer<URL> {
         @Override

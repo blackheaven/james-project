@@ -52,6 +52,18 @@ public class AttributeValue<T> {
         return new AttributeValue<>(value, Serializer.INT_SERIALIZER);
     }
 
+    public static AttributeValue<Long> of(Long value) {
+        return new AttributeValue<>(value, Serializer.LONG_SERIALIZER);
+    }
+
+    public static AttributeValue<Float> of(Float value) {
+        return new AttributeValue<>(value, Serializer.FLOAT_SERIALIZER);
+    }
+
+    public static AttributeValue<Double> of(Double value) {
+        return new AttributeValue<>(value, Serializer.DOUBLE_SERIALIZER);
+    }
+
     public static AttributeValue<URL> of(URL value) {
         return new AttributeValue<>(value, Serializer.URL_SERIALIZER);
     }
@@ -80,6 +92,15 @@ public class AttributeValue<T> {
         }
         if (value instanceof Integer) {
             return of((Integer) value);
+        }
+        if (value instanceof Long) {
+            return of((Long) value);
+        }
+        if (value instanceof Float) {
+            return of((Float) value);
+        }
+        if (value instanceof Double) {
+            return of((Double) value);
         }
         if (value instanceof Collection<?>) {
             return of(((Collection<AttributeValue<?>>) value));
