@@ -19,8 +19,6 @@
 
 package org.apache.james.queue.file;
 
-import java.util.concurrent.ExecutorService;
-
 import org.apache.james.queue.api.DelayedManageableMailQueueContract;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.ManageableMailQueue;
@@ -114,66 +112,4 @@ public class FileMailQueueTest implements DelayedManageableMailQueueContract {
 
     }
 
-    @Test
-    @Override
-    @Disabled("FIXME : Better Serialization")
-    public void delayShouldAtLeastBeTheOneSpecified() throws Exception {
-
-    }
-
-    @Test
-    @Override
-    @Disabled("FIXME : Better Serialization")
-    public void queueShouldPreserveNonStringMailAttribute() throws Exception {
-
-    }
-
-    @Test
-    @Override
-    @Disabled("FIXME : Better Serialization")
-    public void enqueueShouldDelayMailsWhenSpecified(ExecutorService executorService) throws Exception {
-
-    }
-
-    @Test
-    @Override
-    @Disabled("FIXME : Better Serialization")
-    public void enqueueWithVeryLongDelayShouldDelayMail(ExecutorService executorService) throws Exception {
-
-    }
-
-    @Test
-    @Override
-    @Disabled("FIXME : Better Serialization")
-    public void delayedMailCanBeRetrievedFromTheQueue() throws Exception {
-
-    }
-
-    @Test
-    @Override
-    @Disabled("FIXME : Better Serialization")
-    public void queueShouldPreserveMailAttribute() throws Exception {
-
-    }
-
-    @Test
-    @Override
-    @Disabled("FIXME : Better Serialization")
-    public void flushShouldPreserveBrowseOrder() throws Exception {
-
-    }
-
-    @Test
-    @Override
-    @Disabled("FIXME : Better Serialization")
-    public void flushShouldRemoveDelays(ExecutorService executorService) throws Exception {
-
-    }
-
-    @Test
-    @Override
-    @Disabled("FIXME : Better Serialization")
-    public void enqueueWithReasonablyLongDelayShouldDelayMail(ExecutorService executorService) throws Exception {
-
-    }
 }
