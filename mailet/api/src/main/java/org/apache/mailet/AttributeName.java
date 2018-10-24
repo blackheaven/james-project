@@ -19,6 +19,7 @@
 
 package org.apache.mailet;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /** 
@@ -26,7 +27,7 @@ import java.util.Objects;
  * 
  * @since Mailet API v3.2
  */
-public class AttributeName {
+public class AttributeName implements Serializable {
     private final String name;
 
     public static AttributeName of(String name) {

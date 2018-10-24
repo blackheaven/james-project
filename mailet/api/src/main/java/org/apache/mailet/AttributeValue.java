@@ -38,7 +38,7 @@ import com.google.common.annotations.VisibleForTesting;
  * 
  * @since Mailet API v3.2
  */
-public class AttributeValue<T> {
+public class AttributeValue<T> implements Serializable {
 
     public static AttributeValue<Boolean> of(Boolean value) {
         return new AttributeValue<>(value, Serializer.BOOLEAN_SERIALIZER);

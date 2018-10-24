@@ -55,7 +55,7 @@ import com.google.common.collect.ImmutableMap;
  * 
  * @since Mailet API v3.2
  */
-public interface Serializer<T> {
+public interface Serializer<T> extends Serializable {
     JsonNode serialize(T object);
 
     Optional<T> deserialize(JsonNode json);
