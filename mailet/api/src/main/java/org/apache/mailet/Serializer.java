@@ -22,13 +22,20 @@ package org.apache.mailet;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
+import org.apache.james.util.streams.Iterators;
 import org.nustaq.serialization.FSTConfiguration;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -47,11 +54,46 @@ import com.google.common.collect.ImmutableMap;
  */
 public interface Serializer<T> {
     JsonNode serialize(T object);
+    Optional<T> deserialize(JsonNode json);
+    String getName();
+    
+    class Registry {
+        private static ImmutableMap<String, Serializer<?>> serializers;
+        static {
+            serializers = Stream.<Serializer<?>>of(
+                    BOOLEAN_SERIALIZER,
+                    STRING_SERIALIZER,
+                    INT_SERIALIZER,
+                    URL_SERIALIZER,
+                    new CollectionSerializer<>(),
+                    new MapSerializer<>(),
+                    new FSTSerializer())
+                    .collect(ImmutableMap.toImmutableMap(Serializer::getName, Function.identity()));
+        }
+        
+        static Optional<Serializer<?>> find(String name) {
+            return Optional.ofNullable(serializers.get(name));
+        }
+    }
 
     class BooleanSerializer implements Serializer<Boolean> {
         @Override
         public JsonNode serialize(Boolean object) {
             return BooleanNode.valueOf(object);
+        }
+
+        @Override
+        public Optional<Boolean> deserialize(JsonNode json) {
+            if (json instanceof BooleanNode) {
+                return Optional.of(json.asBoolean());
+            } else {
+                return Optional.empty();
+            }
+        }
+
+        @Override
+        public String getName() {
+            return "BooleanSerializer";
         }
 
         @Override
@@ -69,6 +111,20 @@ public interface Serializer<T> {
         }
 
         @Override
+        public Optional<String> deserialize(JsonNode json) {
+            if (json instanceof TextNode) {
+                return Optional.of(json.asText());
+            } else {
+                return Optional.empty();
+            }
+        }
+
+        @Override
+        public String getName() {
+            return "StringSerializer";
+        }
+
+        @Override
         public boolean equals(Object other) {
             return this.getClass() == other.getClass();
         }
@@ -83,12 +139,56 @@ public interface Serializer<T> {
         }
 
         @Override
+        public Optional<Integer> deserialize(JsonNode json) {
+            if (json instanceof IntNode) {
+                return Optional.of(json.asInt());
+            } else {
+                return Optional.empty();
+            }
+        }
+
+        @Override
+        public String getName() {
+            return "IntSerializer";
+        }
+
+        @Override
         public boolean equals(Object other) {
             return this.getClass() == other.getClass();
         }
     }
 
     Serializer<Integer> INT_SERIALIZER = new IntSerializer();
+
+    class UrlSerializer implements Serializer<URL> {
+        @Override
+        public JsonNode serialize(URL object) {
+            return STRING_SERIALIZER.serialize(object.toString());
+        }
+
+        @Override
+        public Optional<URL> deserialize(JsonNode json) {
+            return STRING_SERIALIZER.deserialize(json).flatMap(url -> {
+                try {
+                    return Optional.of(new URL(url));
+                } catch (MalformedURLException e) {
+                    return Optional.empty();
+                }
+            });
+        }
+
+        @Override
+        public String getName() {
+            return "UrlSerializer";
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return this.getClass() == other.getClass();
+        }
+    }
+
+    Serializer<URL> URL_SERIALIZER = new UrlSerializer();
 
     class CollectionSerializer<U> implements Serializer<Collection<AttributeValue<U>>> {
         @Override
@@ -97,6 +197,22 @@ public interface Serializer<T> {
                 .map(AttributeValue::toJson)
                 .collect(ImmutableList.toImmutableList());
             return new ArrayNode(JsonNodeFactory.instance, jsons);
+        }
+
+        @Override
+        public Optional<Collection<AttributeValue<U>>> deserialize(JsonNode json) {
+            if (json instanceof ArrayNode) {
+                return Optional.of(Iterators.toStream(json.elements())
+                        .map(value -> (AttributeValue<U>) AttributeValue.fromJson(value))
+                        .collect(ImmutableList.toImmutableList()));
+            } else {
+                return Optional.empty();
+            }
+        }
+
+        @Override
+        public String getName() {
+            return "CollectionSerializer";
         }
 
         @Override
@@ -111,6 +227,24 @@ public interface Serializer<T> {
             Map<String, JsonNode> jsonMap = object.entrySet().stream()
                 .collect(ImmutableMap.toImmutableMap(Entry::getKey, entry -> entry.getValue().toJson()));
             return new ObjectNode(JsonNodeFactory.instance, jsonMap);
+        }
+
+        @Override
+        public Optional<Map<String, AttributeValue<U>>> deserialize(JsonNode json) {
+            if (json instanceof ArrayNode) {
+                return Optional.of(Iterators.toStream(json.fields())
+                        .collect(ImmutableMap.toImmutableMap(
+                            Map.Entry::getKey,
+                            entry -> (AttributeValue<U>) AttributeValue.fromJson(entry.getValue())
+                        )));
+            } else {
+                return Optional.empty();
+            }
+        }
+
+        @Override
+        public String getName() {
+            return "MapSerializer";
         }
 
         @Override
@@ -132,8 +266,24 @@ public interface Serializer<T> {
         }
 
         @Override
+        public Optional<Serializable> deserialize(JsonNode json) {
+            FSTConfiguration conf = FSTConfiguration.createJsonConfiguration();
+            try {
+                return Optional.of((Serializable) conf.asObject(new ObjectMapper().writer().writeValueAsBytes(json)));
+            } catch (JsonProcessingException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+
+        @Override
+        public String getName() {
+            return "FSTSerializer";
+        }
+
+        @Override
         public boolean equals(Object other) {
             return this.getClass() == other.getClass();
         }
     }
+
 }

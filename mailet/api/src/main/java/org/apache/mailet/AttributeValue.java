@@ -21,22 +21,17 @@ package org.apache.mailet;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
-
-import org.apache.james.util.streams.Iterators;
+import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 
 /** 
  * Strong typing for attribute value, which represent the value of an attribute stored in a mail.
@@ -57,11 +52,16 @@ public class AttributeValue<T> {
         return new AttributeValue<>(value, Serializer.INT_SERIALIZER);
     }
 
+    public static AttributeValue<URL> of(URL value) {
+        return new AttributeValue<>(value, Serializer.URL_SERIALIZER);
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static AttributeValue<Collection<AttributeValue<?>>> of(Collection<AttributeValue<?>> value) {
         return new AttributeValue<>(value, new Serializer.CollectionSerializer());
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static AttributeValue<Map<String, AttributeValue<?>>> of(Map<String, AttributeValue<?>> value) {
         return new AttributeValue<>(value, new Serializer.MapSerializer());
     }
@@ -101,51 +101,13 @@ public class AttributeValue<T> {
 
     @VisibleForTesting
     static AttributeValue<?> fromJson(JsonNode input) {
-        if (input instanceof BooleanNode) {
-            return fromJson((BooleanNode) input);
-        }
-        if (input instanceof TextNode) {
-            return fromJson((TextNode) input);
-        }
-        if (input instanceof IntNode) {
-            return fromJson((IntNode) input);
-        }
-        if (input instanceof ArrayNode) {
-            return fromJson((ArrayNode) input);
-        }
-        //FIXME how are we supposed to choose between a Map and an Object Graph from FST
-        if (input instanceof ObjectNode) {
-            return fromJson((ObjectNode) input);
-        }
-        throw new IllegalStateException("unable to deserialize type " + input.getNodeType());
-    }
-
-    private static AttributeValue<Boolean> fromJson(BooleanNode booleanAsJson) {
-        return AttributeValue.of(booleanAsJson.asBoolean());
-    }
-
-    private static AttributeValue<String> fromJson(TextNode stringAsJson) {
-        return AttributeValue.of(stringAsJson.asText());
-    }
-
-    private static AttributeValue<Integer> fromJson(IntNode intAsJson) {
-        return AttributeValue.of(intAsJson.asInt());
-    }
-
-    private static AttributeValue<? extends Collection<?>> fromJson(ArrayNode arrayAsJson) {
-        return AttributeValue.of(
-            Iterators.toStream(arrayAsJson.elements())
-                .map(AttributeValue::fromJson)
-                .collect(ImmutableList.toImmutableList()));
-    }
-
-    private static AttributeValue<? extends Map<String, ?>> fromJson(ObjectNode mapAsJson) {
-        return AttributeValue.of(
-            Iterators.toStream(mapAsJson.fields())
-                .collect(Guavate.toImmutableMap(
-                    Map.Entry::getKey,
-                    entry -> fromJson(entry.getValue())
-                )));
+        return Optional.of(input)
+                .filter(ObjectNode.class::isInstance)
+                .map(ObjectNode.class::cast)
+                .flatMap(fields -> Serializer.Registry.find(fields.get("serializer").asText())
+                    .flatMap(s -> s.deserialize(fields.get("value"))))
+                .map(AttributeValue::of)
+                .orElseThrow(() -> new IllegalStateException("unable to deserialize " + input.toString()));
     }
 
     private final T value;
@@ -166,7 +128,10 @@ public class AttributeValue<T> {
     }
 
     public JsonNode toJson() {
-        return serializer.serialize(value);
+        ObjectNode serialized = JsonNodeFactory.instance.objectNode();
+        serialized.put("serializer", serializer.getName());
+        serialized.replace("value", serializer.serialize(value));
+        return serialized;
     }
 
     public T getValue() {
