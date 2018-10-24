@@ -24,28 +24,25 @@ import javax.inject.Inject;
 import org.apache.james.jmap.utils.SystemMailboxesProvider;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MessageIdManager;
-import org.apache.james.mailbox.model.MessageId.Factory;
 import org.apache.james.queue.api.MailQueue.MailQueueItem;
 import org.apache.james.queue.api.MailQueueItemDecoratorFactory;
 
 public class PostDequeueDecoratorFactory implements MailQueueItemDecoratorFactory {
     private final MailboxManager mailboxManager;
-    private final Factory messageIdFactory;
     private final MessageIdManager messageIdManager;
     private final SystemMailboxesProvider systemMailboxesProvider;
 
     @Inject
-    public PostDequeueDecoratorFactory(MailboxManager mailboxManager, Factory messageIdFactory,
-            MessageIdManager messageIdManager, SystemMailboxesProvider systemMailboxesProvider) {
+    public PostDequeueDecoratorFactory(MailboxManager mailboxManager, MessageIdManager messageIdManager,
+            SystemMailboxesProvider systemMailboxesProvider) {
         this.mailboxManager = mailboxManager;
-        this.messageIdFactory = messageIdFactory;
         this.messageIdManager = messageIdManager;
         this.systemMailboxesProvider = systemMailboxesProvider;
     }
 
     @Override
     public MailQueueItemDecorator decorate(MailQueueItem mailQueueItem) {
-        return new PostDequeueDecorator(mailQueueItem, mailboxManager, messageIdFactory, messageIdManager, systemMailboxesProvider);
+        return new PostDequeueDecorator(mailQueueItem, mailboxManager, messageIdManager, systemMailboxesProvider);
     }
 
 }

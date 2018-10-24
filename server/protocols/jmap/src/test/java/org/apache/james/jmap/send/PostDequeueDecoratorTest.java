@@ -60,7 +60,6 @@ import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -89,7 +88,7 @@ public class PostDequeueDecoratorTest {
         mockedMailQueueItem = mock(MailQueueItem.class);
         mail = FakeMail.defaultFakeMail();
         when(mockedMailQueueItem.getMail()).thenReturn(mail);
-        testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager, new InMemoryMessageId.Factory(), 
+        testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager,
                 inMemoryIntegrationResources.createMessageIdManager(mailboxManager), new SystemMailboxesProviderImpl(mailboxManager));
 
         message = Message.Builder.of()
@@ -109,7 +108,6 @@ public class PostDequeueDecoratorTest {
         verify(mockedMailQueueItem).done(true);
     }
     
-    @Ignore("FIXME: AttributeValue.of(MessageId)")
     @Test
     public void doneShouldNotThrowWhenMessageIsNotInOutbox() throws Exception {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
@@ -123,7 +121,6 @@ public class PostDequeueDecoratorTest {
         testee.done(true);
     }
     
-    @Ignore("FIXME: AttributeValue.of(MessageId)")
     @Test(expected = MailboxRoleNotFoundException.class)
     public void doneShouldThrowWhenSentDoesNotExist() throws Exception {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
@@ -136,7 +133,6 @@ public class PostDequeueDecoratorTest {
         testee.done(true);
     }
     
-    @Ignore("FIXME: AttributeValue.of(MessageId)")
     @Test
     public void doneShouldCopyMailFromOutboxToSentWhenSuccess() throws Exception {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
@@ -161,7 +157,7 @@ public class PostDequeueDecoratorTest {
         mailboxManager.createMailbox(SENT_MAILBOX_PATH, mailboxSession);
         MessageManager messageManager = mailboxManager.getMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         ComposedMessageId messageId = messageManager.appendMessage(AppendCommand.from(message), mailboxSession);
-        mail.setAttribute(new Attribute(MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, AttributeValue.of(messageId.getMessageId().serialize())));
+        mail.setAttribute(new Attribute(MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, AttributeValue.of(messageId.getMessageId())));
         mail.setAttribute(new Attribute(MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE, USERNAME_ATTRIBUTE_VALUE));
         
         testee.done(true);
@@ -171,7 +167,6 @@ public class PostDequeueDecoratorTest {
         assertThat(resultIterator).hasSize(0);
     }
     
-    @Ignore("FIXME: AttributeValue.of(MessageId)")
     @Test
     public void doneShouldNotMoveMailFromOutboxToSentWhenSuccessIsFalse() throws Exception {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
@@ -204,7 +199,6 @@ public class PostDequeueDecoratorTest {
         assertThat(resultIterator).hasSize(1);
     }
     
-    @Ignore("FIXME: AttributeValue.of(MessageId)")
     @Test
     public void doneShouldNotMoveMailFromOutboxToSentWhenUsernameNotProvided() throws Exception {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
@@ -245,7 +239,7 @@ public class PostDequeueDecoratorTest {
         MessageManager messageManager = mailboxManager.getMailbox(OUTBOX_MAILBOX_PATH, mailboxSession);
         messageManager.appendMessage(AppendCommand.from(message), mailboxSession);
         mail.setAttribute(new Attribute(MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE, USERNAME_ATTRIBUTE_VALUE));
-        mail.setAttribute(new Attribute(MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, AttributeValue.of("invalid")));
+        mail.setAttribute(new Attribute(MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, AttributeValue.of(InMemoryMessageId.of(42))));
         
         testee.done(true);
         
@@ -254,11 +248,10 @@ public class PostDequeueDecoratorTest {
         assertThat(resultIterator).hasSize(1);
     }
 
-    @Ignore("FIXME: AttributeValue.of(MessageId)")
     @Test
     public void doneShouldCopyMailFromOutboxToSentOnlyOneTimeWhenSuccess() throws Exception {
         MessageIdManager messageIdManager = mock(MessageIdManager.class);
-        testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager, new InMemoryMessageId.Factory(),
+        testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager,
                 messageIdManager, new SystemMailboxesProviderImpl(mailboxManager));
 
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
@@ -283,11 +276,10 @@ public class PostDequeueDecoratorTest {
         verifyNoMoreInteractions(messageIdManager);
     }
 
-    @Ignore("FIXME: AttributeValue.of(MessageId)")
     @Test(expected = MailQueue.MailQueueException.class)
     public void doneShouldThrowWhenMailboxException() throws Exception {
         MessageIdManager messageIdManager = mock(MessageIdManager.class);
-        testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager, new InMemoryMessageId.Factory(),
+        testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager,
                 messageIdManager, new SystemMailboxesProviderImpl(mailboxManager));
 
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);

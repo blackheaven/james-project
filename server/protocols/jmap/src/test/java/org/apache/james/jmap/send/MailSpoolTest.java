@@ -74,8 +74,8 @@ public class MailSpoolTest {
         MailQueueItem actual = myQueue.deQueue();
         assertThat(AttributeUtils.getValueAndCastFromMail(actual.getMail(), MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE, String.class))
             .isEqualTo(USERNAME);
-        assertThat(AttributeUtils.getValueAndCastFromMail(actual.getMail(), MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, String.class))
-            .isEqualTo(MESSAGE_ID.serialize());
+        assertThat(AttributeUtils.getValueAndCastFromMail(actual.getMail(), MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, TestMessageId.class))
+            .isEqualTo(MESSAGE_ID);
     }
 
 }

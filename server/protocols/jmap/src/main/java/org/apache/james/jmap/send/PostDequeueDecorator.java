@@ -36,7 +36,6 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.FetchGroupImpl;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.model.MessageId.Factory;
 import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.queue.api.MailQueue.MailQueueException;
 import org.apache.james.queue.api.MailQueue.MailQueueItem;
@@ -56,18 +55,15 @@ public class PostDequeueDecorator extends MailQueueItemDecorator {
     private static final String IS_DELIVERED = "DELIVERED";
 
     private final MailboxManager mailboxManager;
-    private final Factory messageIdFactory;
     private final MessageIdManager messageIdManager;
     private final SystemMailboxesProvider systemMailboxesProvider;
 
     public PostDequeueDecorator(MailQueueItem mailQueueItem,
                                 MailboxManager mailboxManager,
-                                Factory messageIdFactory,
                                 MessageIdManager messageIdManager,
                                 SystemMailboxesProvider systemMailboxesProvider) {
         super(mailQueueItem);
         this.mailboxManager = mailboxManager;
-        this.messageIdFactory = messageIdFactory;
         this.messageIdManager = messageIdManager;
         this.systemMailboxesProvider = systemMailboxesProvider;
     }
@@ -81,7 +77,7 @@ public class PostDequeueDecorator extends MailQueueItemDecorator {
     public void done(boolean success) throws MailQueueException {
         mailQueueItem.done(success);
         if (success && mandatoryJmapMetaDataIsPresent()) {
-            Optional<MessageId> messageId = AttributeUtils.getValueAndCastFromMail(getMail(), MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, String.class).map(id -> messageIdFactory.fromString(id));
+            Optional<MessageId> messageId = AttributeUtils.getValueAndCastFromMail(getMail(), MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, MessageId.class);
             Optional<String> username = AttributeUtils.getValueAndCastFromMail(getMail(), MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE, String.class);
             if (messageId.isPresent() && username.isPresent()
                     && !getMail().getAttribute(AttributeName.of(IS_DELIVERED)).isPresent()) {
@@ -105,30 +101,14 @@ public class PostDequeueDecorator extends MailQueueItemDecorator {
 
     private boolean checkMessageIdAttribute() {
         return AttributeUtils
-                .getAttributeValueFromMail(getMail(), MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE)
-                .map(this::checkMessageIdString)
-                .orElse(false);
-    }
-
-    private Boolean checkMessageIdString(Object messageId) {
-        if (messageId instanceof String) {
-            try {
-                messageIdFactory.fromString((String) messageId);
-                return true;
-            } catch (Exception e) {
-                LOG.error("Invalid messageId: {}", messageId, e);
-            }
-        } else if (messageId != null) {
-            LOG.error("Non-String messageId {} has type {}", messageId, messageId.getClass());
-        }
-        return false;
+                .getValueAndCastFromMail(getMail(), MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, MessageId.class)
+                .isPresent();
     }
 
     private boolean checkUsernameAttribute() {
         return AttributeUtils
-                .getAttributeValueFromMail(getMail(), MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE)
-                .map(username -> username instanceof String)
-                .orElse(false);
+                .getValueAndCastFromMail(getMail(), MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE, String.class)
+                .isPresent();
     }
 
     private void moveFromOutboxToSentWithSeenFlag(MessageId messageId, MailboxSession mailboxSession) throws MailQueueException, MailboxException {
