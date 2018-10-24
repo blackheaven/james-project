@@ -107,7 +107,7 @@ public class AttributeValueTest {
     void fromJsonStringShouldReturnStringAttributeValueWhenString() throws Exception {
         AttributeValue<String> expected = AttributeValue.of("value");
 
-        AttributeValue<?> actual = AttributeValue.fromJsonString("\"value\"");
+        AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"StringSerializer\",\"value\": \"value\"}");
         
         assertThat(actual).isEqualTo(expected);
     }
@@ -116,7 +116,7 @@ public class AttributeValueTest {
     void fromJsonStringShouldReturnIntAttributeValueWhenInt() throws Exception {
         AttributeValue<Integer> expected = AttributeValue.of(42);
 
-        AttributeValue<?> actual = AttributeValue.fromJsonString("42");
+        AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"IntSerializer\",\"value\": 42}");
         
         assertThat(actual).isEqualTo(expected);
     }
@@ -125,7 +125,7 @@ public class AttributeValueTest {
     void fromJsonStringShouldReturnEmptyListAttributeValueWhenEmptyArray() throws Exception {
         AttributeValue<?> expected = AttributeValue.of(ImmutableList.of());
 
-        AttributeValue<?> actual = AttributeValue.fromJsonString("[]");
+        AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"CollectionSerializer\",\"value\": []}");
         
         assertThat(actual).isEqualTo(expected);
     }
@@ -134,7 +134,7 @@ public class AttributeValueTest {
     void fromJsonStringShouldReturnListAttributeValueWhenArray() throws Exception {
         AttributeValue<?> expected = AttributeValue.of(ImmutableList.of(AttributeValue.of("first"), AttributeValue.of("second")));
 
-        AttributeValue<?> actual = AttributeValue.fromJsonString("[\"first\",\"second\"]");
+        AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"CollectionSerializer\",\"value\":[{\"serializer\":\"StringSerializer\",\"value\":\"first\"},{\"serializer\":\"StringSerializer\",\"value\":\"second\"}]}\n");
         
         assertThat(actual).isEqualTo(expected);
     }

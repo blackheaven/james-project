@@ -235,7 +235,7 @@ public interface Serializer<T> {
 
         @Override
         public Optional<Map<String, AttributeValue<U>>> deserialize(JsonNode json) {
-            if (json instanceof ArrayNode) {
+            if (json instanceof ObjectNode) {
                 return Optional.of(Iterators.toStream(json.fields())
                         .collect(ImmutableMap.toImmutableMap(
                             Map.Entry::getKey,
