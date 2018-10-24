@@ -53,7 +53,6 @@ import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders;
 import org.apache.mailet.base.test.FakeMail;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -252,7 +251,6 @@ public interface MailQueueContract {
             .containsOnly(header);
     }
 
-    @Disabled("FIXME: A correct .fromJson of Serializable is needed")
     @Test
     default void queueShouldPreserveNonStringMailAttribute() throws Exception {
         AttributeName attributeName = AttributeName.of("any");
