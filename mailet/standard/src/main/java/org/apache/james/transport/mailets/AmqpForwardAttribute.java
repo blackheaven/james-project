@@ -127,7 +127,7 @@ public class AmqpForwardAttribute extends GenericMailet {
     private Optional<Stream<byte[]>> getAttributeContent(Mail mail) throws MailetException {
         return mail.getAttribute(attribute)
             .map(Attribute::getValue)
-            .map(x -> x.value())
+            .map(AttributeValue::value)
             .map(Throwing.function(this::toByteStream).sneakyThrow());
     }
 
