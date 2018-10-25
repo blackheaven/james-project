@@ -43,6 +43,6 @@ public class MemorySendMDNMethodTest extends SendMDNMethodTest {
     
     @Override
     protected MessageId randomMessageId() {
-        return new InMemoryMessageId.Factory().fromString(String.valueOf(random.nextInt(100000) + 100));
+        return InMemoryMessageId.of(random.nextInt(100000) + 100);
     }
 }

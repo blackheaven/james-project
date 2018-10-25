@@ -88,7 +88,7 @@ public class SearchUtilTest {
     public void getSerializedMessageIdIfSupportedByUnderlyingStorageOrNullForMessageIdThatSerializeReturnNullShouldReturnNull() {
         //given
         MessageId invalidMessageIdThatReturnNull = mock(MessageId.class);
-        when(invalidMessageIdThatReturnNull.serialize())
+        when(invalidMessageIdThatReturnNull.getName())
             .thenReturn(null);
 
         MailboxMessage message = mock(MailboxMessage.class);
@@ -107,7 +107,7 @@ public class SearchUtilTest {
         //given
         String messageIdString = "http://www.labraxeenne.com/#/";
         MessageId messageId = mock(MessageId.class);
-        when(messageId.serialize())
+        when(messageId.getName())
             .thenReturn(messageIdString);
 
         MailboxMessage message = mock(MailboxMessage.class);

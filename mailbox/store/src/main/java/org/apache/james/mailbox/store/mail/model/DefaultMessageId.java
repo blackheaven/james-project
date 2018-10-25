@@ -1,20 +1,23 @@
 package org.apache.james.mailbox.store.mail.model;
 
+import java.util.Optional;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.mailet.QueueSerializable;
 
 public class DefaultMessageId implements MessageId {
 
     public static class Factory implements MessageId.Factory {
         
         @Override
-        public MessageId fromString(String serialized) {
-            throw new NotImplementedException("MessageId is not supported by this backend");
-        }
-        
-        @Override
         public MessageId generate() {
             return new DefaultMessageId();
+        }
+
+        @Override
+        public Optional<QueueSerializable> deserialize(Serializable serializable) {
+            throw new NotImplementedException("MessageId is not supported by this backend");
         }
     }
     
@@ -22,7 +25,7 @@ public class DefaultMessageId implements MessageId {
     }
 
     @Override
-    public String serialize() {
+    public String getName() {
         throw new IllegalStateException("Capabilities should prevent calling this method");
     }
     
@@ -39,5 +42,10 @@ public class DefaultMessageId implements MessageId {
     @Override
     public String toString() {
         return "DefaultMessageId{}";
+    }
+
+    @Override
+    public Serializable serialize() {
+        throw new IllegalStateException("Capabilities should prevent calling this method");
     }
 }

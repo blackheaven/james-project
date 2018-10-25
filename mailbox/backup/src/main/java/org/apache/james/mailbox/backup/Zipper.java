@@ -76,12 +76,12 @@ public class Zipper implements Backup {
     }
 
     private void storeInArchive(MailboxMessage message, ZipArchiveOutputStream archiveOutputStream) throws IOException {
-        String entryId = message.getMessageId().serialize();
+        String entryId = message.getMessageId().getName();
         ZipArchiveEntry archiveEntry = (ZipArchiveEntry) archiveOutputStream.createArchiveEntry(new File(entryId), entryId);
 
         archiveEntry.addExtraField(new SizeExtraField(message.getFullContentOctets()));
         archiveEntry.addExtraField(new UidExtraField(message.getUid().asLong()));
-        archiveEntry.addExtraField(new MessageIdExtraField(message.getMessageId().serialize()));
+        archiveEntry.addExtraField(new MessageIdExtraField(message.getMessageId().getName()));
         archiveEntry.addExtraField(new MailboxIdExtraField(message.getMailboxId().serialize()));
         archiveEntry.addExtraField(new InternalDateExtraField(message.getInternalDate()));
 

@@ -29,7 +29,7 @@ public class MessageIdComparator implements Comparator<MailboxMessage> {
     @Override
     public int compare(MailboxMessage mailboxMessage1, MailboxMessage mailboxMessage2) {
         return mailboxMessage1.getMessageId()
-            .serialize()
-            .compareToIgnoreCase(mailboxMessage2.getMessageId().serialize());
+            .getName()
+            .compareToIgnoreCase(mailboxMessage2.getMessageId().getName());
     }
 }

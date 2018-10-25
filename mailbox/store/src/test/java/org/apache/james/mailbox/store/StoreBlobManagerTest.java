@@ -55,7 +55,7 @@ public class StoreBlobManagerTest {
     public static final byte[] BYTES = "abc".getBytes(StandardCharsets.UTF_8);
     public static final TestMessageId MESSAGE_ID = TestMessageId.of(125);
     public static final BlobId BLOB_ID_ATTACHMENT = BlobId.fromString(ID);
-    public static final BlobId BLOB_ID_MESSAGE = BlobId.fromString(MESSAGE_ID.serialize());
+    public static final BlobId BLOB_ID_MESSAGE = BlobId.fromString(MESSAGE_ID.getName());
     private StoreBlobManager blobManager;
 
     private AttachmentManager attachmentManager;
@@ -68,7 +68,7 @@ public class StoreBlobManagerTest {
         messageIdManager = mock(MessageIdManager.class);
         session = mock(MailboxSession.class);
 
-        blobManager = new StoreBlobManager(attachmentManager, messageIdManager, new TestMessageId.Factory());
+        blobManager = new StoreBlobManager(attachmentManager, messageIdManager);
     }
 
     @Test

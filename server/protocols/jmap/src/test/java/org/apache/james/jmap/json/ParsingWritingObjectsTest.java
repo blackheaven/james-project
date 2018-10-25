@@ -32,7 +32,6 @@ import org.apache.james.jmap.methods.GetMessagesMethod;
 import org.apache.james.jmap.methods.JmapResponseWriterImpl;
 import org.apache.james.jmap.model.SubMessage;
 import org.apache.james.mailbox.inmemory.InMemoryId;
-import org.apache.james.mailbox.model.TestMessageId;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,7 +44,7 @@ public class ParsingWritingObjectsTest {
 
     @Before
     public void setup() {
-        testee = new ObjectMapperFactory(new InMemoryId.Factory(), new TestMessageId.Factory());
+        testee = new ObjectMapperFactory(new InMemoryId.Factory());
     }
 
     @Test

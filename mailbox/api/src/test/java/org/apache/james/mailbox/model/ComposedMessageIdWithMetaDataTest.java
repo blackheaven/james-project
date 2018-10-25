@@ -20,10 +20,14 @@ package org.apache.james.mailbox.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Optional;
+
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 
 import org.apache.james.mailbox.MessageUid;
+import org.apache.mailet.AttributeValue;
+import org.apache.mailet.QueueSerializable;
 import org.junit.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -101,6 +105,16 @@ public class ComposedMessageIdWithMetaDataTest {
 
     private static class TestMessageId implements MessageId {
 
+        public static class Factory implements QueueSerializable.Factory {
+            @Override
+            public Optional<QueueSerializable> deserialize(Serializable serializable) {
+                return Optional.of(serializable.getValue().getValue())
+                        .filter(String.class::isInstance)
+                        .map(String.class::cast)
+                        .map(TestMessageId::new);
+            }
+        }
+
         private final String id;
 
         public TestMessageId(String id) {
@@ -108,9 +122,13 @@ public class ComposedMessageIdWithMetaDataTest {
         }
 
         @Override
-        public String serialize() {
+        public String getName() {
             return id;
         }
-        
+
+        @Override
+        public Serializable serialize() {
+            return new Serializable(AttributeValue.of(id), Factory.class);
+        }
     }
 }

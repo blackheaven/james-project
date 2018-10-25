@@ -78,7 +78,7 @@ public class SetMessagesDestructionProcessor implements SetMessagesProcessor {
                 .map(messageId -> SetMessagesResponse.builder().notDestroyed(messageId,
                     SetError.builder()
                         .type(SetError.Type.NOT_FOUND)
-                        .description("The message " + messageId.serialize() + " can't be found")
+                        .description("The message " + messageId.getName() + " can't be found")
                         .build())
                     .build());
             return Stream.concat(destroyed, notFound);
@@ -88,7 +88,7 @@ public class SetMessagesDestructionProcessor implements SetMessagesProcessor {
                 .map(messageId -> SetMessagesResponse.builder().notDestroyed(messageId,
                     SetError.builder()
                         .type(SetError.Type.ERROR)
-                        .description("An error occurred while deleting messages " + messageId.serialize())
+                        .description("An error occurred while deleting messages " + messageId.getName())
                         .build())
                     .build());
         }

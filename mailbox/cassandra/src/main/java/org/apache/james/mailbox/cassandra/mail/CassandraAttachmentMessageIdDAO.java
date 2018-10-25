@@ -50,12 +50,10 @@ public class CassandraAttachmentMessageIdDAO {
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final PreparedStatement insertStatement;
     private final PreparedStatement selectStatement;
-    private final MessageId.Factory messageIdFactory;
     private final CassandraUtils cassandraUtils;
 
     @Inject
-    public CassandraAttachmentMessageIdDAO(Session session, MessageId.Factory messageIdFactory, CassandraUtils cassandraUtils) {
-        this.messageIdFactory = messageIdFactory;
+    public CassandraAttachmentMessageIdDAO(Session session, CassandraUtils cassandraUtils) {
         this.cassandraUtils = cassandraUtils;
         this.cassandraAsyncExecutor = new CassandraAsyncExecutor(session);
 
@@ -88,7 +86,7 @@ public class CassandraAttachmentMessageIdDAO {
     }
 
     private MessageId rowToMessageId(Row row) {
-        return messageIdFactory.fromString(row.getString(MESSAGE_ID));
+        return MessageId.fromJson(row.getString(MESSAGE_ID)).get();
     }
 
     public CompletableFuture<Void> storeAttachmentForMessageId(AttachmentId attachmentId, MessageId ownerMessageId) {
@@ -96,6 +94,6 @@ public class CassandraAttachmentMessageIdDAO {
             insertStatement.bind()
                 .setUUID(ATTACHMENT_ID_AS_UUID, attachmentId.asUUID())
                 .setString(ATTACHMENT_ID, attachmentId.getId())
-                .setString(MESSAGE_ID, ownerMessageId.serialize()));
+                .setString(MESSAGE_ID, ownerMessageId.getName()));
     }
 }

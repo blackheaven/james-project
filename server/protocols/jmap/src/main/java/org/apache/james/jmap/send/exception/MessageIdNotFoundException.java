@@ -24,7 +24,7 @@ import org.apache.james.queue.api.MailQueue.MailQueueException;
 public class MessageIdNotFoundException extends MailQueueException {
 
     public MessageIdNotFoundException(MessageId messageId) {
-        super("Unable to find a Mailbox Message matching: " + messageId.serialize());
+        super("Unable to find a Mailbox Message matching: " + messageId.getName());
     }
 
 }

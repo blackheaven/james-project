@@ -19,17 +19,22 @@
 
 package org.apache.james.mailbox.model;
 
-import java.io.Serializable;
+import java.util.Optional;
 
-public interface MessageId extends Serializable {
+import org.apache.mailet.AttributeValue;
+import org.apache.mailet.QueueSerializable;
 
-    interface Factory {
-        
-        MessageId fromString(String serialized);
+public interface MessageId extends QueueSerializable {
 
+    interface Factory extends QueueSerializable.Factory {
         MessageId generate();
-        
     }
-    
-    String serialize();
+
+    String getName();
+
+    static Optional<MessageId> fromJson(String json) {
+       return AttributeValue.optionalFromJsonString(json)
+               .filter(MessageId.class::isInstance)
+               .map(MessageId.class::cast);
+    }
 }

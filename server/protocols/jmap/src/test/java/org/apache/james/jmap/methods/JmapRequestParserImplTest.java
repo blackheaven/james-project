@@ -22,7 +22,6 @@ package org.apache.james.jmap.methods;
 import org.apache.james.jmap.json.ObjectMapperFactory;
 import org.apache.james.jmap.model.ProtocolRequest;
 import org.apache.james.mailbox.inmemory.InMemoryId;
-import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,7 +34,7 @@ public class JmapRequestParserImplTest {
 
     @Before
     public void setup() {
-        testee = new JmapRequestParserImpl(new ObjectMapperFactory(new InMemoryId.Factory(), new InMemoryMessageId.Factory()));
+        testee = new JmapRequestParserImpl(new ObjectMapperFactory(new InMemoryId.Factory()));
     }
     
     @Test(expected = IllegalArgumentException.class)

@@ -106,7 +106,7 @@ public class MailFactoryTest {
 
     @Test
     public void buildMailShouldWork() throws Exception {
-        String expectedName = jmapMessage.getId().serialize();
+        String expectedName = jmapMessage.getId().getName();
         MailAddress expectedSender = new MailAddress("me@example.com");
         Collection<MailAddress> expectedRecipients = ImmutableSet.of(
                 new MailAddress("1@example.com"),

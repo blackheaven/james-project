@@ -396,7 +396,7 @@ public class GetMessagesMethodStepdefs {
 
         TestingConstants.calmlyAwait.until(() -> !retrieveIds(user, mailboxId).isEmpty());
         List<String> ids = retrieveIds(user, mailboxId);
-        messageIdStepdefs.addMessageId(messageName, mainStepdefs.messageIdFactory.fromString(ids.get(0)));
+        messageIdStepdefs.addMessageId(messageName, MessageId.fromJson(ids.get(0)).get());
     }
 
     public List<String> retrieveIds(String user, MailboxId mailboxId) {
@@ -495,7 +495,7 @@ public class GetMessagesMethodStepdefs {
     private void askMessages(List<MessageId> messageIds) throws Exception {
         requestedMessageIds = messageIds;
         String serializedIds = requestedMessageIds.stream()
-            .map(MessageId::serialize)
+            .map(MessageId::getName)
             .map(toJsonString())
             .collect(Collectors.joining(",", "[", "]"));
         httpClient.post("[[\"getMessages\", {\"ids\": " + serializedIds + "}, \"#0\"]]");
@@ -517,7 +517,7 @@ public class GetMessagesMethodStepdefs {
             .collect(Guavate.toImmutableList());
 
         String serializedIds = requestedMessageIds.stream()
-            .map(MessageId::serialize)
+            .map(MessageId::getName)
             .map(toJsonString())
             .collect(Collectors.joining(",", "[", "]"));
 
@@ -570,12 +570,12 @@ public class GetMessagesMethodStepdefs {
     @Then("^the notFound list should contain \"([^\"]*)\"$")
     public void assertNotFoundListContains(String id) {
         MessageId messageId = messageIdStepdefs.getMessageId(id);
-        assertThat(httpClient.jsonPath.<List<String>>read(ARGUMENTS + ".notFound")).contains(messageId.serialize());
+        assertThat(httpClient.jsonPath.<List<String>>read(ARGUMENTS + ".notFound")).contains(messageId.getName());
     }
 
     @Then("^the notFound list should contain the requested message id$")
     public void assertNotFoundListContainsRequestedMessages() {
-        ImmutableList<String> elements = requestedMessageIds.stream().map(MessageId::serialize).collect(Guavate.toImmutableList());
+        ImmutableList<String> elements = requestedMessageIds.stream().map(MessageId::getName).collect(Guavate.toImmutableList());
         assertThat(httpClient.jsonPath.<List<String>>read(ARGUMENTS + ".notFound"))
             .containsExactlyElementsOf(elements);
     }
@@ -589,7 +589,7 @@ public class GetMessagesMethodStepdefs {
     @Then("^the id of the message is \"([^\"]*)\"$")
     public void assertIdOfTheFirstMessage(String messageName) {
         MessageId id = messageIdStepdefs.getMessageId(messageName);
-        assertThat(httpClient.jsonPath.<String>read(FIRST_MESSAGE + ".id")).isEqualTo(id.serialize());
+        assertThat(httpClient.jsonPath.<String>read(FIRST_MESSAGE + ".id")).isEqualTo(id.getName());
     }
 
     @Then("^the message is in \"([^\"]*)\" mailboxes")
@@ -620,7 +620,7 @@ public class GetMessagesMethodStepdefs {
     @Then("^the threadId of the message is \"([^\"]*)\"$")
     public void assertThreadIdOfTheFirstMessage(String threadId) {
         MessageId id = messageIdStepdefs.getMessageId(threadId);
-        assertThat(httpClient.jsonPath.<String>read(FIRST_MESSAGE + ".threadId")).isEqualTo(id.serialize());
+        assertThat(httpClient.jsonPath.<String>read(FIRST_MESSAGE + ".threadId")).isEqualTo(id.getName());
     }
 
     @Then("^the subject of the message is \"([^\"]*)\"$")

@@ -18,9 +18,12 @@
  ****************************************************************/
 package org.apache.james.mailbox.inmemory;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.mailet.AttributeValue;
+import org.apache.mailet.QueueSerializable;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
@@ -32,13 +35,16 @@ public class InMemoryMessageId implements MessageId {
         private AtomicLong counter = new AtomicLong();
         
         @Override
-        public MessageId fromString(String serialized) {
-            return of(Long.valueOf(serialized));
-        }
-        
-        @Override
         public MessageId generate() {
             return of(counter.incrementAndGet());
+        }
+
+        @Override
+        public Optional<QueueSerializable> deserialize(Serializable serializable) {
+            return Optional.of(serializable.getValue().getValue())
+                    .filter(Long.class::isInstance)
+                    .map(Long.class::cast)
+                    .map(InMemoryMessageId::of);
         }
     }
     
@@ -53,7 +59,7 @@ public class InMemoryMessageId implements MessageId {
     }
 
     @Override
-    public String serialize() {
+    public String getName() {
         return String.valueOf(value);
     }
 
@@ -80,5 +86,10 @@ public class InMemoryMessageId implements MessageId {
         return MoreObjects.toStringHelper(InMemoryMessageId.class)
                 .add("value", value)
                 .toString();
+    }
+
+    @Override
+    public Serializable serialize() {
+        return new Serializable(AttributeValue.of(value), Factory.class);
     }
 }

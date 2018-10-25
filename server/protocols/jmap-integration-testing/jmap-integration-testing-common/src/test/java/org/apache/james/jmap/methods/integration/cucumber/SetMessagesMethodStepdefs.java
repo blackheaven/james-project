@@ -70,7 +70,7 @@ public class SetMessagesMethodStepdefs {
             "  [" +
             "    \"setMessages\"," +
             "    {" +
-            "      \"update\": { \"" + messageId.serialize() + "\" : {" +
+            "      \"update\": { \"" + messageId.getName() + "\" : {" +
             "        \"mailboxIds\": [\"" + mailboxId.serialize() + "\"]" +
             "      }}" +
             "    }," +
@@ -90,7 +90,7 @@ public class SetMessagesMethodStepdefs {
             "  [" +
             "    \"setMessages\"," +
             "    {" +
-            "      \"update\": { \"" + messageId.serialize() + "\" : {" +
+            "      \"update\": { \"" + messageId.getName() + "\" : {" +
             "        \"mailboxIds\": [\"" + mailboxId.serialize() + "\"]," +
             "        \"keywords\": {" + keywordString + "}" +
             "      }}" +
@@ -117,7 +117,7 @@ public class SetMessagesMethodStepdefs {
             "  [" +
             "    \"setMessages\"," +
             "    {" +
-            "      \"update\": { \"" + messageId.serialize() + "\" : {" +
+            "      \"update\": { \"" + messageId.getName() + "\" : {" +
             "        \"mailboxIds\": [\"" + destinationMailboxId.serialize() + "\",\"" + sourceMailboxId.serialize() + "\"]" +
             "      }}" +
             "    }," +
@@ -141,7 +141,7 @@ public class SetMessagesMethodStepdefs {
             "  [" +
             "    \"setMessages\"," +
             "    {" +
-            "      \"update\": { \"" + messageId.serialize() + "\" : {" +
+            "      \"update\": { \"" + messageId.getName() + "\" : {" +
             "        \"mailboxIds\": [\"" + destinationMailboxId.serialize() + "\",\"" + sourceMailboxId.serialize() + "\"]" +
             "      }}" +
             "    }," +
@@ -164,7 +164,7 @@ public class SetMessagesMethodStepdefs {
             "  [" +
             "    \"setMessages\"," +
             "    {" +
-            "      \"update\": { \"" + messageId.serialize() + "\" : {" +
+            "      \"update\": { \"" + messageId.getName() + "\" : {" +
             "        \"mailboxIds\": [\"" + destinationMailboxId.serialize() + "\"]" +
             "      }}" +
             "    }," +
@@ -188,7 +188,7 @@ public class SetMessagesMethodStepdefs {
                 "  [" +
                 "    \"setMessages\"," +
                 "    {" +
-                "      \"update\": { \"" + messageId.serialize() + "\" : {" +
+                "      \"update\": { \"" + messageId.getName() + "\" : {" +
                 "        \"isFlagged\": true" +
                 "      }}" +
                 "    }," +
@@ -208,7 +208,7 @@ public class SetMessagesMethodStepdefs {
                 "  [" +
                 "    \"setMessages\"," +
                 "    {" +
-                "      \"update\": { \"" + messageId.serialize() + "\" : {" +
+                "      \"update\": { \"" + messageId.getName() + "\" : {" +
                 "        \"isDraft\": true" +
                 "      }}" +
                 "    }," +
@@ -228,7 +228,7 @@ public class SetMessagesMethodStepdefs {
                 "  [" +
                 "    \"setMessages\"," +
                 "    {" +
-                "      \"destroy\": [ \"" + messageId.serialize() + "\" ]" +
+                "      \"destroy\": [ \"" + messageId.getName() + "\" ]" +
                 "    }," +
                 "    \"#0\"" +
                 "  ]" +
@@ -259,7 +259,7 @@ public class SetMessagesMethodStepdefs {
             mainStepdefs.awaitMethod.run();
             Optional.ofNullable(
                 httpClient.jsonPath.<String>read("[0][1].created." + message + ".id"))
-                .map(mainStepdefs.messageIdFactory::fromString)
+                .flatMap(MessageId::fromJson)
                 .ifPresent(id -> messageIdStepdefs.addMessageId(message, id));
         });
     }
@@ -273,7 +273,7 @@ public class SetMessagesMethodStepdefs {
             "  [" +
             "    \"setMessages\"," +
             "    {" +
-            "      \"update\": { \"" + messageId.serialize() + "\" : {" +
+            "      \"update\": { \"" + messageId.getName() + "\" : {" +
             "        \"keywords\": {" + keywordString + "}" +
             "      }}" +
             "    }," +
@@ -305,14 +305,14 @@ public class SetMessagesMethodStepdefs {
     public void assertNotUpdate(String messageName) {
         MessageId id = messageIdStepdefs.getMessageId(messageName);
         assertThat(httpClient.jsonPath.<Map<String, String>>read("[0][1].notUpdated"))
-            .containsOnlyKeys(id.serialize());
+            .containsOnlyKeys(id.getName());
     }
 
     @Then("^message \"([^\"]*)\" is updated$")
     public void assertUpdated(String messageName) {
         MessageId id = messageIdStepdefs.getMessageId(messageName);
         assertThat(httpClient.jsonPath.<List<String>>read("[0][1].updated"))
-            .containsOnly(id.serialize());
+            .containsOnly(id.getName());
     }
 
     @Then("^message \"([^\"]*)\" is not created$")

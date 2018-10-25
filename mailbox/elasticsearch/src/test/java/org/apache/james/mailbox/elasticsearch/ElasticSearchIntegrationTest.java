@@ -106,7 +106,7 @@ public class ElasticSearchIntegrationTest extends AbstractMessageSearchIndexTest
                 MailboxElasticSearchConstants.MESSAGE_TYPE,
                 BATCH_SIZE),
             new ElasticSearchSearcher(client, new QueryConverter(new CriterionConverter()), SEARCH_SIZE,
-                new InMemoryId.Factory(), storeMailboxManager.getMessageIdFactory(),
+                new InMemoryId.Factory(),
                 MailboxElasticSearchConstants.DEFAULT_MAILBOX_READ_ALIAS,
                 MailboxElasticSearchConstants.MESSAGE_TYPE),
             new MessageToElasticSearchJson(textExtractor, ZoneId.of("Europe/Paris"), IndexAttachments.YES));

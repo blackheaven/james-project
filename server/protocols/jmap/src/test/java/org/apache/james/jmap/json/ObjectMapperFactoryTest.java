@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.apache.james.jmap.model.mailbox.Rights;
 import org.apache.james.mailbox.inmemory.InMemoryId;
-import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mdn.action.mode.DispositionActionMode;
 import org.apache.james.mdn.sending.mode.DispositionSendingMode;
@@ -42,7 +41,7 @@ public class ObjectMapperFactoryTest {
 
     @Before
     public void setup() {
-        testee = new ObjectMapperFactory(new InMemoryId.Factory(), new InMemoryMessageId.Factory());
+        testee = new ObjectMapperFactory(new InMemoryId.Factory());
     }
 
     @Test
@@ -71,7 +70,7 @@ public class ObjectMapperFactoryTest {
 
     @Test
     public void mailboxIdShouldBeSerializableWhenKeyWithoutToString() throws Exception {
-        ObjectMapperFactory testeeWithoutToString = new ObjectMapperFactory(new KeyWithoutToString.Factory(), new InMemoryMessageId.Factory());
+        ObjectMapperFactory testeeWithoutToString = new ObjectMapperFactory(new KeyWithoutToString.Factory());
         MailboxIdKeyTestContainer container = new MailboxIdKeyTestContainer(ImmutableMap.of(new KeyWithoutToString("key"), "value"));
         String expectedJson = "{\"map\":{\"key\":\"value\"}}";
         String actual = testeeWithoutToString.forWriting().writeValueAsString(container);

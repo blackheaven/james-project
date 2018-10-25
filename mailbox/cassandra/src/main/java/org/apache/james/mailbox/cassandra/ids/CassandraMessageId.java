@@ -20,9 +20,12 @@
 package org.apache.james.mailbox.cassandra.ids;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.mailet.AttributeValue;
+import org.apache.mailet.QueueSerializable;
 
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.base.MoreObjects;
@@ -41,8 +44,11 @@ public class CassandraMessageId implements MessageId {
         }
 
         @Override
-        public MessageId fromString(String serialized) {
-            return of(UUID.fromString(serialized));
+        public Optional<QueueSerializable> deserialize(Serializable serializable) {
+            return Optional.of(serializable.getValue().getValue())
+                    .filter(String.class::isInstance)
+                    .map(String.class::cast)
+                    .map(uuid -> of(UUID.fromString(uuid)));
         }
     }
 
@@ -53,7 +59,7 @@ public class CassandraMessageId implements MessageId {
     }
     
     @Override
-    public String serialize() {
+    public String getName() {
         return uuid.toString();
     }
 
@@ -80,5 +86,10 @@ public class CassandraMessageId implements MessageId {
         return MoreObjects.toStringHelper(this)
             .add("uuid", uuid)
             .toString();
+    }
+
+    @Override
+    public Serializable serialize() {
+        return new Serializable(AttributeValue.of(getName()), Factory.class);
     }
 }

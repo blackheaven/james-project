@@ -71,7 +71,7 @@ class ZipperTest {
         try (ZipFile zipFile = new ZipFile(toSeekableByteChannel(output))) {
             assertThatZip(zipFile)
                 .containsOnlyEntriesMatching(
-                    hasName(MESSAGE_ID_1.serialize())
+                    hasName(MESSAGE_ID_1.getName())
                         .hasStringContent(MESSAGE_CONTENT_1));
         }
     }
@@ -83,9 +83,9 @@ class ZipperTest {
         try (ZipFile zipFile = new ZipFile(toSeekableByteChannel(output))) {
             assertThatZip(zipFile)
                 .containsOnlyEntriesMatching(
-                    hasName(MESSAGE_ID_1.serialize())
+                    hasName(MESSAGE_ID_1.getName())
                         .hasStringContent(MESSAGE_CONTENT_1),
-                    hasName(MESSAGE_ID_2.serialize())
+                    hasName(MESSAGE_ID_2.getName())
                         .hasStringContent(MESSAGE_CONTENT_2));
         }
     }
@@ -97,10 +97,10 @@ class ZipperTest {
         try (ZipFile zipFile = new ZipFile(toSeekableByteChannel(output))) {
             assertThatZip(zipFile)
                 .containsOnlyEntriesMatching(
-                    hasName(MESSAGE_ID_1.serialize())
+                    hasName(MESSAGE_ID_1.getName())
                         .containsExtraFields(new SizeExtraField(SIZE_1))
                         .containsExtraFields(new UidExtraField(MESSAGE_UID_1_VALUE))
-                        .containsExtraFields(new MessageIdExtraField(MESSAGE_ID_1.serialize()))
+                        .containsExtraFields(new MessageIdExtraField(MESSAGE_ID_1.getName()))
                         .containsExtraFields(new MailboxIdExtraField(MAILBOX_ID_1))
                         .containsExtraFields(new InternalDateExtraField(MESSAGE_1.getInternalDate())));
         }

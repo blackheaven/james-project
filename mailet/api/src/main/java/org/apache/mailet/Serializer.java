@@ -74,6 +74,7 @@ public interface Serializer<T> extends Serializable {
                     LONG_SERIALIZER,
                     FLOAT_SERIALIZER,
                     DOUBLE_SERIALIZER,
+                    QUEUE_SERIALIZABLE_SERIALIZER,
                     URL_SERIALIZER,
                     new CollectionSerializer<>(),
                     new MapSerializer<>(),
@@ -253,6 +254,58 @@ public interface Serializer<T> extends Serializable {
     }
 
     Serializer<Double> DOUBLE_SERIALIZER = new DoubleSerializer();
+
+    class QueueSerializableSerializer implements Serializer<QueueSerializable> {
+        @Override
+        public JsonNode serialize(QueueSerializable serializable) {
+            QueueSerializable.Serializable serialized = serializable.serialize();
+            ObjectNode serializedJson = JsonNodeFactory.instance.objectNode();
+            serializedJson.put("factory", serialized.getFactory().getCanonicalName());
+            serializedJson.replace("value", serialized.getValue().toJson());
+            return serializedJson;
+        }
+
+        @Override
+        public Optional<QueueSerializable> deserialize(JsonNode json) {
+            return Optional.of(json)
+                    .filter(ObjectNode.class::isInstance)
+                    .map(ObjectNode.class::cast)
+                    .flatMap(this::instanciante);
+                   
+        }
+
+        public Optional<QueueSerializable> instanciante(ObjectNode fields) {
+            return Optional.ofNullable(fields.get("serializer"))
+            .flatMap(serializer ->  Optional.ofNullable(fields.get("value"))
+                    .flatMap(value -> deserialize(serializer.asText(), AttributeValue.fromJson(value))));
+        }
+
+        @SuppressWarnings("unchecked")
+        private Optional<QueueSerializable> deserialize(String serializer, AttributeValue<?> value) {
+            try {
+                Class<?> factoryClass = Class.forName(serializer);
+                if (factoryClass.isAssignableFrom(QueueSerializable.Factory.class)) {
+                    QueueSerializable.Factory factory = (QueueSerializable.Factory) factoryClass.newInstance();
+                    return factory.deserialize(new QueueSerializable.Serializable(value, (Class<QueueSerializable.Factory>) factoryClass));
+                }
+            } catch (Exception e) {
+            }
+
+            return Optional.empty();
+        }
+
+        @Override
+        public String getName() {
+            return "QueueSerializableSerializer";
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return this.getClass() == other.getClass();
+        }
+    }
+
+    Serializer<QueueSerializable> QUEUE_SERIALIZABLE_SERIALIZER = new QueueSerializableSerializer();
 
     class UrlSerializer implements Serializer<URL> {
         @Override

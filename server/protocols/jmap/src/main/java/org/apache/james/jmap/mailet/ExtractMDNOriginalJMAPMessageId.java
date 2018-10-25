@@ -87,9 +87,9 @@ public class ExtractMDNOriginalJMAPMessageId extends GenericMailet {
     }
 
     private void setJmapMessageIdAsHeader(MimeMessage mimeMessage, MessageId messageId) {
-        LOGGER.debug("Adding header {}:{}", X_JAMES_MDN_JMAP_MESSAGE_ID, messageId.serialize());
+        LOGGER.debug("Adding header {}:{}", X_JAMES_MDN_JMAP_MESSAGE_ID, messageId.getName());
         try {
-            mimeMessage.addHeader(X_JAMES_MDN_JMAP_MESSAGE_ID, messageId.serialize());
+            mimeMessage.addHeader(X_JAMES_MDN_JMAP_MESSAGE_ID, messageId.getName());
         } catch (MessagingException e) {
             LOGGER.error("unable to add " + X_JAMES_MDN_JMAP_MESSAGE_ID + " header to message", e);
         }

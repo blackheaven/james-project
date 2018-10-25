@@ -47,7 +47,7 @@ public class MemorySetMessagesMethodTest extends SetMessagesMethodTest {
     
     @Override
     protected MessageId randomMessageId() {
-        return new InMemoryMessageId.Factory().fromString(String.valueOf(random.nextInt(100000) + 100));
+        return InMemoryMessageId.of(random.nextInt(100000) + 100);
     }
 
 }

@@ -87,7 +87,7 @@ public class MessageFactory {
         return Message.builder()
                 .id(message.getMessageId())
                 .blobId(BlobId.of(blobManager.toBlobId(message.getMessageId())))
-                .threadId(message.getMessageId().serialize())
+                .threadId(message.getMessageId().getName())
                 .mailboxIds(message.getMailboxIds())
                 .inReplyToMessageId(getHeader(mimeMessage, "in-reply-to"))
                 .keywords(message.getKeywords())

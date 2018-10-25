@@ -353,7 +353,6 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     private static final SortField FIRST_FROM_MAILBOX_DISPLAY_SORT_REVERSE = new SortField(FIRST_FROM_MAILBOX_DISPLAY_FIELD, SortField.STRING, true);
     
     private final MailboxId.Factory mailboxIdFactory;
-    private final MessageId.Factory messageIdFactory;
     private final IndexWriter writer;
     private final Directory directory;
 
@@ -365,10 +364,9 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     public LuceneMessageSearchIndex(
         MessageMapperFactory factory,
         MailboxId.Factory mailboxIdFactory,
-        Directory directory,
-        MessageId.Factory messageIdFactory
+        Directory directory
     ) throws IOException {
-        this(factory, mailboxIdFactory, directory, false, true, messageIdFactory);
+        this(factory, mailboxIdFactory, directory, false, true);
     }
 
     public LuceneMessageSearchIndex(
@@ -376,12 +374,10 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
             MailboxId.Factory mailboxIdFactory,
             Directory directory,
             boolean dropIndexOnStart,
-            boolean lenient,
-            MessageId.Factory messageIdFactory
+            boolean lenient
     ) throws IOException {
         super(factory);
         this.mailboxIdFactory = mailboxIdFactory;
-        this.messageIdFactory = messageIdFactory;
         this.directory = directory;
         this.writer = new IndexWriter(this.directory,  createConfig(createAnalyzer(lenient), dropIndexOnStart));
     }
@@ -516,10 +512,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     }
 
     private Optional<MessageId> toMessageId(Optional<String> messageIdField) {
-        if (messageIdField.isPresent()) {
-            return Optional.of(messageIdFactory.fromString(messageIdField.get()));
-        }
-        return Optional.empty();
+        return messageIdField.flatMap(MessageId::fromJson);
     }
 
     private Query buildQueryFromMailboxes(Collection<MailboxId> mailboxIds) {

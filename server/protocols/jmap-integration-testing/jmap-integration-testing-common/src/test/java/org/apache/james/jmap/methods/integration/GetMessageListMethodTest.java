@@ -163,7 +163,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -175,7 +175,7 @@ public abstract class GetMessageListMethodTest {
             ClassLoader.getSystemResourceAsStream("eml/twoAttachments.eml"), new Date(), false, new Flags());
         await();
 
-        String messageId = message.getMessageId().serialize();
+        String messageId = message.getMessageId().getName();
 
         given()
             .header("Authorization", aliceAccessToken.serialize())
@@ -213,7 +213,7 @@ public abstract class GetMessageListMethodTest {
             ALICE,
             new Rfc4314Rights(Right.Read));
 
-        String messageId = message.getMessageId().serialize();
+        String messageId = message.getMessageId().getName();
 
         given()
             .header("Authorization", bobAccessToken.serialize())
@@ -232,7 +232,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -278,8 +278,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                    containsInAnyOrder(messageFlagged.getMessageId().serialize()), 
-                    not(containsInAnyOrder(messageNotFlagged.getMessageId().serialize()))));
+                    containsInAnyOrder(messageFlagged.getMessageId().getName()),
+                    not(containsInAnyOrder(messageNotFlagged.getMessageId().getName()))));
     }
 
     @Test
@@ -302,8 +302,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                    containsInAnyOrder(messageNotFlagged.getMessageId().serialize()), 
-                    not(containsInAnyOrder(messageFlagged.getMessageId().serialize()))));
+                    containsInAnyOrder(messageNotFlagged.getMessageId().getName()),
+                    not(containsInAnyOrder(messageFlagged.getMessageId().getName()))));
     }
 
     @Test
@@ -326,8 +326,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                    containsInAnyOrder(messageRead.getMessageId().serialize()), 
-                    not(containsInAnyOrder(messageNotRead.getMessageId().serialize()))));
+                    containsInAnyOrder(messageRead.getMessageId().getName()),
+                    not(containsInAnyOrder(messageNotRead.getMessageId().getName()))));
     }
 
     @Test
@@ -350,8 +350,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                    containsInAnyOrder(messageNotRead.getMessageId().serialize()), 
-                    not(containsInAnyOrder(messageRead.getMessageId().serialize()))));
+                    containsInAnyOrder(messageNotRead.getMessageId().getName()),
+                    not(containsInAnyOrder(messageRead.getMessageId().getName()))));
     }
 
     @Test
@@ -374,8 +374,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                    containsInAnyOrder(messageDraft.getMessageId().serialize()), 
-                    not(containsInAnyOrder(messageNotDraft.getMessageId().serialize()))));
+                    containsInAnyOrder(messageDraft.getMessageId().getName()),
+                    not(containsInAnyOrder(messageNotDraft.getMessageId().getName()))));
     }
 
     @Test
@@ -398,8 +398,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                    containsInAnyOrder(messageNotDraft.getMessageId().serialize()), 
-                    not(containsInAnyOrder(messageDraft.getMessageId().serialize()))));
+                    containsInAnyOrder(messageNotDraft.getMessageId().getName()),
+                    not(containsInAnyOrder(messageDraft.getMessageId().getName()))));
     }
 
     @Test
@@ -422,8 +422,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                    containsInAnyOrder(messageAnswered.getMessageId().serialize()), 
-                    not(containsInAnyOrder(messageNotAnswered.getMessageId().serialize()))));
+                    containsInAnyOrder(messageAnswered.getMessageId().getName()),
+                    not(containsInAnyOrder(messageNotAnswered.getMessageId().getName()))));
     }
 
     @Test
@@ -446,8 +446,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                    containsInAnyOrder(messageNotAnswered.getMessageId().serialize()), 
-                    not(containsInAnyOrder(messageAnswered.getMessageId().serialize()))));
+                    containsInAnyOrder(messageNotAnswered.getMessageId().getName()),
+                    not(containsInAnyOrder(messageAnswered.getMessageId().getName()))));
     }
 
     @Test
@@ -470,8 +470,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                containsInAnyOrder(messageForwarded.getMessageId().serialize()),
-                not(containsInAnyOrder(messageNotForwarded.getMessageId().serialize()))));
+                containsInAnyOrder(messageForwarded.getMessageId().getName()),
+                not(containsInAnyOrder(messageNotForwarded.getMessageId().getName()))));
     }
 
     @Test
@@ -494,8 +494,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                containsInAnyOrder(messageNotForwarded.getMessageId().serialize()),
-                not(containsInAnyOrder(messageForwarded.getMessageId().serialize()))));
+                containsInAnyOrder(messageNotForwarded.getMessageId().getName()),
+                not(containsInAnyOrder(messageForwarded.getMessageId().getName()))));
     }
 
     @Test
@@ -522,10 +522,10 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                    containsInAnyOrder(messageNotSeenFlagged.getMessageId().serialize()), 
-                    not(containsInAnyOrder(messageNotSeenNotFlagged.getMessageId().serialize(),
-                            messageSeenNotFlagged.getMessageId().serialize(),
-                            messageSeenFlagged.getMessageId().serialize()))));
+                    containsInAnyOrder(messageNotSeenFlagged.getMessageId().getName()),
+                    not(containsInAnyOrder(messageNotSeenNotFlagged.getMessageId().getName(),
+                            messageSeenNotFlagged.getMessageId().getName(),
+                            messageSeenFlagged.getMessageId().getName()))));
     }
 
     @Test
@@ -552,10 +552,10 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                    containsInAnyOrder(messageNotSeenFlagged.getMessageId().serialize(),
-                            messageSeenFlagged.getMessageId().serialize(),
-                            messageNotSeenNotFlagged.getMessageId().serialize()), 
-                    not(containsInAnyOrder(messageSeenNotFlagged.getMessageId().serialize()))));
+                    containsInAnyOrder(messageNotSeenFlagged.getMessageId().getName(),
+                            messageSeenFlagged.getMessageId().getName(),
+                            messageNotSeenNotFlagged.getMessageId().getName()),
+                    not(containsInAnyOrder(messageSeenNotFlagged.getMessageId().getName()))));
     }
 
     @Test
@@ -582,10 +582,10 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                    containsInAnyOrder(messageSeenNotFlagged.getMessageId().serialize()), 
-                    not(containsInAnyOrder(messageNotSeenFlagged.getMessageId().serialize(),
-                            messageSeenFlagged.getMessageId().serialize(),
-                            messageNotSeenNotFlagged.getMessageId().serialize()))));
+                    containsInAnyOrder(messageSeenNotFlagged.getMessageId().getName()),
+                    not(containsInAnyOrder(messageNotSeenFlagged.getMessageId().getName(),
+                            messageSeenFlagged.getMessageId().getName(),
+                            messageNotSeenNotFlagged.getMessageId().getName()))));
     }
 
     @Test
@@ -615,10 +615,10 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                    containsInAnyOrder(messageSeenFlagged.getMessageId().serialize(),
-                            messageNotSeenFlagged.getMessageId().serialize()), 
-                    not(containsInAnyOrder(messageNotSeenNotFlagged.getMessageId().serialize(),
-                            messageSeenNotFlagged.getMessageId().serialize()))));
+                    containsInAnyOrder(messageSeenFlagged.getMessageId().getName(),
+                            messageNotSeenFlagged.getMessageId().getName()),
+                    not(containsInAnyOrder(messageNotSeenNotFlagged.getMessageId().getName(),
+                            messageSeenNotFlagged.getMessageId().getName()))));
     }
 
     @Test
@@ -667,7 +667,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().getName()));
     }
 
     @Test
@@ -690,7 +690,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().serialize(), message3.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().getName(), message3.getMessageId().getName()));
     }
 
     @Test
@@ -723,7 +723,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message1.getMessageId().serialize(), message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message1.getMessageId().getName(), message2.getMessageId().getName()));
     }
 
     @Test
@@ -745,7 +745,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message1.getMessageId().serialize(), message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message1.getMessageId().getName(), message2.getMessageId().getName()));
     }
 
     @Test
@@ -776,7 +776,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message1.getMessageId().serialize(), message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message1.getMessageId().getName(), message2.getMessageId().getName()));
     }
 
     @Test
@@ -794,7 +794,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -814,7 +814,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -893,7 +893,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -913,7 +913,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -966,7 +966,7 @@ public abstract class GetMessageListMethodTest {
             .post("/jmap")
         .then()
             .statusCode(200)
-            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -983,7 +983,7 @@ public abstract class GetMessageListMethodTest {
             .post("/jmap")
         .then()
             .statusCode(200)
-            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -1000,7 +1000,7 @@ public abstract class GetMessageListMethodTest {
             .post("/jmap")
         .then()
             .statusCode(200)
-            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -1034,7 +1034,7 @@ public abstract class GetMessageListMethodTest {
             .post("/jmap")
         .then()
             .statusCode(200)
-            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -1068,7 +1068,7 @@ public abstract class GetMessageListMethodTest {
             .post("/jmap")
         .then()
             .statusCode(200)
-            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -1102,7 +1102,7 @@ public abstract class GetMessageListMethodTest {
             .post("/jmap")
         .then()
             .statusCode(200)
-            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -1175,7 +1175,7 @@ public abstract class GetMessageListMethodTest {
             .post("/jmap")
         .then()
             .statusCode(200)
-            .body(ARGUMENTS + ".messageIds", contains(composedMessageId.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(composedMessageId.getMessageId().getName()));
     }
 
     @Test
@@ -1197,7 +1197,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().serialize(), message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().getName(), message2.getMessageId().getName()));
     }
 
     @Test
@@ -1220,7 +1220,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().serialize(), message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().getName(), message2.getMessageId().getName()));
     }
 
     @Test
@@ -1242,7 +1242,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().serialize(), message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().getName(), message2.getMessageId().getName()));
     }
 
     @Test
@@ -1264,7 +1264,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().serialize(), message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().getName(), message2.getMessageId().getName()));
     }
 
     @Test
@@ -1286,7 +1286,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize(), message1.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().getName(), message1.getMessageId().getName()));
     }
 
     @Test
@@ -1308,7 +1308,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize(), message1.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().getName(), message1.getMessageId().getName()));
     }
 
     @Test
@@ -1330,7 +1330,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize(), message1.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().getName(), message1.getMessageId().getName()));
     }
 
     @Test
@@ -1352,7 +1352,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize(), message1.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().getName(), message1.getMessageId().getName()));
     }
 
     @Test
@@ -1374,7 +1374,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize(), message1.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().getName(), message1.getMessageId().getName()));
     }
 
 
@@ -1397,7 +1397,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().serialize(), message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().getName(), message2.getMessageId().getName()));
     }
 
     @Test
@@ -1419,7 +1419,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize(), message1.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().getName(), message1.getMessageId().getName()));
     }
 
     @Test
@@ -1444,7 +1444,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize(), message3.getMessageId().serialize(), message1.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().getName(), message3.getMessageId().getName(), message1.getMessageId().getName()));
     }
 
     @Test
@@ -1469,7 +1469,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message3.getMessageId().serialize(), message2.getMessageId().serialize(), message1.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message3.getMessageId().getName(), message2.getMessageId().getName(), message1.getMessageId().getName()));
     }
 
     @Test
@@ -1491,7 +1491,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message2.getMessageId().serialize(), message1.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message2.getMessageId().getName(), message1.getMessageId().getName()));
     }
 
     @Test
@@ -1513,7 +1513,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().serialize(), message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message1.getMessageId().getName(), message2.getMessageId().getName()));
     }
 
     @Test
@@ -1559,7 +1559,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message1.getMessageId().serialize(), message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message1.getMessageId().getName(), message2.getMessageId().getName()));
     }
 
     @Test
@@ -1581,7 +1581,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().getName()));
     }
 
     @Test
@@ -1605,7 +1605,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().getName()));
     }
 
     @Test
@@ -1627,7 +1627,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message1.getMessageId().serialize(), message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message1.getMessageId().getName(), message2.getMessageId().getName()));
     }
 
     @Test
@@ -1649,7 +1649,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -1675,7 +1675,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message1.getMessageId().serialize(), message2.getMessageId().serialize(), message3.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", containsInAnyOrder(message1.getMessageId().getName(), message2.getMessageId().getName(), message3.getMessageId().getName()));
     }
 
     @Test
@@ -1697,9 +1697,9 @@ public abstract class GetMessageListMethodTest {
             .body("[0][0]", equalTo("messageList"))
             .body("[1][0]", equalTo("messages"))
             .body("[0][1].messageIds", hasSize(1))
-            .body("[0][1].messageIds[0]", equalTo(message.getMessageId().serialize()))
+            .body("[0][1].messageIds[0]", equalTo(message.getMessageId().getName()))
             .body("[1][1].list", hasSize(1))
-            .body("[1][1].list[0].id", equalTo(message.getMessageId().serialize()));
+            .body("[1][1].list[0].id", equalTo(message.getMessageId().getName()));
     }
 
     @Test
@@ -1749,8 +1749,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                containsInAnyOrder(messageFlagged.getMessageId().serialize()),
-                not(containsInAnyOrder(messageNotFlagged.getMessageId().serialize()))));
+                containsInAnyOrder(messageFlagged.getMessageId().getName()),
+                not(containsInAnyOrder(messageNotFlagged.getMessageId().getName()))));
     }
 
     @Test
@@ -1778,8 +1778,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-            containsInAnyOrder(messageFlagged.getMessageId().serialize()),
-            not(containsInAnyOrder(messageNotFlagged.getMessageId().serialize()))));
+            containsInAnyOrder(messageFlagged.getMessageId().getName()),
+            not(containsInAnyOrder(messageNotFlagged.getMessageId().getName()))));
     }
 
     @Test
@@ -1802,8 +1802,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                containsInAnyOrder(messageNotFlagged.getMessageId().serialize()),
-                not(containsInAnyOrder(messageFlagged.getMessageId().serialize()))));
+                containsInAnyOrder(messageNotFlagged.getMessageId().getName()),
+                not(containsInAnyOrder(messageFlagged.getMessageId().getName()))));
     }
 
     @Test
@@ -1831,8 +1831,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                containsInAnyOrder(messageNotFlagged.getMessageId().serialize()),
-                not(containsInAnyOrder(messageFlagged.getMessageId().serialize()))));
+                containsInAnyOrder(messageNotFlagged.getMessageId().getName()),
+                not(containsInAnyOrder(messageFlagged.getMessageId().getName()))));
     }
 
     @Test
@@ -1860,7 +1860,7 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds",
-                containsInAnyOrder(messageNotFlagged.getMessageId().serialize(), messageFlagged.getMessageId().serialize()));
+                containsInAnyOrder(messageNotFlagged.getMessageId().getName(), messageFlagged.getMessageId().getName()));
     }
 
     @Test
@@ -1883,8 +1883,8 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                containsInAnyOrder(messageFlagged.getMessageId().serialize()),
-                not(containsInAnyOrder(messageNotFlagged.getMessageId().serialize()))));
+                containsInAnyOrder(messageFlagged.getMessageId().getName()),
+                not(containsInAnyOrder(messageNotFlagged.getMessageId().getName()))));
     }
 
     @Test
@@ -1907,7 +1907,7 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds",
-                containsInAnyOrder(messageFlagged.getMessageId().serialize(), messageNotFlagged.getMessageId().serialize()));
+                containsInAnyOrder(messageFlagged.getMessageId().getName(), messageNotFlagged.getMessageId().getName()));
     }
 
     @Test
@@ -1930,7 +1930,7 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds",
-                containsInAnyOrder(messageFlagged.getMessageId().serialize(), messageNotFlagged.getMessageId().serialize()));
+                containsInAnyOrder(messageFlagged.getMessageId().getName(), messageNotFlagged.getMessageId().getName()));
     }
 
     @Test
@@ -1953,7 +1953,7 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds",
-                containsInAnyOrder(messageFlagged.getMessageId().serialize(), messageNotFlagged.getMessageId().serialize()));
+                containsInAnyOrder(messageFlagged.getMessageId().getName(), messageNotFlagged.getMessageId().getName()));
     }
 
     @Test
@@ -1976,7 +1976,7 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds",
-                containsInAnyOrder(messageFlagged.getMessageId().serialize(), messageNotFlagged.getMessageId().serialize()));
+                containsInAnyOrder(messageFlagged.getMessageId().getName(), messageNotFlagged.getMessageId().getName()));
     }
 
     @Test
@@ -1999,7 +1999,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize(), message1.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().getName(), message1.getMessageId().getName()));
     }
 
     @Test
@@ -2035,7 +2035,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().getName()));
     }
 
     @Test
@@ -2102,7 +2102,7 @@ public abstract class GetMessageListMethodTest {
         .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().getName()));
     }
 
     private Date convertToDate(LocalDate localDate) {

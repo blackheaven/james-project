@@ -40,7 +40,6 @@ import org.apache.james.mailbox.elasticsearch.events.ElasticSearchListeningMessa
 import org.apache.james.mailbox.elasticsearch.query.QueryConverter;
 import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
 import org.apache.james.mailbox.model.MailboxId;
-import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
 import org.apache.james.quota.search.elasticsearch.QuotaSearchIndexCreationUtil;
@@ -88,14 +87,12 @@ public class ElasticSearchMailboxModule extends AbstractModule {
     private ElasticSearchSearcher createMailboxElasticSearchSearcher(Client client,
                                                                      QueryConverter queryConverter,
                                                                      MailboxId.Factory mailboxIdFactory,
-                                                                     MessageId.Factory messageIdFactory,
                                                                      ElasticSearchConfiguration configuration) {
         return new ElasticSearchSearcher(
             client,
             queryConverter,
             DEFAULT_SEARCH_SIZE,
             mailboxIdFactory,
-            messageIdFactory,
             configuration.getReadAliasMailboxName(),
             MailboxElasticSearchConstants.MESSAGE_TYPE);
     }

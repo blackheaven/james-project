@@ -45,19 +45,16 @@ public class StoreBlobManager implements BlobManager {
     public static final String MESSAGE_RFC822_CONTENT_TYPE = "message/rfc822";
     private final AttachmentManager attachmentManager;
     private final MessageIdManager messageIdManager;
-    private final MessageId.Factory messageIdFactory;
 
     @Inject
-    public StoreBlobManager(AttachmentManager attachmentManager, MessageIdManager messageIdManager,
-                            MessageId.Factory messageIdFactory) {
+    public StoreBlobManager(AttachmentManager attachmentManager, MessageIdManager messageIdManager) {
         this.attachmentManager = attachmentManager;
         this.messageIdManager = messageIdManager;
-        this.messageIdFactory = messageIdFactory;
     }
 
     @Override
     public BlobId toBlobId(MessageId messageId) {
-        return BlobId.fromString(messageId.serialize());
+        return BlobId.fromString(messageId.getName());
     }
 
     @Override
@@ -88,11 +85,7 @@ public class StoreBlobManager implements BlobManager {
     }
 
     private Optional<MessageId> retrieveMessageId(BlobId blobId) {
-        try {
-            return Optional.of(messageIdFactory.fromString(blobId.asString()));
-        } catch (IllegalArgumentException e) {
-            return Optional.empty();
-        }
+        return MessageId.fromJson(blobId.asString());
     }
 
     private Optional<InputStream> loadMessageAsBlob(MessageId messageId, MailboxSession mailboxSession)  {

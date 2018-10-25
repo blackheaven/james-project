@@ -48,7 +48,6 @@ import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.inmemory.InMemoryMailboxSessionMapperFactory;
-import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.store.StoreMailboxManager;
@@ -92,7 +91,6 @@ public class ElasticSearchHostSystem extends JamesImapHostSystem {
             new TestingClientProvider(embeddedElasticSearch.getNode()).get());
 
         InMemoryMailboxSessionMapperFactory factory = new InMemoryMailboxSessionMapperFactory();
-        InMemoryMessageId.Factory messageIdFactory = new InMemoryMessageId.Factory();
 
         ElasticSearchListeningMessageSearchIndex searchIndex = new ElasticSearchListeningMessageSearchIndex(
             factory,
@@ -103,7 +101,7 @@ public class ElasticSearchHostSystem extends JamesImapHostSystem {
             new ElasticSearchSearcher(client,
                 new QueryConverter(new CriterionConverter()),
                 ElasticSearchSearcher.DEFAULT_SEARCH_SIZE,
-                new InMemoryId.Factory(), messageIdFactory,
+                new InMemoryId.Factory(),
                 MailboxElasticSearchConstants.DEFAULT_MAILBOX_READ_ALIAS, MailboxElasticSearchConstants.MESSAGE_TYPE),
             new MessageToElasticSearchJson(new DefaultTextExtractor(), ZoneId.systemDefault(), IndexAttachments.YES));
 

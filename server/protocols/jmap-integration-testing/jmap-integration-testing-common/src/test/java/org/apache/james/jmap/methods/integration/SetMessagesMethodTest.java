@@ -219,7 +219,7 @@ public abstract class SetMessagesMethodTest {
     @Test
     public void setMessagesShouldReturnNotDestroyedWhenUnknownMailbox() {
 
-        String unknownMailboxMessageId = randomMessageId().serialize();
+        String unknownMailboxMessageId = randomMessageId().getName();
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[\"setMessages\", {\"destroy\": [\"" + unknownMailboxMessageId + "\"]}, \"#0\"]]")
@@ -241,7 +241,7 @@ public abstract class SetMessagesMethodTest {
     public void setMessagesShouldReturnNotDestroyedWhenNoMatchingMessage() {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
-        String messageId = randomMessageId().serialize();
+        String messageId = randomMessageId().getName();
         given()
             .header("Authorization", accessToken.serialize())
             .body("[[\"setMessages\", {\"destroy\": [\"" + messageId + "\"]}, \"#0\"]]")
@@ -270,7 +270,7 @@ public abstract class SetMessagesMethodTest {
 
         given()
             .header("Authorization", accessToken.serialize())
-            .body("[[\"setMessages\", {\"destroy\": [\"" + message.getMessageId().serialize() + "\"]}, \"#0\"]]")
+            .body("[[\"setMessages\", {\"destroy\": [\"" + message.getMessageId().getName() + "\"]}, \"#0\"]]")
         .when()
             .post("/jmap")
         .then()
@@ -279,7 +279,7 @@ public abstract class SetMessagesMethodTest {
             .body(NAME, equalTo("messagesSet"))
             .body(ARGUMENTS + ".notDestroyed", anEmptyMap())
             .body(ARGUMENTS + ".destroyed", hasSize(1))
-            .body(ARGUMENTS + ".destroyed", contains(message.getMessageId().serialize()));
+            .body(ARGUMENTS + ".destroyed", contains(message.getMessageId().getName()));
     }
 
     @Test
@@ -294,7 +294,7 @@ public abstract class SetMessagesMethodTest {
         // When
         given()
             .header("Authorization", accessToken.serialize())
-            .body("[[\"setMessages\", {\"destroy\": [\"" + message.getMessageId().serialize() + "\"]}, \"#0\"]]")
+            .body("[[\"setMessages\", {\"destroy\": [\"" + message.getMessageId().getName() + "\"]}, \"#0\"]]")
         .when()
             .post("/jmap")
         .then()
@@ -304,7 +304,7 @@ public abstract class SetMessagesMethodTest {
         // Then
         given()
             .header("Authorization", accessToken.serialize())
-            .body("[[\"getMessages\", {\"ids\": [\"" + message.getMessageId().serialize() + "\"]}, \"#0\"]]")
+            .body("[[\"getMessages\", {\"ids\": [\"" + message.getMessageId().getName() + "\"]}, \"#0\"]]")
         .when()
             .post("/jmap")
         .then()
@@ -328,13 +328,13 @@ public abstract class SetMessagesMethodTest {
             new ByteArrayInputStream("Subject: test3\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String missingMessageId = randomMessageId().serialize();
+        String missingMessageId = randomMessageId().getName();
         given()
             .header("Authorization", accessToken.serialize())
             .body(String.format("[[\"setMessages\", {\"destroy\": [\"%s\", \"%s\", \"%s\"]}, \"#0\"]]",
-                message1.getMessageId().serialize(),
+                message1.getMessageId().getName(),
                 missingMessageId,
-                message3.getMessageId().serialize()))
+                message3.getMessageId().getName()))
         .when()
             .post("/jmap")
         .then()
@@ -343,7 +343,7 @@ public abstract class SetMessagesMethodTest {
             .body(NAME, equalTo("messagesSet"))
             .body(ARGUMENTS + ".destroyed", hasSize(2))
             .body(ARGUMENTS + ".notDestroyed", aMapWithSize(1))
-            .body(ARGUMENTS + ".destroyed", contains(message1.getMessageId().serialize(), message3.getMessageId().serialize()))
+            .body(ARGUMENTS + ".destroyed", contains(message1.getMessageId().getName(), message3.getMessageId().getName()))
             .body(ARGUMENTS + ".notDestroyed", hasEntry(equalTo(missingMessageId), Matchers.allOf(
                 hasEntry("type", "notFound"),
                 hasEntry("description", "The message " + missingMessageId + " can't be found")))
@@ -369,18 +369,18 @@ public abstract class SetMessagesMethodTest {
         with()
             .header("Authorization", accessToken.serialize())
             .body(String.format("[[\"setMessages\", {\"destroy\": [\"%s\", \"%s\", \"%s\"]}, \"#0\"]]",
-                message1.getMessageId().serialize(),
-                randomMessageId().serialize(),
-                message3.getMessageId().serialize()))
+                message1.getMessageId().getName(),
+                randomMessageId().getName(),
+                message3.getMessageId().getName()))
         .post("/jmap");
 
         // Then
         given()
             .header("Authorization", accessToken.serialize())
             .body(String.format("[[\"getMessages\", {\"ids\": [\"%s\", \"%s\", \"%s\"]}, \"#0\"]]",
-                message1.getMessageId().serialize(),
-                message2.getMessageId().serialize(),
-                message3.getMessageId().serialize()))
+                message1.getMessageId().getName(),
+                message2.getMessageId().getName(),
+                message3.getMessageId().getName()))
         .when()
             .post("/jmap")
         .then()
@@ -399,7 +399,7 @@ public abstract class SetMessagesMethodTest {
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String serializedMessageId = message.getMessageId().serialize();
+        String serializedMessageId = message.getMessageId().getName();
 
         // When
         given()
@@ -421,7 +421,7 @@ public abstract class SetMessagesMethodTest {
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String messageId = message.getMessageId().serialize();
+        String messageId = message.getMessageId().getName();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -444,7 +444,7 @@ public abstract class SetMessagesMethodTest {
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String serializedMessageId = message.getMessageId().serialize();
+        String serializedMessageId = message.getMessageId().getName();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -476,7 +476,7 @@ public abstract class SetMessagesMethodTest {
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String serializedMessageId = message.getMessageId().serialize();
+        String serializedMessageId = message.getMessageId().getName();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -512,7 +512,7 @@ public abstract class SetMessagesMethodTest {
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, flags);
         await();
 
-        String serializedMessageId = message.getMessageId().serialize();
+        String serializedMessageId = message.getMessageId().getName();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -543,7 +543,7 @@ public abstract class SetMessagesMethodTest {
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags(Flags.Flag.ANSWERED));
         await();
 
-        String messageId = message.getMessageId().serialize();
+        String messageId = message.getMessageId().getName();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -566,7 +566,7 @@ public abstract class SetMessagesMethodTest {
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags(Flags.Flag.ANSWERED));
         await();
 
-        String messageId = message.getMessageId().serialize();
+        String messageId = message.getMessageId().getName();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -589,7 +589,7 @@ public abstract class SetMessagesMethodTest {
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags(Flags.Flag.DELETED));
         await();
 
-        String messageId = message.getMessageId().serialize();
+        String messageId = message.getMessageId().getName();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -622,7 +622,7 @@ public abstract class SetMessagesMethodTest {
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, flags);
         await();
 
-        String messageId = message.getMessageId().serialize();
+        String messageId = message.getMessageId().getName();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -657,7 +657,7 @@ public abstract class SetMessagesMethodTest {
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, currentFlags);
         await();
 
-        String messageId = message.getMessageId().serialize();
+        String messageId = message.getMessageId().getName();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -690,7 +690,7 @@ public abstract class SetMessagesMethodTest {
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String serializedMessageId = message.getMessageId().serialize();
+        String serializedMessageId = message.getMessageId().getName();
         given()
             .header("Authorization", accessToken.serialize())
             .body(String.format("[[\"setMessages\", {\"update\": {\"%s\" : { \"isUnread\" : false } } }, \"#0\"]]", serializedMessageId))
@@ -719,7 +719,7 @@ public abstract class SetMessagesMethodTest {
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags(Flags.Flag.SEEN));
         await();
 
-        String serializedMessageId = message.getMessageId().serialize();
+        String serializedMessageId = message.getMessageId().getName();
         given()
             .header("Authorization", accessToken.serialize())
             .body(String.format("[[\"setMessages\", {\"update\": {\"%s\" : { \"isUnread\" : true } } }, \"#0\"]]", serializedMessageId))
@@ -741,7 +741,7 @@ public abstract class SetMessagesMethodTest {
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags(Flags.Flag.SEEN));
         await();
 
-        String serializedMessageId = message.getMessageId().serialize();
+        String serializedMessageId = message.getMessageId().getName();
         given()
             .header("Authorization", accessToken.serialize())
             .body(String.format("[[\"setMessages\", {\"update\": {\"%s\" : { \"isUnread\" : true } } }, \"#0\"]]", serializedMessageId))
@@ -770,7 +770,7 @@ public abstract class SetMessagesMethodTest {
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String serializedMessageId = message.getMessageId().serialize();
+        String serializedMessageId = message.getMessageId().getName();
         given()
             .header("Authorization", accessToken.serialize())
             .body(String.format("[[\"setMessages\", {\"update\": {\"%s\" : { \"isFlagged\" : true } } }, \"#0\"]]", serializedMessageId))
@@ -792,7 +792,7 @@ public abstract class SetMessagesMethodTest {
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String serializedMessageId = message.getMessageId().serialize();
+        String serializedMessageId = message.getMessageId().getName();
         given()
             .header("Authorization", accessToken.serialize())
             .body(String.format("[[\"setMessages\", {\"update\": {\"%s\" : { \"isFlagged\" : true } } }, \"#0\"]]", serializedMessageId))
@@ -819,7 +819,7 @@ public abstract class SetMessagesMethodTest {
 
         await();
 
-        String messageId = randomMessageId().serialize();
+        String messageId = randomMessageId().getName();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -875,7 +875,7 @@ public abstract class SetMessagesMethodTest {
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String serializedMessageId = message.getMessageId().serialize();
+        String serializedMessageId = message.getMessageId().getName();
         // When
         given()
             .header("Authorization", accessToken.serialize())
@@ -897,7 +897,7 @@ public abstract class SetMessagesMethodTest {
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String serializedMessageId = message.getMessageId().serialize();
+        String serializedMessageId = message.getMessageId().getName();
         given()
             .header("Authorization", accessToken.serialize())
             .body(String.format("[[\"setMessages\", {\"update\": {\"%s\" : { \"isAnswered\" : true } } }, \"#0\"]]", serializedMessageId))
@@ -925,7 +925,7 @@ public abstract class SetMessagesMethodTest {
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String serializedMessageId = message.getMessageId().serialize();
+        String serializedMessageId = message.getMessageId().getName();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -945,7 +945,7 @@ public abstract class SetMessagesMethodTest {
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String serializedMessageId = message.getMessageId().serialize();
+        String serializedMessageId = message.getMessageId().getName();
         given()
             .header("Authorization", accessToken.serialize())
             .body(String.format("[[\"setMessages\", {\"update\": {\"%s\" : { \"isForwarded\" : true } } }, \"#0\"]]", serializedMessageId))
@@ -967,7 +967,7 @@ public abstract class SetMessagesMethodTest {
     public void setMessagesShouldReturnNotFoundWhenUpdateUnknownMessage() {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
-        String nonExistingMessageId = randomMessageId().serialize();
+        String nonExistingMessageId = randomMessageId().getName();
 
         given()
             .header("Authorization", accessToken.serialize())
@@ -1438,7 +1438,7 @@ public abstract class SetMessagesMethodTest {
 
         List<ComposedMessageId> composedMessageIds = MessageAppender.fillMailbox(mailboxProbe, USERNAME, MailboxConstants.INBOX);
 
-        String messageId = composedMessageIds.get(0).getMessageId().serialize();
+        String messageId = composedMessageIds.get(0).getMessageId().getName();
         String requestBody =  "[" +
             "  [" +
             "    \"setMessages\"," +
@@ -2212,7 +2212,7 @@ public abstract class SetMessagesMethodTest {
             new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String messageId = message.getMessageId().serialize();
+        String messageId = message.getMessageId().getName();
         String moveMessageToOutBox = "[" +
             "  [" +
             "    \"setMessages\"," +
@@ -2334,7 +2334,7 @@ public abstract class SetMessagesMethodTest {
         EventFactory.AddedImpl added = (EventFactory.AddedImpl) event;
         return added.getMailboxPath().equals(MailboxPath.forUser(USERNAME, DefaultMailboxes.OUTBOX))
             && added.getUids().size() == 1
-            && added.getMetaData(added.getUids().get(0)).getMessageId().serialize().equals(messageId);
+            && added.getMetaData(added.getUids().get(0)).getMessageId().getName().equals(messageId);
     }
 
     @Test
@@ -3214,7 +3214,7 @@ public abstract class SetMessagesMethodTest {
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
 
-        String messageToMoveId = message.getMessageId().serialize();
+        String messageToMoveId = message.getMessageId().getName();
         String mailboxId = message.getMailboxId().serialize();
         String requestBody = "[" +
             "  [" +
@@ -3247,7 +3247,7 @@ public abstract class SetMessagesMethodTest {
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
 
-        String messageToMoveId = message.getMessageId().serialize();
+        String messageToMoveId = message.getMessageId().getName();
         String requestBody = "[" +
             "  [" +
             "    \"setMessages\"," +
@@ -3289,7 +3289,7 @@ public abstract class SetMessagesMethodTest {
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
 
-        String messageToMoveId = message.getMessageId().serialize();
+        String messageToMoveId = message.getMessageId().getName();
         String inboxId = message.getMailboxId().serialize();
         String requestBody = "[" +
             "  [" +
@@ -3332,7 +3332,7 @@ public abstract class SetMessagesMethodTest {
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
 
-        String messageToMoveId = message.getMessageId().serialize();
+        String messageToMoveId = message.getMessageId().getName();
         String inboxId = message.getMailboxId().serialize();
         String requestBody = "[" +
             "  [" +
@@ -3372,7 +3372,7 @@ public abstract class SetMessagesMethodTest {
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
 
-        String messageToMoveId = message.getMessageId().serialize();
+        String messageToMoveId = message.getMessageId().getName();
         String mailboxId = message.getMailboxId().serialize();
         String requestBody = "[" +
             "  [" +
@@ -3417,7 +3417,7 @@ public abstract class SetMessagesMethodTest {
             .serialize();
         mailboxProbe.deleteMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "any");
 
-        String messageToMoveId = message.getMessageId().serialize();
+        String messageToMoveId = message.getMessageId().getName();
         String requestBody = "[" +
             "  [" +
             "    \"setMessages\"," +
@@ -3450,7 +3450,7 @@ public abstract class SetMessagesMethodTest {
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
 
-        String messageToMoveId = message.getMessageId().serialize();
+        String messageToMoveId = message.getMessageId().getName();
         String requestBody = "[" +
             "  [" +
             "    \"setMessages\"," +
@@ -3488,7 +3488,7 @@ public abstract class SetMessagesMethodTest {
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
 
-        String messageToMoveId = message.getMessageId().serialize();
+        String messageToMoveId = message.getMessageId().getName();
         String requestBody = "[" +
             "  [" +
             "    \"setMessages\"," +
@@ -3521,7 +3521,7 @@ public abstract class SetMessagesMethodTest {
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
 
-        String messageToMoveId = message.getMessageId().serialize();
+        String messageToMoveId = message.getMessageId().getName();
         String requestBody = "[" +
             "  [" +
             "    \"setMessages\"," +
@@ -3564,7 +3564,7 @@ public abstract class SetMessagesMethodTest {
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
 
-        String messageToMoveId = message.getMessageId().serialize();
+        String messageToMoveId = message.getMessageId().getName();
         String requestBody = "[" +
             "  [" +
             "    \"setMessages\"," +
@@ -3600,7 +3600,7 @@ public abstract class SetMessagesMethodTest {
         ComposedMessageId message = mailboxProbe.appendMessage(USERNAME, MailboxPath.forUser(USERNAME, MailboxConstants.INBOX),
             new ByteArrayInputStream("Subject: my test subject\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), Date.from(dateTime.toInstant()), false, new Flags());
 
-        String messageToMoveId = message.getMessageId().serialize();
+        String messageToMoveId = message.getMessageId().getName();
         String mailboxId = message.getMailboxId().serialize();
         String requestBody = "[" +
             "  [" +
@@ -5313,7 +5313,7 @@ public abstract class SetMessagesMethodTest {
                 new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes(StandardCharsets.UTF_8)), new Date(), false, new Flags());
         await();
 
-        String messageId = message.getMessageId().serialize();
+        String messageId = message.getMessageId().getName();
 
         given()
             .header("Authorization", accessToken.serialize())

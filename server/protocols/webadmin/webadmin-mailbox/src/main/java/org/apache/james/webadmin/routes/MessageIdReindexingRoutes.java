@@ -57,14 +57,12 @@ public class MessageIdReindexingRoutes implements Routes {
     private static final String MESSAGE_PATH = BASE_PATH + "/messages/" + MESSAGE_ID_PARAM;
 
     private final TaskManager taskManager;
-    private final MessageId.Factory messageIdFactory;
     private final MessageIdReIndexer reIndexer;
     private final JsonTransformer jsonTransformer;
 
     @Inject
-    public MessageIdReindexingRoutes(TaskManager taskManager, MessageId.Factory messageIdFactory, MessageIdReIndexer reIndexer, JsonTransformer jsonTransformer) {
+    public MessageIdReindexingRoutes(TaskManager taskManager, MessageIdReIndexer reIndexer, JsonTransformer jsonTransformer) {
         this.taskManager = taskManager;
-        this.messageIdFactory = messageIdFactory;
         this.reIndexer = reIndexer;
         this.jsonTransformer = jsonTransformer;
     }
@@ -110,7 +108,7 @@ public class MessageIdReindexingRoutes implements Routes {
 
     private MessageId extractMessageId(Request request) {
         try {
-            return messageIdFactory.fromString(request.params(MESSAGE_ID_PARAM));
+            return MessageId.fromJson(request.params(MESSAGE_ID_PARAM)).get();
         } catch (Exception e) {
             throw ErrorResponder.builder()
                 .statusCode(HttpStatus.BAD_REQUEST_400)

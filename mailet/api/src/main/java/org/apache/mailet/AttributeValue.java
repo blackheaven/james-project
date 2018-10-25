@@ -64,6 +64,10 @@ public class AttributeValue<T> implements Serializable {
         return new AttributeValue<>(value, Serializer.DOUBLE_SERIALIZER);
     }
 
+    public static AttributeValue<QueueSerializable> of(QueueSerializable value) {
+        return new AttributeValue<>(value, Serializer.QUEUE_SERIALIZABLE_SERIALIZER);
+    }
+
     public static AttributeValue<URL> of(URL value) {
         return new AttributeValue<>(value, Serializer.URL_SERIALIZER);
     }
@@ -108,6 +112,9 @@ public class AttributeValue<T> implements Serializable {
         if (value instanceof Map<?,?>) {
             return of(((Map<String, AttributeValue<?>>) value));
         }
+        if (value instanceof QueueSerializable) {
+            return of((QueueSerializable) value);
+        }
         if (value instanceof Serializable) {
             return ofSerializable((Serializable) value);
         }
@@ -120,15 +127,33 @@ public class AttributeValue<T> implements Serializable {
         return fromJson(tree);
     }
 
+    public static Optional<AttributeValue<?>> optionalFromJsonString(String json) {
+        try {
+            return Optional.of(fromJsonString(json));
+        } catch (IOException e) {
+            return Optional.empty();
+        }
+    }
+
     @VisibleForTesting
     static AttributeValue<?> fromJson(JsonNode input) {
         return Optional.of(input)
                 .filter(ObjectNode.class::isInstance)
                 .map(ObjectNode.class::cast)
-                .flatMap(fields -> Serializer.Registry.find(fields.get("serializer").asText())
-                    .flatMap(s -> s.deserialize(fields.get("value"))))
+                .flatMap(AttributeValue::deserialize)
                 .map(AttributeValue::of)
                 .orElseThrow(() -> new IllegalStateException("unable to deserialize " + input.toString()));
+    }
+
+    public static Optional<?> deserialize(ObjectNode fields) {
+        return Optional.ofNullable(fields.get("serializer"))
+                .flatMap(serializer ->  Optional.ofNullable(fields.get("value"))
+                        .flatMap(value -> findSerializer(serializer, value)));
+    }
+
+    public static Optional<?> findSerializer(JsonNode serializer, JsonNode value) {
+        return Serializer.Registry.find(serializer.asText())
+                .flatMap(s -> s.deserialize(value));
     }
 
     private final T value;

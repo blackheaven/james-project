@@ -48,8 +48,7 @@ public class LuceneMessageSearchIndexTest extends AbstractMessageSearchIndexTest
             storeMailboxManager.getQuotaManager(),
             storeMailboxManager.getQuotaRootResolver());
         LuceneMessageSearchIndex luceneMessageSearchIndex = new LuceneMessageSearchIndex(
-            storeMailboxManager.getMapperFactory(), new InMemoryId.Factory(), new RAMDirectory(),
-            storeMailboxManager.getMessageIdFactory());
+            storeMailboxManager.getMapperFactory(), new InMemoryId.Factory(), new RAMDirectory());
         storeMailboxManager.setMessageSearchIndex(luceneMessageSearchIndex);
         storeMailboxManager.addGlobalListener(luceneMessageSearchIndex, new MockMailboxSession("admin"));
         this.messageSearchIndex = luceneMessageSearchIndex;
