@@ -59,7 +59,7 @@ public class InMemoryMessageId implements MessageId {
     }
 
     @Override
-    public String getName() {
+    public String asString() {
         return String.valueOf(value);
     }
 

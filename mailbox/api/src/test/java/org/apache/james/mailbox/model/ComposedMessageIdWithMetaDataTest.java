@@ -122,7 +122,7 @@ public class ComposedMessageIdWithMetaDataTest {
         }
 
         @Override
-        public String getName() {
+        public String asString() {
             return id;
         }
 

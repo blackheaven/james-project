@@ -30,7 +30,7 @@ public interface MessageId extends QueueSerializable {
         MessageId generate();
     }
 
-    String getName();
+    String asString();
 
     static Optional<MessageId> fromJson(String json) {
        return AttributeValue.optionalFromJsonString(json)

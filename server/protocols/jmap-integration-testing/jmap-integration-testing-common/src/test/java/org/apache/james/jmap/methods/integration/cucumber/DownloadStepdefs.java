@@ -171,7 +171,7 @@ public class DownloadStepdefs {
     public void downloads(String username, String blobId) throws Throwable {
         String attachmentIdOrMessageId = Optional.ofNullable(blobIdByAttachmentId.get(blobId))
             .orElse(Optional.ofNullable(inputToMessageId.get(blobId))
-                .map(MessageId::getName)
+                .map(MessageId::asString)
                 .orElse(null));
 
         downLoad(username, attachmentIdOrMessageId);
@@ -181,7 +181,7 @@ public class DownloadStepdefs {
     public void downloadsUnAuthenticated(String blobId) throws Throwable {
         String attachmentIdOrMessageId = Optional.ofNullable(blobIdByAttachmentId.get(blobId))
             .orElse(Optional.ofNullable(inputToMessageId.get(blobId))
-                .map(MessageId::getName)
+                .map(MessageId::asString)
                 .orElse(null));
 
         response = Request.Get(

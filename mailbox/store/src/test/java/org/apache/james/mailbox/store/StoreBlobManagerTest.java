@@ -55,7 +55,7 @@ public class StoreBlobManagerTest {
     public static final byte[] BYTES = "abc".getBytes(StandardCharsets.UTF_8);
     public static final TestMessageId MESSAGE_ID = TestMessageId.of(125);
     public static final BlobId BLOB_ID_ATTACHMENT = BlobId.fromString(ID);
-    public static final BlobId BLOB_ID_MESSAGE = BlobId.fromString(MESSAGE_ID.getName());
+    public static final BlobId BLOB_ID_MESSAGE = BlobId.fromString(MESSAGE_ID.asString());
     private StoreBlobManager blobManager;
 
     private AttachmentManager attachmentManager;

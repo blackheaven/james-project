@@ -34,7 +34,7 @@ public class MailFactory {
     }
 
     public Mail build(MetaDataWithContent message, Envelope envelope) throws MessagingException {
-        return new MailImpl(message.getMessageId().getName(),
+        return new MailImpl(message.getMessageId().asString(),
             envelope.getFrom(),
             envelope.getRecipients(),
             message.getContent());

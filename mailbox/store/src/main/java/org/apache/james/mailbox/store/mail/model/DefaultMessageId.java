@@ -25,7 +25,7 @@ public class DefaultMessageId implements MessageId {
     }
 
     @Override
-    public String getName() {
+    public String asString() {
         throw new IllegalStateException("Capabilities should prevent calling this method");
     }
     

@@ -59,7 +59,7 @@ public class CassandraMessageId implements MessageId {
     }
     
     @Override
-    public String getName() {
+    public String asString() {
         return uuid.toString();
     }
 
@@ -90,6 +90,6 @@ public class CassandraMessageId implements MessageId {
 
     @Override
     public Serializable serialize() {
-        return new Serializable(AttributeValue.of(getName()), Factory.class);
+        return new Serializable(AttributeValue.of(asString()), Factory.class);
     }
 }

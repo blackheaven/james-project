@@ -94,6 +94,6 @@ public class CassandraAttachmentMessageIdDAO {
             insertStatement.bind()
                 .setUUID(ATTACHMENT_ID_AS_UUID, attachmentId.asUUID())
                 .setString(ATTACHMENT_ID, attachmentId.getId())
-                .setString(MESSAGE_ID, ownerMessageId.getName()));
+                .setString(MESSAGE_ID, ownerMessageId.asString()));
     }
 }
