@@ -19,11 +19,19 @@
 
 package org.apache.mailet;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 
 /** 
  * Strong typing for attribute value, which represent the value of an attribute stored in a mail.
@@ -31,6 +39,125 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @since Mailet API v3.2
  */
 public class AttributeValue<T> {
+
+    public static AttributeValue<Boolean> of(Boolean value) {
+        return new AttributeValue<>(value, Serializer.BOOLEAN_SERIALIZER);
+    }
+
+    public static AttributeValue<String> of(String value) {
+        return new AttributeValue<>(value, Serializer.STRING_SERIALIZER);
+    }
+
+    public static AttributeValue<Integer> of(Integer value) {
+        return new AttributeValue<>(value, Serializer.INT_SERIALIZER);
+    }
+
+    public static AttributeValue<Long> of(Long value) {
+        return new AttributeValue<>(value, Serializer.LONG_SERIALIZER);
+    }
+
+    public static AttributeValue<Float> of(Float value) {
+        return new AttributeValue<>(value, Serializer.FLOAT_SERIALIZER);
+    }
+
+    public static AttributeValue<Double> of(Double value) {
+        return new AttributeValue<>(value, Serializer.DOUBLE_SERIALIZER);
+    }
+
+    public static AttributeValue<QueueSerializable> of(QueueSerializable value) {
+        return new AttributeValue<>(value, Serializer.QUEUE_SERIALIZABLE_SERIALIZER);
+    }
+
+    public static AttributeValue<URL> of(URL value) {
+        return new AttributeValue<>(value, Serializer.URL_SERIALIZER);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static AttributeValue<Collection<AttributeValue<?>>> of(Collection<AttributeValue<?>> value) {
+        return new AttributeValue<>(value, new Serializer.CollectionSerializer());
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static AttributeValue<Map<String, AttributeValue<?>>> of(Map<String, AttributeValue<?>> value) {
+        return new AttributeValue<>(value, new Serializer.MapSerializer());
+    }
+
+    public static AttributeValue<Serializable> ofSerializable(Serializable value) {
+        return new AttributeValue<>(value, new Serializer.FSTSerializer());
+    }
+
+    @SuppressWarnings("unchecked")
+    public static AttributeValue<?> of(Object value) {
+        if (value instanceof Boolean) {
+            return of((Boolean) value);
+        }
+        if (value instanceof String) {
+            return of((String) value);
+        }
+        if (value instanceof Integer) {
+            return of((Integer) value);
+        }
+        if (value instanceof Long) {
+            return of((Long) value);
+        }
+        if (value instanceof Float) {
+            return of((Float) value);
+        }
+        if (value instanceof Double) {
+            return of((Double) value);
+        }
+        if (value instanceof Collection<?>) {
+            return of(((Collection<AttributeValue<?>>) value));
+        }
+        if (value instanceof Map<?,?>) {
+            return of(((Map<String, AttributeValue<?>>) value));
+        }
+        if (value instanceof QueueSerializable) {
+            return of((QueueSerializable) value);
+        }
+        if (value instanceof URL) {
+            return of((URL) value);
+        }
+        if (value instanceof Serializable) {
+            return ofSerializable((Serializable) value);
+        }
+        throw new IllegalArgumentException("input should at least be Serializable");
+    }
+
+    public static AttributeValue<?> fromJsonString(String json) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode tree = objectMapper.readTree(json);
+        return fromJson(tree);
+    }
+
+    public static Optional<AttributeValue<?>> optionalFromJsonString(String json) {
+        try {
+            return Optional.of(fromJsonString(json));
+        } catch (IOException e) {
+            return Optional.empty();
+        }
+    }
+
+    @VisibleForTesting
+    static AttributeValue<?> fromJson(JsonNode input) {
+        return Optional.of(input)
+                .filter(ObjectNode.class::isInstance)
+                .map(ObjectNode.class::cast)
+                .flatMap(AttributeValue::deserialize)
+                .map(AttributeValue::of)
+                .orElseThrow(() -> new IllegalStateException("unable to deserialize " + input.toString()));
+    }
+
+    public static Optional<?> deserialize(ObjectNode fields) {
+        return Optional.ofNullable(fields.get("serializer"))
+                .flatMap(serializer ->  Optional.ofNullable(fields.get("value"))
+                        .flatMap(value -> findSerializerAndDeserialize(serializer, value)));
+    }
+
+    public static Optional<?> findSerializerAndDeserialize(JsonNode serializer, JsonNode value) {
+        return Serializer.Registry.find(serializer.asText())
+                .flatMap(s -> s.deserialize(value));
+    }
 
     private final T value;
     private final Serializer<T> serializer;
@@ -42,6 +169,11 @@ public class AttributeValue<T> {
 
     public T value() {
         return value;
+    }
+
+    //FIXME : poor performance
+    public AttributeValue<T> duplicate() {
+        return (AttributeValue<T>) fromJson(toJson());
     }
 
     public JsonNode toJson() {
