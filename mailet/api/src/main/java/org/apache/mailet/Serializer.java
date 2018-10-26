@@ -47,6 +47,7 @@ import com.fasterxml.jackson.databind.node.FloatNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.LongNode;
+import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableList;
@@ -63,7 +64,7 @@ public interface Serializer<T> extends Serializable {
     Optional<T> deserialize(JsonNode json);
 
     String getName();
-    
+
     class Registry {
 
         private static ImmutableMap<String, Serializer<?>> serializers;
@@ -83,7 +84,7 @@ public interface Serializer<T> extends Serializable {
                     new FSTSerializer())
                     .collect(ImmutableMap.toImmutableMap(Serializer::getName, Function.identity()));
         }
-        
+
         static Optional<Serializer<?>> find(String name) {
             return Optional.ofNullable(serializers.get(name));
         }
@@ -153,7 +154,7 @@ public interface Serializer<T> extends Serializable {
 
         @Override
         public Optional<Integer> deserialize(JsonNode json) {
-            if (json instanceof IntNode) {
+            if (json instanceof NumericNode) {
                 return Optional.of(json.asInt());
             } else {
                 return Optional.empty();
@@ -181,7 +182,7 @@ public interface Serializer<T> extends Serializable {
 
         @Override
         public Optional<Long> deserialize(JsonNode json) {
-            if (json instanceof LongNode) {
+            if (json instanceof NumericNode) {
                 return Optional.of(json.asLong());
             } else {
                 return Optional.empty();
@@ -209,7 +210,7 @@ public interface Serializer<T> extends Serializable {
 
         @Override
         public Optional<Float> deserialize(JsonNode json) {
-            if (json instanceof FloatNode) {
+            if (json instanceof NumericNode) {
                 return Optional.of(json.floatValue());
             } else {
                 return Optional.empty();
@@ -237,7 +238,7 @@ public interface Serializer<T> extends Serializable {
 
         @Override
         public Optional<Double> deserialize(JsonNode json) {
-            if (json instanceof DoubleNode) {
+            if (json instanceof NumericNode) {
                 return Optional.of(json.asDouble());
             } else {
                 return Optional.empty();
@@ -264,7 +265,7 @@ public interface Serializer<T> extends Serializable {
         public JsonNode serialize(QueueSerializable serializable) {
             QueueSerializable.Serializable serialized = serializable.serialize();
             ObjectNode serializedJson = JsonNodeFactory.instance.objectNode();
-            serializedJson.put("factory", serialized.getFactory().getCanonicalName());
+            serializedJson.put("factory", serialized.getFactory().getName());
             serializedJson.replace("value", serialized.getValue().toJson());
             return serializedJson;
         }
@@ -274,12 +275,11 @@ public interface Serializer<T> extends Serializable {
             return Optional.of(json)
                     .filter(ObjectNode.class::isInstance)
                     .map(ObjectNode.class::cast)
-                    .flatMap(this::instanciante);
-                   
+                    .flatMap(this::instantiate);
         }
 
-        public Optional<QueueSerializable> instanciante(ObjectNode fields) {
-            return Optional.ofNullable(fields.get("serializer"))
+        public Optional<QueueSerializable> instantiate(ObjectNode fields) {
+            return Optional.ofNullable(fields.get("factory"))
                 .flatMap(serializer ->  Optional.ofNullable(fields.get("value"))
                     .flatMap(value -> deserialize(serializer.asText(), AttributeValue.fromJson(value))));
         }
@@ -288,7 +288,7 @@ public interface Serializer<T> extends Serializable {
         private Optional<QueueSerializable> deserialize(String serializer, AttributeValue<?> value) {
             try {
                 Class<?> factoryClass = Class.forName(serializer);
-                if (factoryClass.isAssignableFrom(QueueSerializable.Factory.class)) {
+                if (QueueSerializable.Factory.class.isAssignableFrom(factoryClass)) {
                     QueueSerializable.Factory factory = (QueueSerializable.Factory) factoryClass.newInstance();
                     return factory.deserialize(new QueueSerializable.Serializable(value, (Class<QueueSerializable.Factory>) factoryClass));
                 }

@@ -115,6 +115,9 @@ public class AttributeValue<T> implements Serializable {
         if (value instanceof QueueSerializable) {
             return of((QueueSerializable) value);
         }
+        if (value instanceof URL) {
+            return of((URL) value);
+        }
         if (value instanceof Serializable) {
             return ofSerializable((Serializable) value);
         }
@@ -148,10 +151,10 @@ public class AttributeValue<T> implements Serializable {
     public static Optional<?> deserialize(ObjectNode fields) {
         return Optional.ofNullable(fields.get("serializer"))
                 .flatMap(serializer ->  Optional.ofNullable(fields.get("value"))
-                        .flatMap(value -> findSerializer(serializer, value)));
+                        .flatMap(value -> findSerializerAndDeserialize(serializer, value)));
     }
 
-    public static Optional<?> findSerializer(JsonNode serializer, JsonNode value) {
+    public static Optional<?> findSerializerAndDeserialize(JsonNode serializer, JsonNode value) {
         return Serializer.Registry.find(serializer.asText())
                 .flatMap(s -> s.deserialize(value));
     }
