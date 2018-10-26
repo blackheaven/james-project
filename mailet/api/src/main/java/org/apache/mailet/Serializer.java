@@ -34,6 +34,8 @@ import java.util.stream.Stream;
 
 import org.apache.james.util.streams.Iterators;
 import org.nustaq.serialization.FSTConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -256,6 +258,8 @@ public interface Serializer<T> extends Serializable {
     Serializer<Double> DOUBLE_SERIALIZER = new DoubleSerializer();
 
     class QueueSerializableSerializer implements Serializer<QueueSerializable> {
+        private static final Logger LOGGER = LoggerFactory.getLogger(QueueSerializableSerializer.class);
+
         @Override
         public JsonNode serialize(QueueSerializable serializable) {
             QueueSerializable.Serializable serialized = serializable.serialize();
@@ -276,7 +280,7 @@ public interface Serializer<T> extends Serializable {
 
         public Optional<QueueSerializable> instanciante(ObjectNode fields) {
             return Optional.ofNullable(fields.get("serializer"))
-            .flatMap(serializer ->  Optional.ofNullable(fields.get("value"))
+                .flatMap(serializer ->  Optional.ofNullable(fields.get("value"))
                     .flatMap(value -> deserialize(serializer.asText(), AttributeValue.fromJson(value))));
         }
 
@@ -289,6 +293,7 @@ public interface Serializer<T> extends Serializable {
                     return factory.deserialize(new QueueSerializable.Serializable(value, (Class<QueueSerializable.Factory>) factoryClass));
                 }
             } catch (Exception e) {
+                LOGGER.error("Error while deserializing", e);
             }
 
             return Optional.empty();
