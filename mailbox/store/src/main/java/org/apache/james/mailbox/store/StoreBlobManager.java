@@ -57,7 +57,7 @@ public class StoreBlobManager implements BlobManager {
 
     @Override
     public BlobId toBlobId(MessageId messageId) {
-        return BlobId.fromString(messageId.serialize());
+        return BlobId.fromString(messageId.asString());
     }
 
     @Override

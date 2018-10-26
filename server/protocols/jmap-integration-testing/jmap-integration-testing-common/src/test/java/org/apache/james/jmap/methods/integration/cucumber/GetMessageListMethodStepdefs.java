@@ -117,6 +117,6 @@ public class GetMessageListMethodStepdefs {
     public void assertContains(String message) {
         MessageId messageId = messageIdStepdefs.getMessageId(message);
         assertThat(httpClient.response.getStatusLine().getStatusCode()).isEqualTo(200);
-        assertThat(httpClient.jsonPath.<List<String>>read(ARGUMENTS + ".messageIds")).contains(messageId.serialize());
+        assertThat(httpClient.jsonPath.<List<String>>read(ARGUMENTS + ".messageIds")).contains(messageId.asString());
     }
 }

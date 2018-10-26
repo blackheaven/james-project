@@ -89,7 +89,7 @@ public class InMemoryMessageManagerTestSystem extends MessageManagerTestSystem {
 
     @Override
     public MessageId createNotUsedMessageId() {
-        return InMemoryMessageId.of(Long.valueOf(lastMessageIdUsed.orElse(FIRST_MESSAGE_ID).serialize()) + ONE_HUNDRED);
+        return InMemoryMessageId.of(Long.valueOf(lastMessageIdUsed.orElse(FIRST_MESSAGE_ID).asString()) + ONE_HUNDRED);
     }
 
     @Override

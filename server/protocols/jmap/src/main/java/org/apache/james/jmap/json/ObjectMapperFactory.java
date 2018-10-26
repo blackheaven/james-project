@@ -234,7 +234,7 @@ public class ObjectMapperFactory {
 
         @Override
         public void serialize(MessageId value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
-            gen.writeFieldName(value.serialize());
+            gen.writeFieldName(value.asString());
         }
     }
 
@@ -243,7 +243,7 @@ public class ObjectMapperFactory {
 
         @Override
         public void serialize(MessageId value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
-            gen.writeString(value.serialize());
+            gen.writeString(value.asString());
         }
     }
 

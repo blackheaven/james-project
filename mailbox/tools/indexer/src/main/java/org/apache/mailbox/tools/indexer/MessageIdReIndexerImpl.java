@@ -54,7 +54,7 @@ public class MessageIdReIndexerImpl implements MessageIdReIndexer {
             }
 
             public String getMessageId() {
-                return messageId.serialize();
+                return messageId.asString();
             }
         }
 

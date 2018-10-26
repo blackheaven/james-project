@@ -203,8 +203,8 @@ public class FixingGhostMailboxTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", hasSize(1))
-            .body(ARGUMENTS + ".messageIds", not(contains(message1.getMessageId().serialize())))
-            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize()));
+            .body(ARGUMENTS + ".messageIds", not(contains(message1.getMessageId().asString())))
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().asString()));
     }
 
     @Test
@@ -223,8 +223,8 @@ public class FixingGhostMailboxTest {
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", hasSize(2))
             .body(ARGUMENTS + ".messageIds", containsInAnyOrder(
-                message1.getMessageId().serialize(),
-                message2.getMessageId().serialize()));
+                message1.getMessageId().asString(),
+                message2.getMessageId().asString()));
     }
 
     @Test

@@ -53,7 +53,7 @@ public class CassandraMessageId implements MessageId {
     }
     
     @Override
-    public String serialize() {
+    public String asString() {
         return uuid.toString();
     }
 

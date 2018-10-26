@@ -158,7 +158,7 @@ public class CassandraBulkOperationTest {
                             .setBody("testmail", StandardCharsets.UTF_8)
                             .setDate(Date.from(dateTime.toInstant()))))
                 .getMessageId()
-                .serialize();
+                .asString();
         } catch (MailboxException | IOException e) {
             throw new RuntimeException(e);
         }

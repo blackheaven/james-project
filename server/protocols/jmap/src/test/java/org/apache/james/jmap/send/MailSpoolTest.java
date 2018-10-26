@@ -71,7 +71,7 @@ public class MailSpoolTest {
         assertThat(actual.getMail().getAttribute(MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE))
             .isEqualTo(USERNAME);
         assertThat(actual.getMail().getAttribute(MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE))
-            .isEqualTo(MESSAGE_ID.serialize());
+            .isEqualTo(MESSAGE_ID.asString());
     }
 
 }

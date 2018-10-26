@@ -22,7 +22,7 @@ public class DefaultMessageId implements MessageId {
     }
 
     @Override
-    public String serialize() {
+    public String asString() {
         throw new IllegalStateException("Capabilities should prevent calling this method");
     }
     
