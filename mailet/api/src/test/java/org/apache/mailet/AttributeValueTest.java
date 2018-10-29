@@ -380,7 +380,7 @@ class AttributeValueTest {
         @Disabled("Failing!")
         @Test
         void nullStringListShouldBeSerializedAndBack() {
-            AttributeValue<?> expected = AttributeValue.of((List<String>) null);
+            AttributeValue<?> expected = AttributeValue.ofAny((List<String>) null);
 
             JsonNode json = expected.toJson();
             AttributeValue<?> actual = AttributeValue.fromJson(json);
@@ -390,7 +390,7 @@ class AttributeValueTest {
 
         @Test
         void emptyStringListShouldBeSerializedAndBack() {
-            AttributeValue<?> expected = AttributeValue.of(ImmutableList.<String>of());
+            AttributeValue<?> expected = AttributeValue.ofAny(ImmutableList.<String>of());
 
             JsonNode json = expected.toJson();
             AttributeValue<?> actual = AttributeValue.fromJson(json);
