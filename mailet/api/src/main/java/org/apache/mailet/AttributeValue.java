@@ -27,11 +27,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 
 /** 
  * Strong typing for attribute value, which represents the value of an attribute stored in a mail.
@@ -39,6 +43,7 @@ import com.google.common.annotations.VisibleForTesting;
  * @since Mailet API v3.2
  */
 public class AttributeValue<T> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AttributeValue.class);
 
     public static AttributeValue<Boolean> of(Boolean value) {
         return new AttributeValue<>(value, Serializer.BOOLEAN_SERIALIZER);
@@ -121,7 +126,7 @@ public class AttributeValue<T> {
         if (value instanceof Serializable) {
             return ofSerializable((Serializable) value);
         }
-        throw new IllegalArgumentException("input should at least be Serializable");
+        throw new IllegalArgumentException(value.getClass().toString() + " should at least be Serializable");
     }
 
     public static AttributeValue<?> fromJsonString(String json) throws IOException {
@@ -134,13 +139,14 @@ public class AttributeValue<T> {
         try {
             return Optional.of(fromJsonString(json));
         } catch (IOException e) {
+            LOGGER.error("Error while deserializing '" + json + "'", e);
             return Optional.empty();
         }
     }
 
     @VisibleForTesting
     static AttributeValue<?> fromJson(JsonNode input) {
-        return Optional.of(input)
+        return Optional.ofNullable(input)
                 .filter(ObjectNode.class::isInstance)
                 .map(ObjectNode.class::cast)
                 .flatMap(AttributeValue::deserialize)
@@ -201,5 +207,13 @@ public class AttributeValue<T> {
     @Override
     public final int hashCode() {
         return Objects.hash(value, serializer);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("value", value)
+            .add("serializer", serializer.getName())
+            .toString();
     }
 }
