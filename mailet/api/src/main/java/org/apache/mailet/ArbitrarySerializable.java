@@ -21,7 +21,7 @@ package org.apache.mailet;
 
 import java.util.Optional;
 
-public interface QueueSerializable {
+public interface ArbitrarySerializable {
     public class Serializable {
         private final AttributeValue<?> value;
         private final Class<? extends Factory> factory;
@@ -41,7 +41,7 @@ public interface QueueSerializable {
     }
 
     public interface Factory {
-        Optional<QueueSerializable> deserialize(Serializable serializable);
+        Optional<ArbitrarySerializable> deserialize(Serializable serializable);
     }
     
     Serializable serialize();

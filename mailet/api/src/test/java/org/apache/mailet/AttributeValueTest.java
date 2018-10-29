@@ -314,7 +314,7 @@ class AttributeValueTest {
     class QueueSerializableTest {
         @Test
         void queueSerializableShouldBeSerializedAndBack() {
-            AttributeValue<QueueSerializable> expected = AttributeValue.of(new TestQueueSerializable(42));
+            AttributeValue<ArbitrarySerializable> expected = AttributeValue.of(new TestArbitrarySerializable(42));
 
             JsonNode json = expected.toJson();
             AttributeValue<?> actual = AttributeValue.fromJson(json);
@@ -325,9 +325,9 @@ class AttributeValueTest {
 
         @Test
         void fromJsonStringShouldReturnQueueSerializableAttributeValueWhenQueueSerializable() throws Exception {
-            AttributeValue<QueueSerializable> expected = AttributeValue.of(new TestQueueSerializable(42));
+            AttributeValue<ArbitrarySerializable> expected = AttributeValue.of(new TestArbitrarySerializable(42));
 
-            AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"QueueSerializableSerializer\",\"value\":{\"factory\":\"org.apache.mailet.AttributeValueTest$TestQueueSerializable$Factory\",\"value\":{\"serializer\":\"IntSerializer\",\"value\":42}}}");
+            AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"ArbitrarySerializableSerializer\",\"value\":{\"factory\":\"org.apache.mailet.AttributeValueTest$TestArbitrarySerializable$Factory\",\"value\":{\"serializer\":\"IntSerializer\",\"value\":42}}}");
 
             assertThat(actual).isEqualTo(expected);
         }
@@ -519,7 +519,7 @@ class AttributeValueTest {
     }
 
     @Test
-    void fromJsonStringShouldReturnMessageIdAttributeValueWhenUrl() throws Exception {
+    void fromJsonStringShouldReturnMessageIdAttributeValue() throws Exception {
         AttributeValue<MessageId> expected = AttributeValue.of(TestMessageId.of(42));
 
         AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"MessageIdSerializer\",\"value\":\"42\"}");
@@ -537,20 +537,20 @@ class AttributeValueTest {
         assertThat(actual).isEqualTo(expected);
     }
 
-    private static class TestQueueSerializable implements QueueSerializable {
-        public static class Factory implements QueueSerializable.Factory {
+    private static class TestArbitrarySerializable implements ArbitrarySerializable {
+        public static class Factory implements ArbitrarySerializable.Factory {
             @Override
-            public Optional<QueueSerializable> deserialize(Serializable serializable) {
+            public Optional<ArbitrarySerializable> deserialize(Serializable serializable) {
                 return Optional.of(serializable.getValue().value())
                         .filter(Integer.class::isInstance)
                         .map(Integer.class::cast)
-                        .map(TestQueueSerializable::new);
+                        .map(TestArbitrarySerializable::new);
             }
         }
 
         private final Integer value;
 
-        public TestQueueSerializable(Integer value) {
+        public TestArbitrarySerializable(Integer value) {
             this.value = value;
         }
 
@@ -561,8 +561,8 @@ class AttributeValueTest {
 
         @Override
         public final boolean equals(Object o) {
-            if (o instanceof TestQueueSerializable) {
-                TestQueueSerializable that = (TestQueueSerializable) o;
+            if (o instanceof TestArbitrarySerializable) {
+                TestArbitrarySerializable that = (TestArbitrarySerializable) o;
 
                 return Objects.equals(this.value, that.value);
             }
