@@ -26,7 +26,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
 /** 
- * Strong typing for attribute name, which represent the name of an attribute store in a mail.
+ * Strong typing for attribute name, which represents the name of an attribute stored in a mail.
  * 
  * @since Mailet API v3.2
  */

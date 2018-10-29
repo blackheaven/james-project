@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 
 /** 
- * Strong typing for attribute value, which represent the value of an attribute stored in a mail.
+ * Strong typing for attribute value, which represents the value of an attribute stored in a mail.
  * 
  * @since Mailet API v3.2
  */

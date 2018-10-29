@@ -25,7 +25,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
 /** 
- * Attribute
+ * Attribute attached to an email
+ *
+ * Attributes holds information to be shared during Mail processing, across mailets.
  * 
  * @since Mailet API v3.2
  */
