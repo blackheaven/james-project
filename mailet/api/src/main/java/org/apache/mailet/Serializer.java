@@ -75,7 +75,8 @@ public interface Serializer<T> extends Serializable {
         private static ImmutableMap<String, Serializer<?>> serializers;
 
         static {
-            serializers = Stream.<Serializer<?>>of(
+            serializers = Stream
+                .<Serializer<?>>of(
                     BOOLEAN_SERIALIZER,
                     STRING_SERIALIZER,
                     INT_SERIALIZER,
@@ -88,7 +89,7 @@ public interface Serializer<T> extends Serializable {
                     new CollectionSerializer<>(),
                     new MapSerializer<>(),
                     new FSTSerializer())
-                    .collect(ImmutableMap.toImmutableMap(Serializer::getName, Function.identity()));
+                .collect(ImmutableMap.toImmutableMap(Serializer::getName, Function.identity()));
         }
 
         static Optional<Serializer<?>> find(String name) {
@@ -314,8 +315,9 @@ public interface Serializer<T> extends Serializable {
 
         public Optional<QueueSerializable> instantiate(ObjectNode fields) {
             return Optional.ofNullable(fields.get("factory"))
-                .flatMap(serializer ->  Optional.ofNullable(fields.get("value"))
-                    .flatMap(value -> deserialize(serializer.asText(), AttributeValue.fromJson(value))));
+                .flatMap(serializer ->
+                    Optional.ofNullable(fields.get("value"))
+                        .flatMap(value -> deserialize(serializer.asText(), AttributeValue.fromJson(value))));
         }
 
         @SuppressWarnings("unchecked")
@@ -440,9 +442,11 @@ public interface Serializer<T> extends Serializable {
     }
 
     class FSTSerializer implements Serializer<Serializable> {
+        static final FSTConfiguration CONFIGURATION = FSTConfiguration.createJsonConfiguration();
+
         @Override
         public JsonNode serialize(Serializable object) {
-            FSTConfiguration conf = FSTConfiguration.createJsonConfiguration();
+            FSTConfiguration conf = CONFIGURATION;
             String json = conf.asJsonString(object);
             try {
                 return new ObjectMapper().reader().readTree(json);
