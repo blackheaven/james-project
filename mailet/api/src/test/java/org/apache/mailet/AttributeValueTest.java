@@ -314,7 +314,7 @@ class AttributeValueTest {
     class QueueSerializableTest {
         @Test
         void queueSerializableShouldBeSerializedAndBack() {
-            AttributeValue<ArbitrarySerializable> expected = AttributeValue.of(new TestArbitrarySerializable(42));
+            AttributeValue<TestArbitrarySerializable> expected = AttributeValue.of(new TestArbitrarySerializable(42));
 
             JsonNode json = expected.toJson();
             AttributeValue<?> actual = AttributeValue.fromJson(json);
@@ -325,7 +325,7 @@ class AttributeValueTest {
 
         @Test
         void fromJsonStringShouldReturnQueueSerializableAttributeValueWhenQueueSerializable() throws Exception {
-            AttributeValue<ArbitrarySerializable> expected = AttributeValue.of(new TestArbitrarySerializable(42));
+            AttributeValue<TestArbitrarySerializable> expected = AttributeValue.of(new TestArbitrarySerializable(42));
 
             AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"ArbitrarySerializableSerializer\",\"value\":{\"factory\":\"org.apache.mailet.AttributeValueTest$TestArbitrarySerializable$Factory\",\"value\":{\"serializer\":\"IntSerializer\",\"value\":42}}}");
 
@@ -528,7 +528,7 @@ class AttributeValueTest {
     }
 
     @Test
-    void MessageIdShouldBeSerializedAndBack() {
+    void messageIdShouldBeSerializedAndBack() {
         AttributeValue<MessageId> expected = AttributeValue.of(TestMessageId.of(42));
 
         JsonNode json = expected.toJson();
@@ -537,10 +537,10 @@ class AttributeValueTest {
         assertThat(actual).isEqualTo(expected);
     }
 
-    private static class TestArbitrarySerializable implements ArbitrarySerializable {
-        public static class Factory implements ArbitrarySerializable.Factory {
+    private static class TestArbitrarySerializable implements ArbitrarySerializable<TestArbitrarySerializable> {
+        public static class Factory implements ArbitrarySerializable.Factory<TestArbitrarySerializable> {
             @Override
-            public Optional<ArbitrarySerializable> deserialize(Serializable serializable) {
+            public Optional<TestArbitrarySerializable> deserialize(Serializable<TestArbitrarySerializable> serializable) {
                 return Optional.of(serializable.getValue().value())
                         .filter(Integer.class::isInstance)
                         .map(Integer.class::cast)
@@ -555,8 +555,8 @@ class AttributeValueTest {
         }
 
         @Override
-        public Serializable serialize() {
-            return new Serializable(AttributeValue.of(value), Factory.class);
+        public Serializable<TestArbitrarySerializable> serialize() {
+            return new Serializable<>(AttributeValue.of(value), Factory.class);
         }
 
         @Override
