@@ -18,15 +18,29 @@
  ****************************************************************/
 package org.apache.mailet;
 
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class AttributeTest {
+class AttributeTest {
 
     @Test
     void shouldRespectBeanContract() {
         EqualsVerifier.forClass(Attribute.class).verify();
+    }
+
+    @Test
+    void constructorShouldThrowOnNullName() {
+        assertThatNullPointerException()
+            .isThrownBy(() -> new Attribute(null, AttributeValue.of(1)));
+    }
+
+    @Test
+    void constructorShouldThrowOnNullValue() {
+        assertThatNullPointerException()
+            .isThrownBy(() -> new Attribute(AttributeName.of("name"), null));
     }
 
 }

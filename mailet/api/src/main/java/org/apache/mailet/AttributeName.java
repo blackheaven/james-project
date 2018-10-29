@@ -21,6 +21,9 @@ package org.apache.mailet;
 
 import java.util.Objects;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+
 /** 
  * Strong typing for attribute name, which represent the name of an attribute store in a mail.
  * 
@@ -30,6 +33,9 @@ public class AttributeName {
     private final String name;
 
     public static AttributeName of(String name) {
+        Preconditions.checkNotNull(name, "`name` is compulsory");
+        Preconditions.checkArgument(!name.equals(""), "`name` should not be empty");
+
         return new AttributeName(name);
     }
 
@@ -54,5 +60,12 @@ public class AttributeName {
     @Override
     public final int hashCode() {
         return Objects.hash(name);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("name", name)
+            .toString();
     }
 }

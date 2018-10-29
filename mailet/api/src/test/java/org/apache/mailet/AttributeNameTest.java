@@ -18,15 +18,36 @@
  ****************************************************************/
 package org.apache.mailet;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class AttributeNameTest {
+class AttributeNameTest {
 
     @Test
     void shouldRespectBeanContract() {
         EqualsVerifier.forClass(AttributeName.class).verify();
+    }
+
+    @Test
+    void ofShouldRejectNullValue() {
+        assertThatThrownBy(() -> AttributeName.of(null))
+            .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    void ofShouldRejectEmptyString() {
+        assertThatThrownBy(() -> AttributeName.of(""))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void asStringShouldReturnWrappedValue() {
+        String name = "name";
+        assertThat(AttributeName.of(name).asString()).isEqualTo(name);
     }
 
 }
