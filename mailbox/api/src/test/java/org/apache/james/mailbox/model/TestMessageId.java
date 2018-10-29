@@ -19,11 +19,7 @@
 
 package org.apache.james.mailbox.model;
 
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.mailet.AttributeValue;
-import org.apache.mailet.QueueSerializable;
 
 import com.google.common.base.Objects;
 
@@ -32,18 +28,15 @@ public class TestMessageId implements MessageId {
     public static class Factory implements MessageId.Factory {
         
         private AtomicLong counter = new AtomicLong();
-        
+
         @Override
-        public MessageId generate() {
-            return of(counter.incrementAndGet());
+        public MessageId fromString(String serialized) {
+            return of(Long.valueOf(serialized));
         }
 
         @Override
-        public Optional<QueueSerializable> deserialize(Serializable serializable) {
-            return Optional.of(serializable.getValue().getValue())
-                    .filter(Long.class::isInstance)
-                    .map(Long.class::cast)
-                    .map(TestMessageId::of);
+        public MessageId generate() {
+            return of(counter.incrementAndGet());
         }
     }
     
@@ -83,10 +76,5 @@ public class TestMessageId implements MessageId {
     @Override
     public String toString() {
         return String.valueOf(value);
-    }
-
-    @Override
-    public Serializable serialize() {
-        return new Serializable(AttributeValue.of(value), Factory.class);
     }
 }

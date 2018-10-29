@@ -32,6 +32,11 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+
+import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.MessageId.Factory;
+import org.apache.james.mailbox.model.TestMessageId;
 import org.apache.james.util.streams.Iterators;
 import org.nustaq.serialization.FSTConfiguration;
 import org.slf4j.Logger;
@@ -77,6 +82,7 @@ public interface Serializer<T> extends Serializable {
                     LONG_SERIALIZER,
                     FLOAT_SERIALIZER,
                     DOUBLE_SERIALIZER,
+                    MESSAGE_ID_SERIALIZER,
                     QUEUE_SERIALIZABLE_SERIALIZER,
                     URL_SERIALIZER,
                     new CollectionSerializer<>(),
@@ -257,6 +263,34 @@ public interface Serializer<T> extends Serializable {
     }
 
     Serializer<Double> DOUBLE_SERIALIZER = new DoubleSerializer();
+
+    class MessageIdSerializer implements Serializer<MessageId> {
+
+        @Override
+        public JsonNode serialize(MessageId serializable) {
+            return STRING_SERIALIZER
+                    .serialize(serializable.asString());
+        }
+
+        @Override
+        public Optional<MessageId> deserialize(JsonNode json) {
+            return STRING_SERIALIZER
+                    .deserialize(json)
+                    .map(MessageId.Singleton::fromString);
+        }
+
+        @Override
+        public String getName() {
+            return "MessageIdSerializer";
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return this.getClass() == other.getClass();
+        }
+    }
+
+    Serializer<MessageId> MESSAGE_ID_SERIALIZER = new MessageIdSerializer();
 
     class QueueSerializableSerializer implements Serializer<QueueSerializable> {
         private static final Logger LOGGER = LoggerFactory.getLogger(QueueSerializableSerializer.class);

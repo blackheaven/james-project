@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.james.mailbox.model.MessageId;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -62,6 +64,10 @@ public class AttributeValue<T> implements Serializable {
 
     public static AttributeValue<Double> of(Double value) {
         return new AttributeValue<>(value, Serializer.DOUBLE_SERIALIZER);
+    }
+
+    public static AttributeValue<MessageId> of(MessageId value) {
+        return new AttributeValue<>(value, Serializer.MESSAGE_ID_SERIALIZER);
     }
 
     public static AttributeValue<QueueSerializable> of(QueueSerializable value) {
@@ -112,6 +118,9 @@ public class AttributeValue<T> implements Serializable {
         if (value instanceof Map<?,?>) {
             return of(((Map<String, AttributeValue<?>>) value));
         }
+        if (value instanceof MessageId) {
+            return of((MessageId) value);
+        }
         if (value instanceof QueueSerializable) {
             return of((QueueSerializable) value);
         }
@@ -128,14 +137,6 @@ public class AttributeValue<T> implements Serializable {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode tree = objectMapper.readTree(json);
         return fromJson(tree);
-    }
-
-    public static Optional<AttributeValue<?>> optionalFromJsonString(String json) {
-        try {
-            return Optional.of(fromJsonString(json));
-        } catch (IOException e) {
-            return Optional.empty();
-        }
     }
 
     @VisibleForTesting

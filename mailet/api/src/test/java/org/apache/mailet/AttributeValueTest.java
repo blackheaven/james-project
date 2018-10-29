@@ -25,6 +25,8 @@ import java.net.URL;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.TestMessageId;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -112,6 +114,16 @@ public class AttributeValueTest {
     @Test
     void urlShouldBeSerializedAndBack() throws MalformedURLException {
         AttributeValue<URL> expected = AttributeValue.of(new URL("https://james.apache.org/"));
+
+        JsonNode json = expected.toJson();
+        AttributeValue<?> actual = AttributeValue.fromJson(json);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void MessageIdShouldBeSerializedAndBack() {
+        AttributeValue<MessageId> expected = AttributeValue.of(TestMessageId.of(42));
 
         JsonNode json = expected.toJson();
         AttributeValue<?> actual = AttributeValue.fromJson(json);
@@ -234,6 +246,15 @@ public class AttributeValueTest {
         AttributeValue<URL> expected = AttributeValue.of(new URL("https://james.apache.org/"));
 
         AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"UrlSerializer\",\"value\": \"https://james.apache.org/\"}");
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void fromJsonStringShouldReturnMessageIdAttributeValueWhenUrl() throws Exception {
+        AttributeValue<MessageId> expected = AttributeValue.of(TestMessageId.of(42));
+
+        AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"MessageIdSerializer\",\"value\":\"42\"}");
 
         assertThat(actual).isEqualTo(expected);
     }

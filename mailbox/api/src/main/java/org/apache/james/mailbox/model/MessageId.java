@@ -19,22 +19,27 @@
 
 package org.apache.james.mailbox.model;
 
-import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Provider;
 
-import org.apache.mailet.AttributeValue;
-import org.apache.mailet.QueueSerializable;
+public interface MessageId {
 
-public interface MessageId extends QueueSerializable {
+    interface Factory {
 
-    interface Factory extends QueueSerializable.Factory {
+        MessageId fromString(String serialized);
+
         MessageId generate();
-    }
 
+    }
+    
     String asString();
 
-    static Optional<MessageId> fromJson(String json) {
-       return AttributeValue.optionalFromJsonString(json)
-               .filter(MessageId.class::isInstance)
-               .map(MessageId.class::cast);
+    class Singleton {
+        @Inject
+        static Provider<Factory> factory;
+
+        public static MessageId fromString(String json) {
+            return factory.get().fromString(json);
+        }
     }
 }
