@@ -78,7 +78,7 @@ public interface Serializer<T> {
                     LONG_SERIALIZER,
                     FLOAT_SERIALIZER,
                     DOUBLE_SERIALIZER,
-                    QUEUE_SERIALIZABLE_SERIALIZER,
+                    ARIBITRARY_SERIALIZABLE_SERIALIZER,
                     URL_SERIALIZER,
                     new CollectionSerializer<>(),
                     new MapSerializer<>(),
@@ -259,12 +259,12 @@ public interface Serializer<T> {
 
     Serializer<Double> DOUBLE_SERIALIZER = new DoubleSerializer();
 
-    class QueueSerializableSerializer implements Serializer<QueueSerializable> {
-        private static final Logger LOGGER = LoggerFactory.getLogger(QueueSerializableSerializer.class);
+    class ArbitrarySerializableSerializer implements Serializer<ArbitrarySerializable> {
+        private static final Logger LOGGER = LoggerFactory.getLogger(ArbitrarySerializableSerializer.class);
 
         @Override
-        public JsonNode serialize(QueueSerializable serializable) {
-            QueueSerializable.Serializable serialized = serializable.serialize();
+        public JsonNode serialize(ArbitrarySerializable serializable) {
+            ArbitrarySerializable.Serializable serialized = serializable.serialize();
             ObjectNode serializedJson = JsonNodeFactory.instance.objectNode();
             serializedJson.put("factory", serialized.getFactory().getName());
             serializedJson.replace("value", serialized.getValue().toJson());
@@ -272,14 +272,14 @@ public interface Serializer<T> {
         }
 
         @Override
-        public Optional<QueueSerializable> deserialize(JsonNode json) {
+        public Optional<ArbitrarySerializable> deserialize(JsonNode json) {
             return Optional.of(json)
                     .filter(ObjectNode.class::isInstance)
                     .map(ObjectNode.class::cast)
                     .flatMap(this::instantiate);
         }
 
-        public Optional<QueueSerializable> instantiate(ObjectNode fields) {
+        public Optional<ArbitrarySerializable> instantiate(ObjectNode fields) {
             return Optional.ofNullable(fields.get("factory"))
                 .flatMap(serializer ->
                     Optional.ofNullable(fields.get("value"))
@@ -287,12 +287,12 @@ public interface Serializer<T> {
         }
 
         @SuppressWarnings("unchecked")
-        private Optional<QueueSerializable> deserialize(String serializer, AttributeValue<?> value) {
+        private Optional<ArbitrarySerializable> deserialize(String serializer, AttributeValue<?> value) {
             try {
                 Class<?> factoryClass = Class.forName(serializer);
-                if (QueueSerializable.Factory.class.isAssignableFrom(factoryClass)) {
-                    QueueSerializable.Factory factory = (QueueSerializable.Factory) factoryClass.newInstance();
-                    return factory.deserialize(new QueueSerializable.Serializable(value, (Class<QueueSerializable.Factory>) factoryClass));
+                if (ArbitrarySerializable.Factory.class.isAssignableFrom(factoryClass)) {
+                    ArbitrarySerializable.Factory factory = (ArbitrarySerializable.Factory) factoryClass.newInstance();
+                    return factory.deserialize(new ArbitrarySerializable.Serializable(value, (Class<ArbitrarySerializable.Factory>) factoryClass));
                 }
             } catch (Exception e) {
                 LOGGER.error("Error while deserializing", e);
@@ -303,7 +303,7 @@ public interface Serializer<T> {
 
         @Override
         public String getName() {
-            return "QueueSerializableSerializer";
+            return "ArbitrarySerializableSerializer";
         }
 
         @Override
@@ -312,7 +312,7 @@ public interface Serializer<T> {
         }
     }
 
-    Serializer<QueueSerializable> QUEUE_SERIALIZABLE_SERIALIZER = new QueueSerializableSerializer();
+    Serializer<ArbitrarySerializable> ARIBITRARY_SERIALIZABLE_SERIALIZER = new ArbitrarySerializableSerializer();
 
     class UrlSerializer implements Serializer<URL> {
         @Override

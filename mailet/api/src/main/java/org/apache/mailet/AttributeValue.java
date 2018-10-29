@@ -64,8 +64,8 @@ public class AttributeValue<T> {
         return new AttributeValue<>(value, Serializer.DOUBLE_SERIALIZER);
     }
 
-    public static AttributeValue<QueueSerializable> of(QueueSerializable value) {
-        return new AttributeValue<>(value, Serializer.QUEUE_SERIALIZABLE_SERIALIZER);
+    public static AttributeValue<ArbitrarySerializable> of(ArbitrarySerializable value) {
+        return new AttributeValue<>(value, Serializer.ARIBITRARY_SERIALIZABLE_SERIALIZER);
     }
 
     public static AttributeValue<URL> of(URL value) {
@@ -112,8 +112,8 @@ public class AttributeValue<T> {
         if (value instanceof Map<?,?>) {
             return of(((Map<String, AttributeValue<?>>) value));
         }
-        if (value instanceof QueueSerializable) {
-            return of((QueueSerializable) value);
+        if (value instanceof ArbitrarySerializable) {
+            return of((ArbitrarySerializable) value);
         }
         if (value instanceof URL) {
             return of((URL) value);
