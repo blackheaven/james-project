@@ -93,7 +93,7 @@ public class AttributeValue<T> implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    public static AttributeValue<?> of(Object value) {
+    public static AttributeValue<?> ofAny(Object value) {
         if (value instanceof Boolean) {
             return of((Boolean) value);
         }
@@ -145,7 +145,7 @@ public class AttributeValue<T> implements Serializable {
                 .filter(ObjectNode.class::isInstance)
                 .map(ObjectNode.class::cast)
                 .flatMap(AttributeValue::deserialize)
-                .map(AttributeValue::of)
+                .map(AttributeValue::ofAny)
                 .orElseThrow(() -> new IllegalStateException("unable to deserialize " + input.toString()));
     }
 
