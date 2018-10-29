@@ -21,6 +21,9 @@ package org.apache.mailet;
 
 import java.util.Objects;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+
 /** 
  * Attribute
  * 
@@ -31,6 +34,9 @@ public class Attribute {
     private final AttributeValue<?> value;
 
     public Attribute(AttributeName name, AttributeValue<?> value) {
+        Preconditions.checkNotNull(name, "`name` should not be null");
+        Preconditions.checkNotNull(value, "`value` should not be null");
+
         this.name = name;
         this.value = value;
     }
@@ -63,4 +69,11 @@ public class Attribute {
         return Objects.hash(name, value);
     }
 
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("name", name)
+            .add("value", value)
+            .toString();
+    }
 }
