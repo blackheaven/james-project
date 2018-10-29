@@ -20,6 +20,7 @@ package org.apache.mailet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.net.MalformedURLException;
@@ -32,7 +33,6 @@ import java.util.Optional;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.TestMessageId;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -50,10 +50,9 @@ class AttributeValueTest {
     }
 
     @Test
-    void ofShouldAcceptNullValue() {
-        AttributeValue<String> attributeValue = AttributeValue.of((String) null);
-
-        assertThat(attributeValue.getValue()).isNull();
+    void ofShouldThrowAnExceptionOnNullValue() {
+        assertThatNullPointerException().
+                isThrownBy(() -> AttributeValue.of((String) null));
     }
 
     @Nested
@@ -78,15 +77,10 @@ class AttributeValueTest {
             assertThat(actual).isEqualTo(expected);
         }
 
-        @Disabled("Failing!")
         @Test
-        void nullStringShouldBeSerializedAndBack() {
-            AttributeValue<String> expected = AttributeValue.of((String) null);
-
-            JsonNode json = expected.toJson();
-            AttributeValue<?> actual = AttributeValue.fromJson(json);
-
-            assertThat(actual).isEqualTo(expected);
+        void nullStringShouldThrowAnException() {
+            assertThatNullPointerException().
+                isThrownBy(() -> AttributeValue.of((String) null));
         }
 
         @Test
@@ -127,15 +121,10 @@ class AttributeValueTest {
             assertThat(actual).isEqualTo(expected);
         }
 
-        @Disabled("Failing")
         @Test
-        void nullBooleanShouldBeSerializedAndBack() {
-            AttributeValue<Boolean> expected = AttributeValue.of((Boolean) null);
-
-            JsonNode json = expected.toJson();
-            AttributeValue<?> actual = AttributeValue.fromJson(json);
-
-            assertThat(actual).isEqualTo(expected);
+        void nullBooleanShouldThrowAnException() {
+            assertThatNullPointerException().
+                isThrownBy(() -> AttributeValue.of((Boolean) null));
         }
 
         @Test
@@ -166,15 +155,10 @@ class AttributeValueTest {
             assertThat(actual).isEqualTo(expected);
         }
 
-        @Disabled("Failing")
         @Test
-        void nullIntShouldBeSerializedAndBack() {
-            AttributeValue<Integer> expected = AttributeValue.of((Integer) null);
-
-            JsonNode json = expected.toJson();
-            AttributeValue<?> actual = AttributeValue.fromJson(json);
-
-            assertThat(actual).isEqualTo(expected);
+        void nullIntShouldThrowAnException() {
+            assertThatNullPointerException().
+                isThrownBy(() -> AttributeValue.of((Integer) null));
         }
 
         @Test
@@ -205,15 +189,10 @@ class AttributeValueTest {
             assertThat(actual).isEqualTo(expected);
         }
 
-        @Disabled("Failing")
         @Test
-        void nullLongShouldBeSerializedAndBack() {
-            AttributeValue<Long> expected = AttributeValue.of((Long) null);
-
-            JsonNode json = expected.toJson();
-            AttributeValue<?> actual = AttributeValue.fromJson(json);
-
-            assertThat(actual).isEqualTo(expected);
+        void nullLongShouldThrowAnException() {
+            assertThatNullPointerException().
+                isThrownBy(() -> AttributeValue.of((Long) null));
         }
 
         @Test
@@ -244,15 +223,10 @@ class AttributeValueTest {
             assertThat(actual).isEqualTo(expected);
         }
 
-        @Disabled("Failing")
         @Test
-        void nullFloatShouldBeSerializedAndBack() {
-            AttributeValue<Float> expected = AttributeValue.of((Float) null);
-
-            JsonNode json = expected.toJson();
-            AttributeValue<?> actual = AttributeValue.fromJson(json);
-
-            assertThat(actual).isEqualTo(expected);
+        void nullFloatShouldThrowAnException() {
+            assertThatNullPointerException().
+                isThrownBy(() -> AttributeValue.of((Float) null));
         }
 
         @Test
@@ -283,15 +257,10 @@ class AttributeValueTest {
             assertThat(actual).isEqualTo(expected);
         }
 
-        @Disabled("Failing")
         @Test
-        void nullDoubleShouldBeSerializedAndBack() {
-            AttributeValue<Double> expected = AttributeValue.of((Double) null);
-
-            JsonNode json = expected.toJson();
-            AttributeValue<?> actual = AttributeValue.fromJson(json);
-
-            assertThat(actual).isEqualTo(expected);
+        void nullDoubleShouldThrowAnException() {
+            assertThatNullPointerException().
+                isThrownBy(() -> AttributeValue.of((Double) null));
         }
 
         @Test
@@ -345,15 +314,10 @@ class AttributeValueTest {
             assertThat(actual).isEqualTo(expected);
         }
 
-        @Disabled("Failing!")
         @Test
-        void nullURLShouldBeSerializedAndBack() {
-            AttributeValue<URL> expected = AttributeValue.of((URL) null);
-
-            JsonNode json = expected.toJson();
-            AttributeValue<?> actual = AttributeValue.fromJson(json);
-
-            assertThat(actual).isEqualTo(expected);
+        void nullURLShouldThrowAnException() {
+            assertThatNullPointerException().
+                isThrownBy(() -> AttributeValue.of((URL) null));
         }
 
         @Test
@@ -380,15 +344,10 @@ class AttributeValueTest {
 
     @Nested
     class ListSerialization {
-        @Disabled("Failing!")
         @Test
-        void nullStringListShouldBeSerializedAndBack() {
-            AttributeValue<?> expected = AttributeValue.ofAny((List<String>) null);
-
-            JsonNode json = expected.toJson();
-            AttributeValue<?> actual = AttributeValue.fromJson(json);
-
-            assertThat(actual).isEqualTo(expected);
+        void nullStringListShouldThrowAnException() {
+            assertThatNullPointerException().
+                isThrownBy(() -> AttributeValue.ofAny((List<String>) null));
         }
 
         @Test
@@ -438,14 +397,10 @@ class AttributeValueTest {
 
     @Nested
     class MapSerialization {
-        @Disabled("Failing!")
         @Test
-        void nullMapShouldBeSerializedAndBack() {
-            AttributeValue<?> expected = AttributeValue.of((Map) null);
-            JsonNode json = expected.toJson();
-            AttributeValue<?> actual = AttributeValue.fromJson(json);
-
-            assertThat(actual).isEqualTo(expected);
+        void nullMapShouldThrowAnException() {
+            assertThatNullPointerException().
+                isThrownBy(() -> AttributeValue.of((Map) null));
         }
 
         @Test

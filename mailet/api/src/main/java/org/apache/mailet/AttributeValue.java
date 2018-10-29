@@ -38,6 +38,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
 /** 
  * Strong typing for attribute value, which represents the value of an attribute stored in a mail.
@@ -48,26 +49,32 @@ public class AttributeValue<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AttributeValue.class);
 
     public static AttributeValue<Boolean> of(Boolean value) {
+        Preconditions.checkNotNull(value, "value should not be null");
         return new AttributeValue<>(value, Serializer.BOOLEAN_SERIALIZER);
     }
 
     public static AttributeValue<String> of(String value) {
+        Preconditions.checkNotNull(value, "value should not be null");
         return new AttributeValue<>(value, Serializer.STRING_SERIALIZER);
     }
 
     public static AttributeValue<Integer> of(Integer value) {
+        Preconditions.checkNotNull(value, "value should not be null");
         return new AttributeValue<>(value, Serializer.INT_SERIALIZER);
     }
 
     public static AttributeValue<Long> of(Long value) {
+        Preconditions.checkNotNull(value, "value should not be null");
         return new AttributeValue<>(value, Serializer.LONG_SERIALIZER);
     }
 
     public static AttributeValue<Float> of(Float value) {
+        Preconditions.checkNotNull(value, "value should not be null");
         return new AttributeValue<>(value, Serializer.FLOAT_SERIALIZER);
     }
 
     public static AttributeValue<Double> of(Double value) {
+        Preconditions.checkNotNull(value, "value should not be null");
         return new AttributeValue<>(value, Serializer.DOUBLE_SERIALIZER);
     }
 
@@ -76,20 +83,24 @@ public class AttributeValue<T> {
     }
 
     public static <T extends ArbitrarySerializable<T>> AttributeValue<T> of(T value) {
+        Preconditions.checkNotNull(value, "value should not be null");
         return new AttributeValue<>(value, new Serializer.ArbitrarySerializableSerializer<>());
     }
 
     public static AttributeValue<URL> of(URL value) {
+        Preconditions.checkNotNull(value, "value should not be null");
         return new AttributeValue<>(value, Serializer.URL_SERIALIZER);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static AttributeValue<Collection<AttributeValue<?>>> of(Collection<AttributeValue<?>> value) {
+        Preconditions.checkNotNull(value, "value should not be null");
         return new AttributeValue<>(value, new Serializer.CollectionSerializer());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static AttributeValue<Map<String, AttributeValue<?>>> of(Map<String, AttributeValue<?>> value) {
+        Preconditions.checkNotNull(value, "value should not be null");
         return new AttributeValue<>(value, new Serializer.MapSerializer());
     }
 
@@ -99,6 +110,7 @@ public class AttributeValue<T> {
 
     @SuppressWarnings("unchecked")
     public static AttributeValue<?> ofAny(Object value) {
+        Preconditions.checkNotNull(value, "value should not be null");
         if (value instanceof Boolean) {
             return of((Boolean) value);
         }
