@@ -175,6 +175,19 @@ class AttributeValueTest {
             assertThatIllegalStateException()
                 .isThrownBy(() -> AttributeValue.fromJsonString("{\"serializer\":\"IntSerializer\",\"value\": []}"));
         }
+
+        @Test
+        void fromJsonStringShouldThrowOnFloatJson() {
+            assertThatIllegalStateException()
+                .isThrownBy(() -> AttributeValue.fromJsonString("{\"serializer\":\"IntSerializer\",\"value\": 42.0}"));
+        }
+
+        @Test
+        void fromJsonStringShouldThrowOnLongJson() {
+            assertThatIllegalStateException()
+                .isThrownBy(() -> AttributeValue.fromJsonString("{\"serializer\":\"IntSerializer\",\"value\": 2147483648}"));
+            // Int.MAX_VALUE + 1
+        }
     }
 
     @Nested
@@ -182,6 +195,15 @@ class AttributeValueTest {
         @Test
         void longShouldBeSerializedAndBack() {
             AttributeValue<Long> expected = AttributeValue.of(42L);
+
+            JsonNode json = expected.toJson();
+            AttributeValue<?> actual = AttributeValue.fromJson(json);
+
+            assertThat(actual).isEqualTo(expected);
+        }
+        @Test
+        void longShouldBeSerializedAndBackForLongMaxValue() {
+            AttributeValue<Long> expected = AttributeValue.of(Long.MAX_VALUE);
 
             JsonNode json = expected.toJson();
             AttributeValue<?> actual = AttributeValue.fromJson(json);
@@ -208,6 +230,12 @@ class AttributeValueTest {
         void fromJsonStringShouldThrowOnMalformedFormattedJson() {
             assertThatIllegalStateException()
                 .isThrownBy(() -> AttributeValue.fromJsonString("{\"serializer\":\"LongSerializer\",\"value\": []}"));
+        }
+
+        @Test
+        void fromJsonStringShouldThrowOnFloatJson() {
+            assertThatIllegalStateException()
+                .isThrownBy(() -> AttributeValue.fromJsonString("{\"serializer\":\"LongSerializer\",\"value\": 42.0}"));
         }
     }
 
@@ -243,6 +271,12 @@ class AttributeValueTest {
             assertThatIllegalStateException()
                 .isThrownBy(() -> AttributeValue.fromJsonString("{\"serializer\":\"FloatSerializer\",\"value\": []}"));
         }
+
+        @Test
+        void fromJsonStringShouldThrowOnIntNode() {
+            assertThatIllegalStateException()
+                .isThrownBy(() -> AttributeValue.fromJsonString("{\"serializer\":\"FloatSerializer\",\"value\": 1}"));
+        }
     }
 
     @Nested
@@ -250,6 +284,15 @@ class AttributeValueTest {
         @Test
         void doubleShouldBeSerializedAndBack() {
             AttributeValue<Double> expected = AttributeValue.of(1.0d);
+
+            JsonNode json = expected.toJson();
+            AttributeValue<?> actual = AttributeValue.fromJson(json);
+
+            assertThat(actual).isEqualTo(expected);
+        }
+        @Test
+        void doubleShouldBeSerializedAndBackForMaxValue() {
+            AttributeValue<Double> expected = AttributeValue.of(Double.MAX_VALUE);
 
             JsonNode json = expected.toJson();
             AttributeValue<?> actual = AttributeValue.fromJson(json);
@@ -276,6 +319,12 @@ class AttributeValueTest {
         void fromJsonStringShouldThrowOnMalformedFormattedJson() {
             assertThatIllegalStateException()
                 .isThrownBy(() -> AttributeValue.fromJsonString("{\"serializer\":\"DoubleSerializer\",\"value\": []}"));
+        }
+
+        @Test
+        void fromJsonStringShouldThrowOnIntNode() {
+            assertThatIllegalStateException()
+                .isThrownBy(() -> AttributeValue.fromJsonString("{\"serializer\":\"DoubleSerializer\",\"value\": 1}"));
         }
     }
 
