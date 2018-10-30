@@ -74,7 +74,7 @@ public class MailSpoolTest {
             .contains(USERNAME);
         assertThat(AttributeUtils.getValueAndCastFromMail(actual.getMail(), MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, MessageIdDto.class)
                 .get()
-                .instanciate(new TestMessageId.Factory()))
+                .instantiate(new TestMessageId.Factory()))
             .isEqualTo(MESSAGE_ID);
     }
 

@@ -34,7 +34,7 @@ public class MessageIdDto {
         this.messageId = messageId.asString();
     }
 
-    public MessageId instanciate(MessageId.Factory factory) {
+    public MessageId instantiate(MessageId.Factory factory) {
         return factory.fromString(messageId);
     }
     
