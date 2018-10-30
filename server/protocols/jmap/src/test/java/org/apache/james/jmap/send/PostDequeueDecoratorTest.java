@@ -89,7 +89,7 @@ public class PostDequeueDecoratorTest {
         mockedMailQueueItem = mock(MailQueueItem.class);
         mail = FakeMail.defaultFakeMail();
         when(mockedMailQueueItem.getMail()).thenReturn(mail);
-        testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager,
+        testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager, new InMemoryMessageId.Factory(), 
                 inMemoryIntegrationResources.createMessageIdManager(mailboxManager), new SystemMailboxesProviderImpl(mailboxManager));
 
         message = Message.Builder.of()
@@ -252,7 +252,7 @@ public class PostDequeueDecoratorTest {
     @Test
     public void doneShouldCopyMailFromOutboxToSentOnlyOneTimeWhenSuccess() throws Exception {
         MessageIdManager messageIdManager = mock(MessageIdManager.class);
-        testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager,
+        testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager, new InMemoryMessageId.Factory(),
                 messageIdManager, new SystemMailboxesProviderImpl(mailboxManager));
 
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
@@ -280,7 +280,7 @@ public class PostDequeueDecoratorTest {
     @Test(expected = MailQueue.MailQueueException.class)
     public void doneShouldThrowWhenMailboxException() throws Exception {
         MessageIdManager messageIdManager = mock(MessageIdManager.class);
-        testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager,
+        testee = new PostDequeueDecorator(mockedMailQueueItem, mailboxManager, new InMemoryMessageId.Factory(),
                 messageIdManager, new SystemMailboxesProviderImpl(mailboxManager));
 
         MailboxSession mailboxSession = mailboxManager.createSystemSession(USERNAME);
