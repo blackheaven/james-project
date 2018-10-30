@@ -300,7 +300,7 @@ public interface Serializer<T> {
                     return factory.deserialize(new ArbitrarySerializable.Serializable<>(value, (Class<ArbitrarySerializable.Factory<T>>) factoryClass));
                 }
             } catch (Exception e) {
-                LOGGER.error("Error while deserializing", e);
+                LOGGER.error("Error while deserializing using serializer {} and value {}", serializer, value, e);
             }
 
             return Optional.empty();
