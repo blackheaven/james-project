@@ -19,8 +19,6 @@
 
 package org.apache.james.mailbox.model;
 
-import java.io.Serializable;
-
 public interface MessageId {
 
     interface Factory {

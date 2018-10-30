@@ -32,11 +32,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-
-import org.apache.james.mailbox.model.MessageId;
-import org.apache.james.mailbox.model.MessageId.Factory;
-import org.apache.james.mailbox.model.TestMessageId;
+import org.apache.james.mailbox.model.MessageIdDto;
 import org.apache.james.util.streams.Iterators;
 import org.nustaq.serialization.FSTConfiguration;
 import org.slf4j.Logger;
@@ -83,8 +79,8 @@ public interface Serializer<T> extends Serializable {
                     LONG_SERIALIZER,
                     FLOAT_SERIALIZER,
                     DOUBLE_SERIALIZER,
-                    MESSAGE_ID_SERIALIZER,
-                    new Serializer.ArbitrarySerializableSerializer(),
+                    MESSAGE_ID_DTO_SERIALIZER,
+                    new Serializer.ArbitrarySerializableSerializer<>(),
                     URL_SERIALIZER,
                     new CollectionSerializer<>(),
                     new MapSerializer<>(),
@@ -265,24 +261,24 @@ public interface Serializer<T> extends Serializable {
 
     Serializer<Double> DOUBLE_SERIALIZER = new DoubleSerializer();
 
-    class MessageIdSerializer implements Serializer<MessageId> {
+    class MessageIdDtoSerializer implements Serializer<MessageIdDto> {
 
         @Override
-        public JsonNode serialize(MessageId serializable) {
+        public JsonNode serialize(MessageIdDto serializable) {
             return STRING_SERIALIZER
                     .serialize(serializable.asString());
         }
 
         @Override
-        public Optional<MessageId> deserialize(JsonNode json) {
+        public Optional<MessageIdDto> deserialize(JsonNode json) {
             return STRING_SERIALIZER
                     .deserialize(json)
-                    .map(MessageId.Singleton::fromString);
+                    .map(MessageIdDto::new);
         }
 
         @Override
         public String getName() {
-            return "MessageIdSerializer";
+            return "MessageIdDtoSerializer";
         }
 
         @Override
@@ -291,7 +287,7 @@ public interface Serializer<T> extends Serializable {
         }
     }
 
-    Serializer<MessageId> MESSAGE_ID_SERIALIZER = new MessageIdSerializer();
+    Serializer<MessageIdDto> MESSAGE_ID_DTO_SERIALIZER = new MessageIdDtoSerializer();
 
     class ArbitrarySerializableSerializer<T extends ArbitrarySerializable<T>> implements Serializer<T> {
         private static final Logger LOGGER = LoggerFactory.getLogger(ArbitrarySerializableSerializer.class);

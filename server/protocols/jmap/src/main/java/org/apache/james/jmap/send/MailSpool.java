@@ -21,6 +21,7 @@ package org.apache.james.jmap.send;
 
 import javax.inject.Inject;
 
+import org.apache.james.mailbox.model.MessageIdDto;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueue.MailQueueException;
 import org.apache.james.queue.api.MailQueueFactory;
@@ -40,7 +41,7 @@ public class MailSpool {
     }
 
     public void send(Mail mail, MailMetadata metadata) throws MailQueueException {
-        mail.setAttribute(new Attribute(MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, AttributeValue.of(metadata.getMessageId())));
+        mail.setAttribute(new Attribute(MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, AttributeValue.of(new MessageIdDto(metadata.getMessageId()))));
         mail.setAttribute(new Attribute(MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE, AttributeValue.of(metadata.getUsername())));
         queue.enQueue(mail);
     }

@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.MessageIdDto;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,8 +78,8 @@ public class AttributeValue<T> {
         return new AttributeValue<>(value, Serializer.DOUBLE_SERIALIZER);
     }
 
-    public static AttributeValue<MessageId> of(MessageId value) {
-        return new AttributeValue<>(value, Serializer.MESSAGE_ID_SERIALIZER);
+    public static AttributeValue<MessageIdDto> of(MessageIdDto value) {
+        return new AttributeValue<>(value, Serializer.MESSAGE_ID_DTO_SERIALIZER);
     }
 
     public static <T extends ArbitrarySerializable<T>> AttributeValue<T> of(T value) {
@@ -135,8 +135,8 @@ public class AttributeValue<T> {
         if (value instanceof Map<?,?>) {
             return of(((Map<String, AttributeValue<?>>) value));
         }
-        if (value instanceof MessageId) {
-            return of((MessageId) value);
+        if (value instanceof MessageIdDto) {
+            return of((MessageIdDto) value);
         }
         if (value instanceof ArbitrarySerializable) {
             return of((ArbitrarySerializable) value);

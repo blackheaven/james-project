@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.MessageIdDto;
 import org.apache.james.mailbox.model.TestMessageId;
 
 import org.junit.jupiter.api.Nested;
@@ -475,16 +475,16 @@ class AttributeValueTest {
 
     @Test
     void fromJsonStringShouldReturnMessageIdAttributeValue() throws Exception {
-        AttributeValue<MessageId> expected = AttributeValue.of(TestMessageId.of(42));
+        AttributeValue<MessageIdDto> expected = AttributeValue.of(new MessageIdDto(TestMessageId.of(42)));
 
-        AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"MessageIdSerializer\",\"value\":\"42\"}");
+        AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"MessageIdDtoSerializer\",\"value\":\"42\"}");
 
         assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     void messageIdShouldBeSerializedAndBack() {
-        AttributeValue<MessageId> expected = AttributeValue.of(TestMessageId.of(42));
+        AttributeValue<MessageIdDto> expected = AttributeValue.of(new MessageIdDto(TestMessageId.of(42)));
 
         JsonNode json = expected.toJson();
         AttributeValue<?> actual = AttributeValue.fromJson(json);
