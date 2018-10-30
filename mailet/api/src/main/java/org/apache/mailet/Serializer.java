@@ -48,6 +48,7 @@ import com.fasterxml.jackson.databind.node.FloatNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.LongNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -84,7 +85,8 @@ public interface Serializer<T> extends Serializable {
                     URL_SERIALIZER,
                     new CollectionSerializer<>(),
                     new MapSerializer<>(),
-                    new FSTSerializer())
+                    new FSTSerializer(),
+                    new OptionalSerializer<>())
                 .collect(ImmutableMap.toImmutableMap(Serializer::getName, Function.identity()));
         }
 
@@ -427,6 +429,36 @@ public interface Serializer<T> extends Serializable {
         @Override
         public String getName() {
             return "MapSerializer";
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return this.getClass() == other.getClass();
+        }
+    }
+
+    class OptionalSerializer<U> implements Serializer<Optional<AttributeValue<U>>> {
+        @Override
+        public JsonNode serialize(Optional<AttributeValue<U>> object) {
+            return object.map(AttributeValue::toJson)
+                .orElse(NullNode.getInstance());
+        }
+
+        @Override
+        public Optional<Optional<AttributeValue<U>>> deserialize(JsonNode json) {
+            if (json instanceof ObjectNode) {
+                AttributeValue<U> value = (AttributeValue<U>) AttributeValue.fromJson(json);
+                return Optional.of(Optional.of(value));
+            } else if (json instanceof NullNode) {
+                return Optional.of(Optional.empty());
+            } else {
+                return Optional.empty();
+            }
+        }
+
+        @Override
+        public String getName() {
+            return "OptionalSerializer";
         }
 
         @Override
