@@ -343,6 +343,40 @@ class AttributeValueTest {
     }
 
     @Nested
+    class MessageIdDtoSerialization {
+        @Test
+        void messageIdShouldBeSerializedAndBack() {
+            AttributeValue<MessageIdDto> expected = AttributeValue.of(new MessageIdDto(TestMessageId.of(42)));
+
+            JsonNode json = expected.toJson();
+            AttributeValue<?> actual = AttributeValue.fromJson(json);
+
+            assertThat(actual).isEqualTo(expected);
+        }
+
+        @Test
+        void nullMessageIdDtoShouldThrowAnException() {
+            assertThatNullPointerException().
+                isThrownBy(() -> AttributeValue.of((MessageIdDto) null));
+        }
+
+        @Test
+        void fromJsonStringShouldReturnMessageIdAttributeValue() throws Exception {
+            AttributeValue<MessageIdDto> expected = AttributeValue.of(new MessageIdDto(TestMessageId.of(42)));
+
+            AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"MessageIdDtoSerializer\",\"value\":\"42\"}");
+
+            assertThat(actual).isEqualTo(expected);
+        }
+
+        @Test
+        void fromJsonStringShouldThrowOnMalformedFormattedJson() {
+            assertThatIllegalStateException()
+                .isThrownBy(() -> AttributeValue.fromJsonString("{\"serializer\":\"MessageIdDtoSerializer\",\"value\": {}}"));
+        }
+    }
+
+    @Nested
     class ListSerialization {
         @Test
         void nullStringListShouldThrowAnException() {
@@ -471,25 +505,6 @@ class AttributeValueTest {
     void fromJsonStringShouldThrowOnMissingValueField() {
         assertThatIllegalStateException()
             .isThrownBy(() -> AttributeValue.fromJsonString("{\"serializer\":\"MapSerializer\"}"));
-    }
-
-    @Test
-    void fromJsonStringShouldReturnMessageIdAttributeValue() throws Exception {
-        AttributeValue<MessageIdDto> expected = AttributeValue.of(new MessageIdDto(TestMessageId.of(42)));
-
-        AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"MessageIdDtoSerializer\",\"value\":\"42\"}");
-
-        assertThat(actual).isEqualTo(expected);
-    }
-
-    @Test
-    void messageIdShouldBeSerializedAndBack() {
-        AttributeValue<MessageIdDto> expected = AttributeValue.of(new MessageIdDto(TestMessageId.of(42)));
-
-        JsonNode json = expected.toJson();
-        AttributeValue<?> actual = AttributeValue.fromJson(json);
-
-        assertThat(actual).isEqualTo(expected);
     }
 
     private static class TestArbitrarySerializable implements ArbitrarySerializable<TestArbitrarySerializable> {

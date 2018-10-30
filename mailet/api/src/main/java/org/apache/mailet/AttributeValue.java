@@ -79,6 +79,7 @@ public class AttributeValue<T> {
     }
 
     public static AttributeValue<MessageIdDto> of(MessageIdDto value) {
+        Preconditions.checkNotNull(value, "value should not be null");
         return new AttributeValue<>(value, Serializer.MESSAGE_ID_DTO_SERIALIZER);
     }
 
