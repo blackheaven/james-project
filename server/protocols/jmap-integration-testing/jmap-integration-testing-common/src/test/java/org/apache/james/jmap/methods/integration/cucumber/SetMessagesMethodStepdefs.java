@@ -259,7 +259,7 @@ public class SetMessagesMethodStepdefs {
             mainStepdefs.awaitMethod.run();
             Optional.ofNullable(
                 httpClient.jsonPath.<String>read("[0][1].created." + message + ".id"))
-                .flatMap(MessageId::fromJson)
+                .map(mainStepdefs.messageIdFactory::fromString)
                 .ifPresent(id -> messageIdStepdefs.addMessageId(message, id));
         });
     }

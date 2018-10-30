@@ -64,16 +64,16 @@ public class ObjectMapperFactory {
     private final Set<Module> jacksonModules;
 
     @Inject
-    public ObjectMapperFactory(MailboxId.Factory mailboxIdFactory) {
+    public ObjectMapperFactory(MailboxId.Factory mailboxIdFactory, MessageId.Factory messageIdFactory) {
         SimpleModule mailboxIdModule = new SimpleModule();
         mailboxIdModule.addDeserializer(MailboxId.class, new MailboxIdDeserializer(mailboxIdFactory));
         mailboxIdModule.addSerializer(MailboxId.class, new MailboxIdSerializer());
         mailboxIdModule.addKeyDeserializer(MailboxId.class, new MailboxIdKeyDeserializer(mailboxIdFactory));
         mailboxIdModule.addKeySerializer(MailboxId.class, new MailboxIdKeySerializer());
 
-        mailboxIdModule.addDeserializer(MessageId.class, new MessageIdDeserializer());
+        mailboxIdModule.addDeserializer(MessageId.class, new MessageIdDeserializer(messageIdFactory));
         mailboxIdModule.addSerializer(MessageId.class, new MessageIdSerializer());
-        mailboxIdModule.addKeyDeserializer(MessageId.class, new MessageIdKeyDeserializer());
+        mailboxIdModule.addKeyDeserializer(MessageId.class, new MessageIdKeyDeserializer(messageIdFactory));
         mailboxIdModule.addKeySerializer(MessageId.class, new MessageIdKeySerializer());
         mailboxIdModule.addKeyDeserializer(Rights.Username.class, new UsernameKeyDeserializer());
         mailboxIdModule.addDeserializer(Rights.Right.class, new RightDeserializer());
@@ -205,16 +205,28 @@ public class ObjectMapperFactory {
     }
 
     public static class MessageIdDeserializer extends JsonDeserializer<MessageId> {
+        private MessageId.Factory factory;
+
+        public MessageIdDeserializer(MessageId.Factory factory) {
+            this.factory = factory;
+        }
+
         @Override
         public MessageId deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-            return MessageId.fromJson(p.getValueAsString()).get();
+            return factory.fromString(p.getValueAsString());
         }
     }
 
     public static class MessageIdKeyDeserializer extends KeyDeserializer {
+        private MessageId.Factory factory;
+
+        public MessageIdKeyDeserializer(MessageId.Factory factory) {
+            this.factory = factory;
+        }
+
         @Override
         public Object deserializeKey(String key, DeserializationContext ctxt) {
-            return MessageId.fromJson(key).get();
+            return factory.fromString(key);
         }
     }
 

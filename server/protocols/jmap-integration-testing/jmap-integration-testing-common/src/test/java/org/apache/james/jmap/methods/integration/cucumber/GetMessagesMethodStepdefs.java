@@ -396,7 +396,7 @@ public class GetMessagesMethodStepdefs {
 
         TestingConstants.calmlyAwait.until(() -> !retrieveIds(user, mailboxId).isEmpty());
         List<String> ids = retrieveIds(user, mailboxId);
-        messageIdStepdefs.addMessageId(messageName, MessageId.fromJson(ids.get(0)).get());
+        messageIdStepdefs.addMessageId(messageName, mainStepdefs.messageIdFactory.fromString(ids.get(0)));
     }
 
     public List<String> retrieveIds(String user, MailboxId mailboxId) {

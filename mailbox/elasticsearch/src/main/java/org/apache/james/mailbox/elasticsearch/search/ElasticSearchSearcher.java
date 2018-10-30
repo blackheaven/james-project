@@ -57,16 +57,18 @@ public class ElasticSearchSearcher {
     private final QueryConverter queryConverter;
     private final int size;
     private final MailboxId.Factory mailboxIdFactory;
+    private final MessageId.Factory messageIdFactory;
     private final AliasName aliasName;
     private final TypeName typeName;
 
     public ElasticSearchSearcher(Client client, QueryConverter queryConverter, int size,
-                                 MailboxId.Factory mailboxIdFactory,
+                                 MailboxId.Factory mailboxIdFactory, MessageId.Factory messageIdFactory,
                                  ReadAliasName aliasName, TypeName typeName) {
         this.client = client;
         this.queryConverter = queryConverter;
         this.size = size;
         this.mailboxIdFactory = mailboxIdFactory;
+        this.messageIdFactory = messageIdFactory;
         this.aliasName = aliasName;
         this.typeName = typeName;
     }
@@ -116,7 +118,7 @@ public class ElasticSearchSearcher {
             Number uidAsNumber = uid.getValue();
             return Optional.of(
                 new MessageSearchIndex.SearchResult(
-                    id.flatMap(field -> MessageId.fromJson(field.getValue())),
+                    id.map(field -> messageIdFactory.fromString(field.getValue())),
                     mailboxIdFactory.fromString(mailboxId.getValue()),
                     MessageUid.of(uidAsNumber.longValue())));
         } else {

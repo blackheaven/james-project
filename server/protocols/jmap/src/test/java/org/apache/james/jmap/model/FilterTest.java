@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.james.jmap.json.ObjectMapperFactory;
 import org.apache.james.mailbox.inmemory.InMemoryId;
+import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,7 +34,7 @@ public class FilterTest {
 
     @Before
     public void setup() {
-        parser = new ObjectMapperFactory(new InMemoryId.Factory()).forParsing();
+        parser = new ObjectMapperFactory(new InMemoryId.Factory(), new InMemoryMessageId.Factory()).forParsing();
     }
 
     @Test

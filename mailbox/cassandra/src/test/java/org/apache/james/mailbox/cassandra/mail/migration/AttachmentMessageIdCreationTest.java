@@ -88,7 +88,7 @@ class AttachmentMessageIdCreationTest {
             blobsDAO, new HashBlobId.Factory(), CassandraUtils.WITH_DEFAULT_CONFIGURATION, messageIdFactory);
 
         attachmentMessageIdDAO = new CassandraAttachmentMessageIdDAO(cassandra.getConf(),
-            CassandraUtils.WITH_DEFAULT_CONFIGURATION);
+            new CassandraMessageId.Factory(), CassandraUtils.WITH_DEFAULT_CONFIGURATION);
 
         migration = new AttachmentMessageIdCreation(cassandraMessageDAO, attachmentMessageIdDAO);
 

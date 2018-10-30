@@ -28,6 +28,7 @@ import org.apache.james.core.quota.QuotaSize;
 import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.MessageId.Factory;
 import org.apache.james.mailbox.model.QuotaRoot;
 import org.apache.james.mailbox.store.event.EventSerializer;
 import org.apache.james.mailbox.store.json.event.EventConverter;
@@ -78,7 +79,7 @@ public class JacksonEventSerializer implements EventSerializer {
         module.addSerializer(MessageUid.class, new MessageUidSerializer());
         module.addKeySerializer(MessageUid.class, new MessageUidKeySerializer());
         module.addSerializer(MessageId.class, new MessageIdSerializer());
-        module.addDeserializer(MessageId.class, new MessageIdDeserializer());
+        module.addDeserializer(MessageId.class, new MessageIdDeserializer(messageIdFactory));
         module.addSerializer(QuotaRoot.class, new QuotaRootSerializer());
         module.addDeserializer(QuotaRoot.class, new QuotaRootDeserializer());
         module.addSerializer(QuotaCount.class, new QuotaCountSerializer());
@@ -135,9 +136,15 @@ public class JacksonEventSerializer implements EventSerializer {
     }
 
     public static class MessageIdDeserializer extends JsonDeserializer<MessageId> {
+        private final Factory factory;
+
+        public MessageIdDeserializer(MessageId.Factory factory) {
+            this.factory = factory;
+        }
+
         @Override
         public MessageId deserialize(JsonParser p, DeserializationContext context) throws IOException, JsonProcessingException {
-            return MessageId.fromJson(p.getValueAsString()).get();
+            return factory.fromString(p.getValueAsString());
         }
         
     }

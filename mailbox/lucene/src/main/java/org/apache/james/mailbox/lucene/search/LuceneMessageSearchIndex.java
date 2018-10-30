@@ -353,6 +353,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     private static final SortField FIRST_FROM_MAILBOX_DISPLAY_SORT_REVERSE = new SortField(FIRST_FROM_MAILBOX_DISPLAY_FIELD, SortField.STRING, true);
     
     private final MailboxId.Factory mailboxIdFactory;
+    private final MessageId.Factory messageIdFactory;
     private final IndexWriter writer;
     private final Directory directory;
 
@@ -364,9 +365,10 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     public LuceneMessageSearchIndex(
         MessageMapperFactory factory,
         MailboxId.Factory mailboxIdFactory,
-        Directory directory
+        Directory directory,
+        MessageId.Factory messageIdFactory
     ) throws IOException {
-        this(factory, mailboxIdFactory, directory, false, true);
+        this(factory, mailboxIdFactory, directory, false, true, messageIdFactory);
     }
 
     public LuceneMessageSearchIndex(
@@ -374,10 +376,12 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
             MailboxId.Factory mailboxIdFactory,
             Directory directory,
             boolean dropIndexOnStart,
-            boolean lenient
+            boolean lenient,
+            MessageId.Factory messageIdFactory
     ) throws IOException {
         super(factory);
         this.mailboxIdFactory = mailboxIdFactory;
+        this.messageIdFactory = messageIdFactory;
         this.directory = directory;
         this.writer = new IndexWriter(this.directory,  createConfig(createAnalyzer(lenient), dropIndexOnStart));
     }
@@ -512,7 +516,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     }
 
     private Optional<MessageId> toMessageId(Optional<String> messageIdField) {
-        return messageIdField.flatMap(MessageId::fromJson);
+        return messageIdField.map(messageIdFactory::fromString);
     }
 
     private Query buildQueryFromMailboxes(Collection<MailboxId> mailboxIds) {

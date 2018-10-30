@@ -45,11 +45,14 @@ public class StoreBlobManager implements BlobManager {
     public static final String MESSAGE_RFC822_CONTENT_TYPE = "message/rfc822";
     private final AttachmentManager attachmentManager;
     private final MessageIdManager messageIdManager;
+    private final MessageId.Factory messageIdFactory;
 
     @Inject
-    public StoreBlobManager(AttachmentManager attachmentManager, MessageIdManager messageIdManager) {
+    public StoreBlobManager(AttachmentManager attachmentManager, MessageIdManager messageIdManager,
+                            MessageId.Factory messageIdFactory) {
         this.attachmentManager = attachmentManager;
         this.messageIdManager = messageIdManager;
+        this.messageIdFactory = messageIdFactory;
     }
 
     @Override
@@ -74,8 +77,7 @@ public class StoreBlobManager implements BlobManager {
     }
 
     private Optional<Blob> getBlobFromMessage(BlobId blobId, MailboxSession mailboxSession) {
-        return retrieveMessageId(blobId)
-                .flatMap(messageId -> loadMessageAsBlob(messageId, mailboxSession))
+        return loadMessageAsBlob(retrieveMessageId(blobId), mailboxSession)
                 .map(Throwing.function(
                     blob -> Blob.builder()
                         .id(blobId)
@@ -84,8 +86,8 @@ public class StoreBlobManager implements BlobManager {
                         .build()));
     }
 
-    private Optional<MessageId> retrieveMessageId(BlobId blobId) {
-        return MessageId.fromJson(blobId.asString());
+    private MessageId retrieveMessageId(BlobId blobId) {
+        return messageIdFactory.fromString(blobId.asString());
     }
 
     private Optional<InputStream> loadMessageAsBlob(MessageId messageId, MailboxSession mailboxSession)  {

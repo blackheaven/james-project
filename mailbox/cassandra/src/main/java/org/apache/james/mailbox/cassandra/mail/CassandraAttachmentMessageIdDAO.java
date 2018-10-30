@@ -50,10 +50,12 @@ public class CassandraAttachmentMessageIdDAO {
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final PreparedStatement insertStatement;
     private final PreparedStatement selectStatement;
+    private final MessageId.Factory messageIdFactory;
     private final CassandraUtils cassandraUtils;
 
     @Inject
-    public CassandraAttachmentMessageIdDAO(Session session, CassandraUtils cassandraUtils) {
+    public CassandraAttachmentMessageIdDAO(Session session, MessageId.Factory messageIdFactory, CassandraUtils cassandraUtils) {
+        this.messageIdFactory = messageIdFactory;
         this.cassandraUtils = cassandraUtils;
         this.cassandraAsyncExecutor = new CassandraAsyncExecutor(session);
 
@@ -86,7 +88,7 @@ public class CassandraAttachmentMessageIdDAO {
     }
 
     private MessageId rowToMessageId(Row row) {
-        return MessageId.fromJson(row.getString(MESSAGE_ID)).get();
+        return messageIdFactory.fromString(row.getString(MESSAGE_ID));
     }
 
     public CompletableFuture<Void> storeAttachmentForMessageId(AttachmentId attachmentId, MessageId ownerMessageId) {

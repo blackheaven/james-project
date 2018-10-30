@@ -37,6 +37,7 @@ import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.indexer.ReIndexer;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.inmemory.InMemoryMailboxManager;
+import org.apache.james.mailbox.inmemory.InMemoryMessageId;
 import org.apache.james.mailbox.inmemory.manager.InMemoryIntegrationResources;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.MailboxId;
@@ -97,6 +98,7 @@ class ReindexingRoutesTest {
                 reIndexer,
                 jsonTransformer),
             new MessageIdReindexingRoutes(taskManager,
+                new InMemoryMessageId.Factory(),
                 new MessageIdReIndexerImpl(mailboxManager, mailboxManager.getMapperFactory(), searchIndex),
                 jsonTransformer));
         webAdminServer.configure(NO_CONFIGURATION);

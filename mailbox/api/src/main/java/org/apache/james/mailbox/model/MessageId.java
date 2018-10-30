@@ -19,8 +19,7 @@
 
 package org.apache.james.mailbox.model;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import java.io.Serializable;
 
 public interface MessageId {
 
@@ -31,15 +30,6 @@ public interface MessageId {
         MessageId generate();
 
     }
-    
+
     String asString();
-
-    class Singleton {
-        @Inject
-        static Provider<Factory> factory;
-
-        public static MessageId fromString(String json) {
-            return factory.get().fromString(json);
-        }
-    }
 }
