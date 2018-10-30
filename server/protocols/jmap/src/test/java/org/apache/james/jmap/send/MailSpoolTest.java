@@ -31,7 +31,6 @@ import org.apache.james.queue.memory.MemoryMailQueueFactory;
 import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class MailSpoolTest {
