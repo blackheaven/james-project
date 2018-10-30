@@ -191,7 +191,7 @@ public class ICalendarParserTest {
             .build();
 
         Mail mail = FakeMail.builder()
-            .attribute(new Attribute(SOURCE_CUSTOM_ATTRIBUTE, AttributeValue.of(attachments)))
+            .attribute(new Attribute(SOURCE_CUSTOM_ATTRIBUTE, AttributeValue.ofAny(attachments)))
             .build();
 
         mailet.service(mail);
@@ -216,7 +216,7 @@ public class ICalendarParserTest {
             .put("key2", RIGHT_ICAL_VALUE.getBytes())
             .build();
         Mail mail = FakeMail.builder()
-            .attribute(new Attribute(SOURCE_CUSTOM_ATTRIBUTE, AttributeValue.of(attachments)))
+            .attribute(new Attribute(SOURCE_CUSTOM_ATTRIBUTE, AttributeValue.ofAny(attachments)))
             .build();
 
         mailet.service(mail);
@@ -249,7 +249,7 @@ public class ICalendarParserTest {
             .build();
 
         Mail mail = FakeMail.builder()
-            .attribute(new Attribute(SOURCE_CUSTOM_ATTRIBUTE, AttributeValue.of(attachments)))
+            .attribute(new Attribute(SOURCE_CUSTOM_ATTRIBUTE, AttributeValue.ofAny(attachments)))
             .build();
 
         mailet.service(mail);

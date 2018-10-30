@@ -256,7 +256,7 @@ public interface MailQueueContract {
         AttributeName attributeName = AttributeName.of("any");
         SerializableAttribute attributeValue = new SerializableAttribute("value");
         enQueue(defaultMail()
-                .attribute(new Attribute(attributeName, AttributeValue.of(attributeValue)))
+                .attribute(new Attribute(attributeName, AttributeValue.ofAny(attributeValue)))
                 .build());
 
         MailQueue.MailQueueItem mailQueueItem = getMailQueue().deQueue();

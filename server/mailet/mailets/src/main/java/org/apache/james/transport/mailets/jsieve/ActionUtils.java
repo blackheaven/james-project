@@ -85,6 +85,6 @@ public class ActionUtils {
                 }
             }).sneakyThrow());
 
-        aMail.setAttribute(new Attribute(name, AttributeValue.of(thisRecipient)));
+        aMail.setAttribute(new Attribute(name, AttributeValue.ofAny(thisRecipient)));
     }
 }

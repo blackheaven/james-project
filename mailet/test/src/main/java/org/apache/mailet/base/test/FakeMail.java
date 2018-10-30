@@ -446,7 +446,7 @@ public class FakeMail implements Mail, Serializable {
 
     @Override
     public Serializable setAttribute(String name, Serializable object) {
-        AttributeValue<?> previous = attributes.put(AttributeName.of(name), AttributeValue.of(object));
+        AttributeValue<?> previous = attributes.put(AttributeName.of(name), AttributeValue.ofAny(object));
         return (Serializable) Optional.ofNullable(previous).map(AttributeValue::value).orElse(null);
     }
 

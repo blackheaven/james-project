@@ -164,7 +164,7 @@ public class SMIMEDecrypt extends GenericMailet {
             // the result of the operation.
             ArrayList<X509Certificate> list = new ArrayList<>(1);
             list.add(keyHolder.getCertificate());
-            mail.setAttribute(new Attribute(mailAttribute, AttributeValue.of(list)));
+            mail.setAttribute(new Attribute(mailAttribute, AttributeValue.ofAny(list)));
 
             // I start the message stripping.
             try {

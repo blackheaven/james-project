@@ -212,7 +212,7 @@ public class MailImpl implements Disposable, Mail {
         }
 
         public Builder attribute(String name, Serializable object) {
-            this.attributes.put(AttributeName.of(name), AttributeValue.of(object));
+            this.attributes.put(AttributeName.of(name), AttributeValue.ofAny(object));
             return this;
         }
 
@@ -729,7 +729,7 @@ public class MailImpl implements Disposable, Mail {
             .stream()
             .collect(Collectors.toMap(
                 x -> AttributeName.of(x.getKey()),
-                x -> AttributeValue.of(x.getValue())));
+                x -> AttributeValue.ofAny(x.getValue())));
     }
 
     @Override
@@ -750,7 +750,7 @@ public class MailImpl implements Disposable, Mail {
     @Override
     public Serializable setAttribute(String key, Serializable object) {
         Preconditions.checkNotNull(key, "Key of an attribute should not be null");
-        AttributeValue<?> previous = attributes.put(AttributeName.of(key), AttributeValue.of(object));
+        AttributeValue<?> previous = attributes.put(AttributeName.of(key), AttributeValue.ofAny(object));
         return Optional.ofNullable(previous).map(x -> (Serializable) x.value()).orElse(null);
     }
 

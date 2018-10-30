@@ -115,7 +115,7 @@ public class ICalendarParser extends GenericMailet {
                     .flatMap(entry -> createCalendar(entry.getKey(), entry.getValue()))
                     .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
 
-                mail.setAttribute(new Attribute(AttributeName.of(destinationAttributeName), AttributeValue.of(calendars)));
+                mail.setAttribute(new Attribute(AttributeName.of(destinationAttributeName), AttributeValue.ofAny(calendars)));
             });
 
     }

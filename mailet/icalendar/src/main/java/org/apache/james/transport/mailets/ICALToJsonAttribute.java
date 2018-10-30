@@ -168,7 +168,7 @@ public class ICALToJsonAttribute extends GenericMailet {
                                         .stream()
                                         .flatMap(calendar -> toJson(calendar, rawCalendars, mail, sender))
                                         .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
-                                    mail.setAttribute(new Attribute(AttributeName.of(destinationAttributeName), AttributeValue.of(jsonsInByteForm)));
+                                    mail.setAttribute(new Attribute(AttributeName.of(destinationAttributeName), AttributeValue.ofAny(jsonsInByteForm)));
                                 });
                         });
                 } catch (ClassCastException e) {

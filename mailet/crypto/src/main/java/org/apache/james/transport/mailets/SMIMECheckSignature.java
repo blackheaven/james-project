@@ -216,7 +216,7 @@ public class SMIMECheckSignature extends GenericMailet {
             }
 
             if (signerinfolist.size() > 0) {
-                mail.setAttribute(new Attribute(mailAttribute, AttributeValue.of(signerinfolist)));
+                mail.setAttribute(new Attribute(mailAttribute, AttributeValue.ofAny(signerinfolist)));
             } else {
                 // if no valid signers are found the message is not modified.
                 strippedMessage = null;

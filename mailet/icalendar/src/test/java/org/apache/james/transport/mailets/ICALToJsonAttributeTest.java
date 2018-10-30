@@ -173,7 +173,7 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(MailAddressFixture.OTHER_AT_JAMES)
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(wrongParametrizedMap)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(wrongParametrizedMap)))
             .build();
         testee.service(mail);
 
@@ -189,7 +189,7 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(MailAddressFixture.OTHER_AT_JAMES)
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(wrongParametrizedMap)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(wrongParametrizedMap)))
             .build();
         testee.service(mail);
 
@@ -206,8 +206,8 @@ public class ICALToJsonAttributeTest {
         ImmutableMap<String, Calendar> icals = ImmutableMap.of("key", calendar);
         Mail mail = FakeMail.builder()
             .recipient(MailAddressFixture.OTHER_AT_JAMES)
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(icals)))
             .build();
         testee.service(mail);
 
@@ -226,8 +226,8 @@ public class ICALToJsonAttributeTest {
         ImmutableMap<String, byte[]> rawIcals = ImmutableMap.of("key", ics);
         Mail mail = FakeMail.builder()
             .sender(SENDER)
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(rawIcals)))
             .build();
         testee.service(mail);
 
@@ -249,8 +249,8 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(recipient)
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(rawIcals)))
             .build();
         testee.service(mail);
 
@@ -286,8 +286,8 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipients(MailAddressFixture.OTHER_AT_JAMES, MailAddressFixture.ANY_AT_JAMES2)
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(rawIcals)))
             .build();
         testee.service(mail);
 
@@ -333,8 +333,8 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(recipient)
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(rawIcals)))
             .build();
         testee.service(mail);
 
@@ -380,8 +380,8 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(recipient)
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(rawIcals)))
             .build();
         testee.service(mail);
 
@@ -417,8 +417,8 @@ public class ICALToJsonAttributeTest {
         Mail mail = FakeMail.builder()
             .sender(SENDER)
             .recipient(recipient)
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(rawIcals)))
             .build();
         testee.service(mail);
 
@@ -455,8 +455,8 @@ public class ICALToJsonAttributeTest {
             .recipient(recipient)
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                 .addFrom(from))
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(rawIcals)))
             .build();
         testee.service(mail);
 
@@ -490,8 +490,8 @@ public class ICALToJsonAttributeTest {
             .sender(SENDER)
             .recipient(recipient)
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(rawIcals)))
             .build();
         testee.service(mail);
 
@@ -526,8 +526,8 @@ public class ICALToJsonAttributeTest {
             .recipient(recipient)
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                 .addFrom(from))
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(icals)))
-            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.of(rawIcals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME, AttributeValue.ofAny(rawIcals)))
             .build();
         testee.service(mail);
 

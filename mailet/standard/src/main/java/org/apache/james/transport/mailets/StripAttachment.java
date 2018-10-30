@@ -340,7 +340,7 @@ public class StripAttachment extends GenericMailet {
             .getValueAndCastFromMail(mail, attributeName, (Class<List<String>>)(Object) List.class)
             .orElseGet(() -> {
                 List<String> newAttributeValues = new ArrayList<>();
-                mail.setAttribute(new Attribute(attributeName, AttributeValue.of(newAttributeValues)));
+                mail.setAttribute(new Attribute(attributeName, AttributeValue.ofAny(newAttributeValues)));
                 return newAttributeValues;
             });
         attributeValues.add(filename);
@@ -358,7 +358,7 @@ public class StripAttachment extends GenericMailet {
             .getValueAndCastFromMail(mail, attributeName, (Class<Map<String, byte[]>>)(Object) Map.class)
             .orElseGet(() -> {
                 Map<String, byte[]> newFileNamesToPartContent = new LinkedHashMap<>();
-                mail.setAttribute(new Attribute(attributeName, AttributeValue.of(newFileNamesToPartContent)));
+                mail.setAttribute(new Attribute(attributeName, AttributeValue.ofAny(newFileNamesToPartContent)));
                 return newFileNamesToPartContent;
             });
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

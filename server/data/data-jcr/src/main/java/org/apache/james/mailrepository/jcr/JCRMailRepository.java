@@ -554,7 +554,7 @@ public class JCRMailRepository extends AbstractMailRepository implements MailRep
             if (property.getType() == PropertyType.BINARY) {
                 try (InputStream input = property.getStream()) {
                     ObjectInputStream stream = new ObjectInputStream(input);
-                    mail.setAttribute(new Attribute(name, AttributeValue.of(stream.readObject())));
+                    mail.setAttribute(new Attribute(name, AttributeValue.ofAny(stream.readObject())));
                 } catch (ClassNotFoundException e) {
                     throw new IOException(e.getMessage());
                 }

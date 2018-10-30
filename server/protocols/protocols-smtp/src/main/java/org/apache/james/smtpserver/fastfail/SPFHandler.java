@@ -276,7 +276,7 @@ public class SPFHandler implements JamesMessageHook, MailHook, RcptHook, Protoco
     @Override
     public HookResult onMessage(SMTPSession session, Mail mail) {
         // Store the spf header as attribute for later using
-        mail.setAttribute(new Attribute(SPF_HEADER_MAIL_ATTRIBUTE_NAME, AttributeValue.of(session.getAttachment(SPF_HEADER, State.Transaction))));
+        mail.setAttribute(new Attribute(SPF_HEADER_MAIL_ATTRIBUTE_NAME, AttributeValue.ofAny(session.getAttachment(SPF_HEADER, State.Transaction))));
 
         return null;
     }

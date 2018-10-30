@@ -79,7 +79,7 @@ public class MimeDecodingMailet extends GenericMailet {
             extractContent(entry.getValue())
                 .ifPresent(content -> extractedMimeContentByName.put(entry.getKey(), content));
         }
-        mail.setAttribute(new Attribute(attribute, AttributeValue.of(extractedMimeContentByName.build())));
+        mail.setAttribute(new Attribute(attribute, AttributeValue.ofAny(extractedMimeContentByName.build())));
     }
 
     private Map<String, byte[]> getAttributeContent(Mail mail) throws MailetException {

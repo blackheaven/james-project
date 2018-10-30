@@ -47,8 +47,8 @@ class MailAttributesListToMimeHeadersTest {
     private static final String VALUE_2_2 = "test2.2";
     private static final ImmutableList<String> RAW_MAIL_ATTRIBUTE_VALUE1 = ImmutableList.of(VALUE_1_1, VALUE_1_2);
     private static final ImmutableList<String> RAW_MAIL_ATTRIBUTE_VALUE2 = ImmutableList.of(VALUE_2_1, VALUE_2_2);
-    private static final AttributeValue<?> MAIL_ATTRIBUTE_VALUE1 = AttributeValue.of(RAW_MAIL_ATTRIBUTE_VALUE1);
-    private static final AttributeValue<?> MAIL_ATTRIBUTE_VALUE2 = AttributeValue.of(RAW_MAIL_ATTRIBUTE_VALUE2);
+    private static final AttributeValue<?> MAIL_ATTRIBUTE_VALUE1 = AttributeValue.ofAny(RAW_MAIL_ATTRIBUTE_VALUE1);
+    private static final AttributeValue<?> MAIL_ATTRIBUTE_VALUE2 = AttributeValue.ofAny(RAW_MAIL_ATTRIBUTE_VALUE2);
 
     private static final String RAW_MAIL_ATTRIBUTE_NAME1 = "org.apache.james.test";
     private static final String RAW_MAIL_ATTRIBUTE_NAME2 = "org.apache.james.test2";
@@ -144,7 +144,7 @@ class MailAttributesListToMimeHeadersTest {
         listWithNull.add("2");
         FakeMail mail = FakeMail.builder()
             .mimeMessage(MailUtil.createMimeMessage())
-            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME1, AttributeValue.of(listWithNull)))
+            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME1, AttributeValue.ofAny(listWithNull)))
             .build();
 
         mailet.service(mail);
@@ -236,7 +236,7 @@ class MailAttributesListToMimeHeadersTest {
         String value = "value";
         FakeMail mail = FakeMail.builder()
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder())
-            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME1, AttributeValue.of(ImmutableList.of(3L, value))))
+            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME1, AttributeValue.ofAny(ImmutableList.of(3L, value))))
             .build();
 
         mailet.service(mail);

@@ -108,7 +108,7 @@ class MimeDecodingMailetTest {
         testee.init(mailetConfig);
 
         FakeMail mail = FakeMail.defaultFakeMail();
-        mail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME, AttributeValue.of(ImmutableMap.of("1", "2"))));
+        mail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME, AttributeValue.ofAny(ImmutableMap.of("1", "2"))));
 
         testee.service(mail);
     }
@@ -145,7 +145,7 @@ class MimeDecodingMailetTest {
                 + "Content-Type: application/octet-stream; charset=utf-8\r\n\r\n"
                 + text;
         String expectedKey = "mimePart1";
-        mail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME, AttributeValue.of(ImmutableMap.of(expectedKey, content.getBytes(StandardCharsets.UTF_8)))));
+        mail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME, AttributeValue.ofAny(ImmutableMap.of(expectedKey, content.getBytes(StandardCharsets.UTF_8)))));
 
         byte[] expectedValue = text.getBytes(StandardCharsets.UTF_8);
         testee.service(mail);

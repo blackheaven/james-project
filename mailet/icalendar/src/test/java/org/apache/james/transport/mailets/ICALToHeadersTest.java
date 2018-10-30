@@ -120,7 +120,7 @@ public class ICALToHeadersTest {
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(wrongParametrizedMap)))
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.ofAny(wrongParametrizedMap)))
             .build();
 
         testee.service(mail);
@@ -138,7 +138,7 @@ public class ICALToHeadersTest {
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.ofAny(icals)))
             .build();
 
         testee.service(mail);
@@ -161,7 +161,7 @@ public class ICALToHeadersTest {
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.ofAny(icals)))
             .build();
 
         testee.service(mail);
@@ -186,7 +186,7 @@ public class ICALToHeadersTest {
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.ofAny(icals)))
             .build();
 
         testee.service(mail);
@@ -202,7 +202,7 @@ public class ICALToHeadersTest {
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(icals)))
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.ofAny(icals)))
             .build();
 
         testee.service(mail);
