@@ -21,6 +21,7 @@ package org.apache.james.jmap.send;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.james.mailbox.model.MessageIdDto;
 import org.apache.james.mailbox.model.TestMessageId;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueue.MailQueueItem;
@@ -49,7 +50,6 @@ public class MailSpoolTest {
         mailSpool = new MailSpool(mailQueueFactory);
     }
 
-    @Ignore("FIXME: AttributeValue.of(MessageId)")
     @Test
     public void sendShouldEnQueueTheMail() throws Exception {
         FakeMail mail = FakeMail.builder()
@@ -62,7 +62,6 @@ public class MailSpoolTest {
         assertThat(actual.getMail().getName()).isEqualTo(NAME);
     }
 
-    @Ignore("FIXME: AttributeValue.of(MessageId)")
     @Test
     public void sendShouldPositionJMAPRelatedMetadata() throws Exception {
         FakeMail mail = FakeMail.builder()
@@ -73,8 +72,10 @@ public class MailSpoolTest {
 
         MailQueueItem actual = myQueue.deQueue();
         assertThat(AttributeUtils.getValueAndCastFromMail(actual.getMail(), MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE, String.class))
-            .isEqualTo(USERNAME);
-        assertThat(AttributeUtils.getValueAndCastFromMail(actual.getMail(), MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, TestMessageIdDtop.class))
+            .contains(USERNAME);
+        assertThat(AttributeUtils.getValueAndCastFromMail(actual.getMail(), MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, MessageIdDto.class)
+                .get()
+                .instanciate(new TestMessageId.Factory()))
             .isEqualTo(MESSAGE_ID);
     }
 
