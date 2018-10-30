@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.mail.MessagingException;
@@ -125,6 +124,11 @@ public class FakeMail implements Mail, Serializable {
 
         public Builder attribute(Attribute attribute) {
             this.attributes.put(attribute.getName(), attribute.getValue());
+            return this;
+        }
+
+        public Builder attributes(Map<AttributeName, AttributeValue<?>> attributes) {
+            this.attributes.putAll(attributes);
             return this;
         }
 
@@ -269,14 +273,6 @@ public class FakeMail implements Mail, Serializable {
 
     public static FakeMail defaultFakeMail() throws MessagingException {
         return FakeMail.builder().build();
-    }
-
-    private static Map<AttributeName, AttributeValue<?>> attributes(Mail mail) {
-        return mail.attributes()
-            .map(Attribute::duplicate)
-            .collect(Collectors.toMap(
-                Attribute::getName,
-                Attribute::getValue));
     }
 
     private transient MimeMessage msg;
