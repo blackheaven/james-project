@@ -77,7 +77,8 @@ public class StoreBlobManager implements BlobManager {
     }
 
     private Optional<Blob> getBlobFromMessage(BlobId blobId, MailboxSession mailboxSession) {
-        return loadMessageAsBlob(retrieveMessageId(blobId), mailboxSession)
+        return retrieveMessageId(blobId)
+                .flatMap(messageId -> loadMessageAsBlob(messageId, mailboxSession))
                 .map(Throwing.function(
                     blob -> Blob.builder()
                         .id(blobId)
@@ -86,8 +87,12 @@ public class StoreBlobManager implements BlobManager {
                         .build()));
     }
 
-    private MessageId retrieveMessageId(BlobId blobId) {
-        return messageIdFactory.fromString(blobId.asString());
+    private Optional<MessageId> retrieveMessageId(BlobId blobId) {
+        try {
+            return Optional.of(messageIdFactory.fromString(blobId.asString()));
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
     }
 
     private Optional<InputStream> loadMessageAsBlob(MessageId messageId, MailboxSession mailboxSession)  {
