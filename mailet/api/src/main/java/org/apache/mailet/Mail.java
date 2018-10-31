@@ -220,6 +220,9 @@ public interface Mail extends Serializable, Cloneable {
      */
     void setState(String state);
 
+    /**
+     * Get the stream of all attributes
+     */
     Stream<Attribute> attributes();
 
     /**
@@ -233,7 +236,14 @@ public interface Mail extends Serializable, Cloneable {
      */
     @Deprecated
     Serializable getAttribute(String name);
-    
+
+    /**
+     * Returns the attribute corresponding to an attribute name
+     *
+     * @param name the attribute name
+     * @return the attribute
+     * @since Mailet API v3.2
+     */
     Optional<Attribute> getAttribute(AttributeName name);
     
     /**
@@ -249,6 +259,16 @@ public interface Mail extends Serializable, Cloneable {
      */
     Iterator<String> getAttributeNames();
 
+    /**
+     * Returns an Iterator over the names of all attributes which are set
+     * in this Mail instance.
+     * <p>
+     * The {@link #getAttribute} method can be called to
+     * retrieve an attribute's value given its name.
+     *
+     * @return an Iterator (of AttributeName) over all attribute names
+     * @since Mailet API v3.2
+     */
     Iterator<AttributeName> attributeNames();
 
     /**
@@ -271,6 +291,15 @@ public interface Mail extends Serializable, Cloneable {
      */
     Serializable removeAttribute(String name);
 
+    /**
+     * Removes the attribute with the given attribute name from this Mail instance.
+     * 
+     * @param name the attribute name of the attribute to be removed
+     * @return the removed attribute, or null
+     *      if there was no such attribute (or if the attribute existed
+     *      and its value was null)
+     * @since Mailet API v3.2
+     */
     Attribute removeAttribute(AttributeName attributeName);
     
     /**
@@ -299,6 +328,22 @@ public interface Mail extends Serializable, Cloneable {
      */
     Serializable setAttribute(String name, Serializable object);
 
+    /**
+     * Associates an attribute with the given name and value with this Mail instance.
+     * If an attribute with a given name already exists, it is replaced, and the
+     * previous value is returned.
+     * <p>
+     * Conventionally, attribute names should follow the namespacing guidelines
+     * for Java packages.
+     * The Mailet API specification reserves names matching
+     * <i>org.apache.james.*</i> and <i>org.apache.mailet.*</i>.
+     *
+     * @param attribute the attribute
+     * @return the previously existing attribute with the same name,
+     *      or null if there was no such attribute (or if the attribute existed
+     *      and its value was null)
+     * @since Mailet API v3.2
+     */
     Attribute setAttribute(Attribute attribute);
 
     /**
@@ -347,6 +392,12 @@ public interface Mail extends Serializable, Cloneable {
      */
     void setLastUpdated(Date lastUpdated);
 
+    /**
+     * Returns a map of AttribeName Attribute for the currently registered attributes
+     *
+     * @return an Map (of AttributeName/Attribute) over all attribute
+     * @since Mailet API v3.2
+     */
     default Map<AttributeName, Attribute> attributesMap() {
         return Iterators.toStream(attributeNames())
             .map(name -> getAttribute(name).map(attribute -> Pair.of(name, attribute)))
