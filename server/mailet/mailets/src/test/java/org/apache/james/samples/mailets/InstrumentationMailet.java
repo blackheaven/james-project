@@ -21,7 +21,6 @@ package org.apache.james.samples.mailets;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Iterator;
 
 import javax.mail.Address;
 import javax.mail.Flags;
@@ -35,7 +34,6 @@ import javax.mail.internet.NewsAddress;
 
 import org.apache.james.core.MailAddress;
 import org.apache.james.transport.mailets.managesieve.ManageSieveMailet;
-import org.apache.mailet.AttributeName;
 import org.apache.mailet.Mail;
 import org.apache.mailet.Mailet;
 import org.apache.mailet.MailetConfig;
@@ -80,10 +78,7 @@ public class InstrumentationMailet implements Mailet {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Mail named: " + mail.getName());
 
-            for (Iterator<AttributeName> it = mail.attributeNames(); it.hasNext();) {
-                String attributeName = it.next().asString();
-                LOGGER.info("Attribute " + attributeName);
-            }
+            mail.attributeNames().forEach(attributeName -> LOGGER.info("Attribute " + attributeName.asString()));
             LOGGER.info("Message size: " + mail.getMessageSize());
             LOGGER.info("Last updated: " + mail.getLastUpdated());
             LOGGER.info("Remote Address: " + mail.getRemoteAddr());

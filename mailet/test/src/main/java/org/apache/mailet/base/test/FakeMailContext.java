@@ -52,7 +52,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Streams;
 
 @SuppressWarnings("deprecation")
 public class FakeMailContext implements MailetContext {
@@ -77,7 +76,7 @@ public class FakeMailContext implements MailetContext {
 
     private static Map<AttributeName, Attribute> buildAttributesMap(Mail mail) {
         Map<AttributeName, Attribute> result = new HashMap<>();
-        Streams.stream(mail.attributeNames())
+        mail.attributeNames()
             .forEach(attributeName -> 
                 mail.getAttribute(attributeName)
                     .ifPresent(attribute -> result.put(attributeName, attribute)));

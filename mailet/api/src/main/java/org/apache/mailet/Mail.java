@@ -34,10 +34,9 @@ import javax.mail.internet.MimeMessage;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.MaybeSender;
-import org.apache.james.util.streams.Iterators;
 import org.apache.mailet.PerRecipientHeaders.Header;
 
-import com.github.steveash.guavate.Guavate;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * <p>Wraps a MimeMessage with additional routing and processing information.
@@ -260,16 +259,16 @@ public interface Mail extends Serializable, Cloneable {
     Iterator<String> getAttributeNames();
 
     /**
-     * Returns an Iterator over the names of all attributes which are set
+     * Returns a Stream over the names of all attributes which are set
      * in this Mail instance.
      * <p>
      * The {@link #getAttribute} method can be called to
      * retrieve an attribute's value given its name.
      *
-     * @return an Iterator (of AttributeName) over all attribute names
+     * @return a Stream (of AttributeName) over all attribute names
      * @since Mailet API v3.2
      */
-    Iterator<AttributeName> attributeNames();
+    Stream<AttributeName> attributeNames();
 
     /**
      * Returns whether this Mail instance has any attributes set.
@@ -399,10 +398,10 @@ public interface Mail extends Serializable, Cloneable {
      * @since Mailet API v3.2
      */
     default Map<AttributeName, Attribute> attributesMap() {
-        return Iterators.toStream(attributeNames())
+        return attributeNames()
             .map(name -> getAttribute(name).map(attribute -> Pair.of(name, attribute)))
             .filter(Optional::isPresent)
             .map(Optional::get)
-            .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
+            .collect(ImmutableMap.toImmutableMap(Pair::getKey, Pair::getValue));
     }
 }

@@ -342,7 +342,7 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
             .forEach((attributeName, attribute) ->
                 props.put(attributeName.asString(), attribute.getValue().toJson().toString()));
 
-        ImmutableList<String> attributesNames = org.apache.james.util.streams.Iterators.toStream(mail.attributeNames())
+        ImmutableList<String> attributesNames = mail.attributeNames()
                 .map(AttributeName::asString)
                 .collect(ImmutableList.toImmutableList());
         props.put(JAMES_MAIL_ATTRIBUTE_NAMES, joiner.join(attributesNames));

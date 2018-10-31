@@ -410,12 +410,12 @@ public class FakeMail implements Mail, Serializable {
 
     @Override
     public Iterator<String> getAttributeNames() {
-        return attributes.keySet().stream().map(AttributeName::asString).iterator();
+        return attributeNames().map(AttributeName::asString).iterator();
     }
 
     @Override
-    public Iterator<AttributeName> attributeNames() {
-        return attributes.keySet().iterator();
+    public Stream<AttributeName> attributeNames() {
+        return attributes.keySet().stream();
     }
 
     @Override

@@ -64,11 +64,12 @@ import org.apache.james.mailrepository.lib.AbstractMailRepository;
 import org.apache.james.server.core.MailImpl;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
-import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.fge.lambdas.Throwing;
 
 /**
  * Mail repository that is backed by a JCR content repository.
@@ -577,20 +578,21 @@ public class JCRMailRepository extends AbstractMailRepository implements MailRep
      *             if an IO error occurs
      */
     private void setAttributes(Node node, Mail mail) throws RepositoryException, IOException {
-        Iterator<AttributeName> iterator = mail.attributeNames();
-        while (iterator.hasNext()) {
-            AttributeName attributeName = iterator.next();
-            Object value = AttributeUtils.getAttributeValueFromMail(mail, attributeName).orElse(null);
-            String name = "jamesattr:" + Text.escapeIllegalJcrChars(attributeName.asString());
-            if (value instanceof String || value == null) {
-                node.setProperty(name, (String) value);
-            } else {
-                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                ObjectOutputStream output = new ObjectOutputStream(buffer);
-                output.writeObject(value);
-                output.close();
-                node.setProperty(name, new ByteArrayInputStream(buffer.toByteArray()));
-            }
+        mail.attributes()
+            .forEach(Throwing.consumer(attribute -> setAttribute(node, mail, (Attribute) attribute)).sneakyThrow());
+    }
+
+    private void setAttribute(Node node, Mail mail, Attribute attribute) throws RepositoryException, IOException {
+        Object value = attribute.getValue().value();
+        String name = "jamesattr:" + Text.escapeIllegalJcrChars(attribute.getName().asString());
+        if (value instanceof String) {
+            node.setProperty(name, (String) value);
+        } else {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            ObjectOutputStream output = new ObjectOutputStream(buffer);
+            output.writeObject(value);
+            output.close();
+            node.setProperty(name, new ByteArrayInputStream(buffer.toByteArray()));
         }
     }
 

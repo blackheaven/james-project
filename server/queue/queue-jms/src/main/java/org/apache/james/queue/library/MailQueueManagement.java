@@ -42,9 +42,9 @@ import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.queue.api.ManageableMailQueue.MailQueueItemView;
 import org.apache.james.queue.api.ManageableMailQueue.MailQueueIterator;
 import org.apache.james.queue.api.ManageableMailQueue.Type;
-import org.apache.mailet.AttributeName;
-import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * JMX MBean implementation which expose management functions by wrapping a
@@ -149,17 +149,10 @@ public class MailQueueManagement extends StandardMBean implements MailQueueManag
             map.put(names[6], m.getRemoteAddr());
             map.put(names[7], m.getRemoteHost());
             map.put(names[8], m.getErrorMessage());
-            Map<String, String> attrs = new HashMap<>();
-            Iterator<AttributeName> attrNames = m.attributeNames();
-            while (attrNames.hasNext()) {
-                AttributeName attrName = attrNames.next();
-                String attrValueString = AttributeUtils
-                        .getAttributeValueFromMail(m, attrName)
-                        .map(Object::toString)
-                        .orElse(null);
-
-                attrs.put(attrName.asString(), attrValueString);
-            }
+            Map<String, String> attrs = m.attributes()
+                    .collect(ImmutableMap.toImmutableMap(
+                            attribute -> attribute.getName().asString(),
+                            attribute -> attribute.getValue().toString()));
             map.put(names[9], attrs.toString());
             map.put(names[10], nextDelivery);
             CompositeDataSupport c = new CompositeDataSupport(new CompositeType(Mail.class.getName(), "Queue Mail", names, descs, types), map);
