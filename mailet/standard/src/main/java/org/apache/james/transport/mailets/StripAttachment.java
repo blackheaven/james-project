@@ -57,6 +57,7 @@ import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -110,7 +111,7 @@ public class StripAttachment extends GenericMailet {
 
     @VisibleForTesting String removeAttachments;
     private String directoryName;
-    private AttributeName attributeName;
+    private Optional<AttributeName> attributeName;
     private Pattern regExPattern;
     private Pattern notRegExPattern;
     private String mimeType;
@@ -135,7 +136,7 @@ public class StripAttachment extends GenericMailet {
         }
 
         directoryName = getInitParameter(DIRECTORY_PARAMETER_NAME);
-        attributeName = AttributeName.of(getInitParameter(ATTRIBUTE_PARAMETER_NAME));
+        attributeName = Optional.ofNullable(getInitParameter(ATTRIBUTE_PARAMETER_NAME)).map(AttributeName::of);
 
         removeAttachments = getInitParameter(REMOVE_ATTACHMENT_PARAMETER_NAME, REMOVE_NONE).toLowerCase(Locale.US);
         if (!removeAttachments.equals(REMOVE_MATCHED) && !removeAttachments.equals(REMOVE_ALL) && !removeAttachments.equals(REMOVE_NONE)) {
@@ -196,11 +197,11 @@ public class StripAttachment extends GenericMailet {
                 logMessage.append(directoryName);
                 logMessage.append(']');
             }
-            if (attributeName != null) {
+            attributeName.ifPresent(name -> {
                 logMessage.append(" and will store attachments to attribute [");
-                logMessage.append(attributeName);
+                logMessage.append(name);
                 logMessage.append(']');
-            }
+            });
             LOGGER.debug(logMessage.toString());
         }
     }
@@ -347,23 +348,26 @@ public class StripAttachment extends GenericMailet {
     }
 
     private void storeBodyPartAsMailAttribute(BodyPart bodyPart, Mail mail, String fileName) throws IOException, MessagingException {
-        if (attributeName != null) {
-            addPartContent(bodyPart, mail, fileName);
-        }
+        attributeName.ifPresent(Throwing.consumer(name -> 
+            addPartContent(bodyPart, convertFileNameToPartContent(mail, (AttributeName) name), fileName)
+        ).sneakyThrow());
     }
 
-    private void addPartContent(BodyPart bodyPart, Mail mail, String fileName) throws IOException, MessagingException {
-        @SuppressWarnings("unchecked")
-        Map<String, byte[]> fileNamesToPartContent = AttributeUtils
-            .getValueAndCastFromMail(mail, attributeName, (Class<Map<String, byte[]>>)(Object) Map.class)
-            .orElseGet(() -> {
-                Map<String, byte[]> newFileNamesToPartContent = new LinkedHashMap<>();
-                mail.setAttribute(new Attribute(attributeName, AttributeValue.ofAny(newFileNamesToPartContent)));
-                return newFileNamesToPartContent;
-            });
+    private void addPartContent(BodyPart bodyPart, Map<String, byte[]> fileNamesToPartContent, String fileName) throws IOException, MessagingException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bodyPart.writeTo(new BufferedOutputStream(byteArrayOutputStream));
         fileNamesToPartContent.put(fileName, byteArrayOutputStream.toByteArray());
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, byte[]> convertFileNameToPartContent(Mail mail, AttributeName name) {
+        return AttributeUtils
+            .getValueAndCastFromMail(mail, name, (Class<Map<String, byte[]>>)(Object) Map.class)
+            .orElseGet(() -> {
+                Map<String, byte[]> newFileNamesToPartContent = new LinkedHashMap<>();
+                mail.setAttribute(new Attribute(name, AttributeValue.ofAny(newFileNamesToPartContent)));
+                return newFileNamesToPartContent;
+            });
     }
 
     private void storeFileNameAsAttribute(Mail mail, String fileName, boolean hasToBeStored) {
