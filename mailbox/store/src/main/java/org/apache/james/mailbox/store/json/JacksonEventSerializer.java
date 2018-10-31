@@ -130,7 +130,7 @@ public class JacksonEventSerializer implements EventSerializer {
 
         @Override
         public void serialize(MessageId value, JsonGenerator generator, SerializerProvider serializers) throws IOException, JsonProcessingException {
-            generator.writeString(String.valueOf(value.asString()));
+            generator.writeString(String.valueOf(value.serialize()));
         }
         
     }

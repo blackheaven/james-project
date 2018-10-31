@@ -210,7 +210,7 @@ public abstract class SendMDNMethodTest {
         bartSendMessageToHomer();
 
         String creationId = "creation-1";
-        String randomMessageId = randomMessageId().asString();
+        String randomMessageId = randomMessageId().serialize();
         given()
             .header("Authorization", homerAccessToken.serialize())
             .body("[[\"setMessages\", {\"sendMDN\": {" +
@@ -383,7 +383,7 @@ public abstract class SendMDNMethodTest {
             .header("Authorization", homerAccessToken.serialize())
             .body("[[\"setMessages\", {\"sendMDN\": {" +
                 "\"" + creationId + "\":{" +
-                    "    \"messageId\":\"" + randomMessageId().asString() + "\"," +
+                    "    \"messageId\":\"" + randomMessageId().serialize() + "\"," +
                     "    \"textBody\":\"textBody\"," +
                     "    \"reportingUA\":\"reportingUA\"," +
                     "    \"disposition\":{" +
@@ -450,7 +450,7 @@ public abstract class SendMDNMethodTest {
             .header("Authorization", homerAccessToken.serialize())
             .body("[[\"setMessages\", {\"sendMDN\": {" +
                 "\"" + creationId + "\":{" +
-                "    \"messageId\":\"" + randomMessageId().asString() + "\"," +
+                "    \"messageId\":\"" + randomMessageId().serialize() + "\"," +
                 "    \"subject\":\"subject\"," +
                 "    \"textBody\":\"textBody\"," +
                 "    \"reportingUA\":\"reportingUA\"," +
@@ -477,7 +477,7 @@ public abstract class SendMDNMethodTest {
             .header("Authorization", homerAccessToken.serialize())
             .body("[[\"setMessages\", {\"sendMDN\": {" +
                 "\"" + creationId + "\":{" +
-                "    \"messageId\":\"" + randomMessageId().asString() + "\"," +
+                "    \"messageId\":\"" + randomMessageId().serialize() + "\"," +
                 "    \"subject\":\"subject\"," +
                 "    \"textBody\":\"textBody\"," +
                 "    \"reportingUA\":\"reportingUA\"," +

@@ -108,7 +108,7 @@ public class ComposedMessageIdWithMetaDataTest {
         }
 
         @Override
-        public String asString() {
+        public String serialize() {
             return id;
         }
     }

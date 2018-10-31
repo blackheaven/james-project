@@ -181,7 +181,7 @@ public class SearchUtil {
     public static String getSerializedMessageIdIfSupportedByUnderlyingStorageOrNull(MailboxMessage mailboxMessage) {
         MessageId messageId = mailboxMessage.getMessageId();
         if (messageId != null) {
-            return messageId.asString();
+            return messageId.serialize();
         }
         return null;
     }

@@ -29,5 +29,5 @@ public interface MessageId {
 
     }
 
-    String asString();
+    String serialize();
 }

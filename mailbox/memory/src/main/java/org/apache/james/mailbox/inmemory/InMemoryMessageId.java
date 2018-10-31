@@ -54,7 +54,7 @@ public class InMemoryMessageId implements MessageId {
     }
 
     @Override
-    public String asString() {
+    public String serialize() {
         return String.valueOf(value);
     }
 

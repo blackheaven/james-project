@@ -31,7 +31,7 @@ public class MessageIdDto {
     }
 
     public MessageIdDto(MessageId messageId) {
-        this.messageId = messageId.asString();
+        this.messageId = messageId.serialize();
     }
 
     public MessageId instantiate(MessageId.Factory factory) {

@@ -70,7 +70,7 @@ public class SetMessagesMethodStepdefs {
             "  [" +
             "    \"setMessages\"," +
             "    {" +
-            "      \"update\": { \"" + messageId.asString() + "\" : {" +
+            "      \"update\": { \"" + messageId.serialize() + "\" : {" +
             "        \"mailboxIds\": [\"" + mailboxId.serialize() + "\"]" +
             "      }}" +
             "    }," +
@@ -90,7 +90,7 @@ public class SetMessagesMethodStepdefs {
             "  [" +
             "    \"setMessages\"," +
             "    {" +
-            "      \"update\": { \"" + messageId.asString() + "\" : {" +
+            "      \"update\": { \"" + messageId.serialize() + "\" : {" +
             "        \"mailboxIds\": [\"" + mailboxId.serialize() + "\"]," +
             "        \"keywords\": {" + keywordString + "}" +
             "      }}" +
@@ -117,7 +117,7 @@ public class SetMessagesMethodStepdefs {
             "  [" +
             "    \"setMessages\"," +
             "    {" +
-            "      \"update\": { \"" + messageId.asString() + "\" : {" +
+            "      \"update\": { \"" + messageId.serialize() + "\" : {" +
             "        \"mailboxIds\": [\"" + destinationMailboxId.serialize() + "\",\"" + sourceMailboxId.serialize() + "\"]" +
             "      }}" +
             "    }," +
@@ -141,7 +141,7 @@ public class SetMessagesMethodStepdefs {
             "  [" +
             "    \"setMessages\"," +
             "    {" +
-            "      \"update\": { \"" + messageId.asString() + "\" : {" +
+            "      \"update\": { \"" + messageId.serialize() + "\" : {" +
             "        \"mailboxIds\": [\"" + destinationMailboxId.serialize() + "\",\"" + sourceMailboxId.serialize() + "\"]" +
             "      }}" +
             "    }," +
@@ -164,7 +164,7 @@ public class SetMessagesMethodStepdefs {
             "  [" +
             "    \"setMessages\"," +
             "    {" +
-            "      \"update\": { \"" + messageId.asString() + "\" : {" +
+            "      \"update\": { \"" + messageId.serialize() + "\" : {" +
             "        \"mailboxIds\": [\"" + destinationMailboxId.serialize() + "\"]" +
             "      }}" +
             "    }," +
@@ -188,7 +188,7 @@ public class SetMessagesMethodStepdefs {
                 "  [" +
                 "    \"setMessages\"," +
                 "    {" +
-                "      \"update\": { \"" + messageId.asString() + "\" : {" +
+                "      \"update\": { \"" + messageId.serialize() + "\" : {" +
                 "        \"isFlagged\": true" +
                 "      }}" +
                 "    }," +
@@ -208,7 +208,7 @@ public class SetMessagesMethodStepdefs {
                 "  [" +
                 "    \"setMessages\"," +
                 "    {" +
-                "      \"update\": { \"" + messageId.asString() + "\" : {" +
+                "      \"update\": { \"" + messageId.serialize() + "\" : {" +
                 "        \"isDraft\": true" +
                 "      }}" +
                 "    }," +
@@ -228,7 +228,7 @@ public class SetMessagesMethodStepdefs {
                 "  [" +
                 "    \"setMessages\"," +
                 "    {" +
-                "      \"destroy\": [ \"" + messageId.asString() + "\" ]" +
+                "      \"destroy\": [ \"" + messageId.serialize() + "\" ]" +
                 "    }," +
                 "    \"#0\"" +
                 "  ]" +
@@ -273,7 +273,7 @@ public class SetMessagesMethodStepdefs {
             "  [" +
             "    \"setMessages\"," +
             "    {" +
-            "      \"update\": { \"" + messageId.asString() + "\" : {" +
+            "      \"update\": { \"" + messageId.serialize() + "\" : {" +
             "        \"keywords\": {" + keywordString + "}" +
             "      }}" +
             "    }," +
@@ -305,14 +305,14 @@ public class SetMessagesMethodStepdefs {
     public void assertNotUpdate(String messageName) {
         MessageId id = messageIdStepdefs.getMessageId(messageName);
         assertThat(httpClient.jsonPath.<Map<String, String>>read("[0][1].notUpdated"))
-            .containsOnlyKeys(id.asString());
+            .containsOnlyKeys(id.serialize());
     }
 
     @Then("^message \"([^\"]*)\" is updated$")
     public void assertUpdated(String messageName) {
         MessageId id = messageIdStepdefs.getMessageId(messageName);
         assertThat(httpClient.jsonPath.<List<String>>read("[0][1].updated"))
-            .containsOnly(id.asString());
+            .containsOnly(id.serialize());
     }
 
     @Then("^message \"([^\"]*)\" is not created$")

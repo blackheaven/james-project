@@ -251,7 +251,7 @@ public class SetMessagesUpdateProcessor implements SetMessagesProcessor {
     }
 
     private MailImpl buildMailFromMessage(MessageResult message) throws MessagingException, IOException, MailboxException {
-        return MailImpl.fromMimeMessage(message.getMessageId().asString(),
+        return MailImpl.fromMimeMessage(message.getMessageId().serialize(),
             new MimeMessage(
                 Session.getDefaultInstance(new Properties()),
                 message.getFullContent().getInputStream()));

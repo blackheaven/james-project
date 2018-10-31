@@ -39,7 +39,7 @@ public class CassandraMessageIdTest {
         CassandraMessageId.Factory testee = new CassandraMessageId.Factory();
 
         CassandraMessageId cassandraMessageId = testee.generate();
-        assertThat(cassandraMessageId.asString()).isNotNull();
+        assertThat(cassandraMessageId.serialize()).isNotNull();
     }
 
     @Test
@@ -60,6 +60,6 @@ public class CassandraMessageIdTest {
         CassandraMessageId cassandraMessageId = testee.of(uuid);
 
         String expected = uuid.toString();
-        assertThat(cassandraMessageId.asString()).isEqualTo(expected);
+        assertThat(cassandraMessageId.serialize()).isEqualTo(expected);
     }
 }

@@ -793,7 +793,7 @@ class ReindexingRoutesTest {
                         systemSession);
 
                 String taskId = when()
-                    .post("/mailboxIndex/messages/" + composedMessageId.getMessageId().asString() + "?task=reIndex")
+                    .post("/mailboxIndex/messages/" + composedMessageId.getMessageId().serialize() + "?task=reIndex")
                     .jsonPath()
                     .get("taskId");
 
@@ -805,7 +805,7 @@ class ReindexingRoutesTest {
                     .body("status", is("completed"))
                     .body("taskId", is(notNullValue()))
                     .body("type", is(MessageIdReIndexerImpl.MessageIdReIndexingTask.TYPE))
-                    .body("additionalInformation.messageId", is(composedMessageId.getMessageId().asString()))
+                    .body("additionalInformation.messageId", is(composedMessageId.getMessageId().serialize()))
                     .body("startedDate", is(notNullValue()))
                     .body("submitDate", is(notNullValue()))
                     .body("completedDate", is(notNullValue()));
@@ -824,7 +824,7 @@ class ReindexingRoutesTest {
                         systemSession);
 
                 String taskId = when()
-                    .post("/mailboxIndex/messages/" + composedMessageId.getMessageId().asString() + "?task=reIndex")
+                    .post("/mailboxIndex/messages/" + composedMessageId.getMessageId().serialize() + "?task=reIndex")
                     .jsonPath()
                     .get("taskId");
 

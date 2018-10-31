@@ -519,7 +519,7 @@ public class IndexableMessageTest {
     @Test
     public void shouldHandleCorrectlyMessageIdHavingSerializeMethodThatReturnNull() throws Exception {
        MessageId invalidMessageIdThatReturnNull = mock(MessageId.class);
-       when(invalidMessageIdThatReturnNull.asString())
+       when(invalidMessageIdThatReturnNull.serialize())
            .thenReturn(null);
        
         // When
