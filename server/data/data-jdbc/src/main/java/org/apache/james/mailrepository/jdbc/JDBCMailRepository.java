@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -474,12 +473,7 @@ public class JDBCMailRepository extends AbstractMailRepository {
                             if (mc instanceof MailImpl) {
                                 oos.writeObject(((MailImpl) mc).getAttributesRaw());
                             } else {
-                                HashMap<String, Serializable> temp = new HashMap<>();
-                                for (Iterator<String> i = mc.getAttributeNames(); i.hasNext();) {
-                                    String hashKey = i.next();
-                                    temp.put(hashKey, mc.getAttribute(hashKey));
-                                }
-                                oos.writeObject(temp);
+                                oos.writeObject(mc.attributesMap());
                             }
                             oos.flush();
                             ByteArrayInputStream attrInputStream = new ByteArrayInputStream(baos.toByteArray());
@@ -562,12 +556,7 @@ public class JDBCMailRepository extends AbstractMailRepository {
                             if (mc instanceof MailImpl) {
                                 oos.writeObject(((MailImpl) mc).getAttributesRaw());
                             } else {
-                                HashMap<String, Serializable> temp = new HashMap<>();
-                                for (Iterator<String> i = mc.getAttributeNames(); i.hasNext();) {
-                                    String hashKey = i.next();
-                                    temp.put(hashKey, mc.getAttribute(hashKey));
-                                }
-                                oos.writeObject(temp);
+                                oos.writeObject(mc.attributesMap());
                             }
                             oos.flush();
                             ByteArrayInputStream attrInputStream = new ByteArrayInputStream(baos.toByteArray());
@@ -627,7 +616,7 @@ public class JDBCMailRepository extends AbstractMailRepository {
             }
             // Determine whether attributes are used and retrieve them
             PreparedStatement retrieveMessageAttr = null;
-            HashMap<String, Object> attributes = null;
+            Map<String, Object> attributes = null;
             if (jdbcMailAttributesReady) {
                 String retrieveMessageAttrSql = sqlQueries.getSqlString("retrieveMessageAttributesSQL", false);
                 ResultSet rsMessageAttr = null;
@@ -652,7 +641,7 @@ public class JDBCMailRepository extends AbstractMailRepository {
                             if (serializedAttr != null) {
                                 ByteArrayInputStream bais = new ByteArrayInputStream(serializedAttr);
                                 ObjectInputStream ois = new ObjectInputStream(bais);
-                                attributes = (HashMap<String, Object>) ois.readObject();
+                                attributes = (Map<String, Object>) ois.readObject();
                                 ois.close();
                             }
                         } catch (IOException ioe) {
