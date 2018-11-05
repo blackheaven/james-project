@@ -38,6 +38,8 @@ import org.apache.james.transport.mailets.Sieve;
 import org.apache.james.transport.mailets.jsieve.ResourceLocator;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.util.MimeMessageUtil;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailContext;
@@ -83,7 +85,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + RECEIVER_DOMAIN_COM)).isNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + RECEIVER_DOMAIN_COM)))
+            .isEmpty();
         assertThat(mail.getState()).isEqualTo(Mail.DEFAULT);
     }
 
@@ -96,7 +99,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + RECEIVER_DOMAIN_COM)).isEqualTo("/INBOX");
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + RECEIVER_DOMAIN_COM), String.class))
+            .contains("/INBOX");
     }
 
     @Test
@@ -108,7 +112,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo("/INBOX");
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains("/INBOX");
     }
 
     @Test
@@ -118,7 +123,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo("/INBOX");
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains("/INBOX");
     }
 
     @Test
@@ -138,7 +144,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo("/INBOX/any");
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains("/INBOX/any");
     }
 
     @Test
@@ -148,7 +155,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -158,7 +166,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -168,7 +177,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -178,7 +188,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -188,7 +199,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -198,7 +210,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -208,7 +221,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -218,7 +232,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -228,7 +243,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -238,7 +254,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -248,7 +265,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(INBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(INBOX.getName()));
     }
 
     @Test
@@ -258,7 +276,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -274,10 +293,9 @@ public class SieveIntegrationTest {
             .build();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART))
-            .isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
-
 
     @Test
     public void headerScriptShouldWorkIfHeaderIsPresent() throws Exception {
@@ -286,7 +304,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubject("JAMES-1620 revolution");
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -297,7 +316,8 @@ public class SieveIntegrationTest {
         mail.setMessageSize(100);
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -308,7 +328,8 @@ public class SieveIntegrationTest {
         mail.setMessageSize(100);
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -319,7 +340,8 @@ public class SieveIntegrationTest {
         mail.setMessageSize(1000);
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -330,7 +352,8 @@ public class SieveIntegrationTest {
         mail.setMessageSize(1000);
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -340,7 +363,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Cc", "source@any.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
 
@@ -351,7 +375,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Cc", "source1@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
 
@@ -362,7 +387,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Cc", "source1@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+           .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -372,7 +398,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Cc", "source@domain.org"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -382,7 +409,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Cc", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -392,7 +420,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Bcc", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -402,7 +431,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Bcc", "source2@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -412,7 +442,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Bcc", "source@domain.org"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -439,7 +470,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Resend-From", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -449,7 +481,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Cc", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -459,7 +492,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Cc", "source2@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -469,7 +503,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Cc", "source@domain.org"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -479,7 +514,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Cc", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -489,7 +525,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("From", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -499,7 +536,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("From", "source2@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -509,7 +547,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("From", "source@domain.org"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -519,7 +558,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Resent-To", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -529,7 +569,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("To", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -539,7 +580,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("To", "source2@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -549,7 +591,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("To", "source@domain.org"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -559,7 +602,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("To", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -569,7 +613,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Sender", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -579,7 +624,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Sender", "source2@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -589,7 +635,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Sender", "source@domain.org"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -599,7 +646,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("From", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -609,7 +657,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Resend-From", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -619,7 +668,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Resend-From", "source2@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -629,7 +679,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Resend-From", "source@domain.org"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -639,7 +690,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("To", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -649,7 +701,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Resend-To", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -659,7 +712,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Resend-To", "source2@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -669,7 +723,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("Resend-To", "source@domain.org"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -679,7 +734,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMailWithSubjectAndHeaders("Default", new Header("From", "source@domain.com"));
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -689,7 +745,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -699,7 +756,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -709,7 +767,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -719,7 +778,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -729,7 +789,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -739,7 +800,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -749,7 +811,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -759,7 +822,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -769,7 +833,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(NOT_SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -779,7 +844,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
     }
 
     @Test
@@ -796,7 +862,8 @@ public class SieveIntegrationTest {
             .fromMailet()
             .build());
         // No action taken
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isNull();
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .isEmpty();
     }
 
     @Test
@@ -806,7 +873,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(INBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(INBOX.getName()));
 
         FakeMailContext.SentMail expectedSentMail = FakeMailContext.sentMailBuilder()
             .sender(new MailAddress(RECEIVER_DOMAIN_COM))
@@ -824,7 +892,8 @@ public class SieveIntegrationTest {
 
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(INBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(INBOX.getName()));
         assertThat(fakeMailContext.getSentMails()).isEmpty();
     }
 
@@ -835,7 +904,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(INBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(INBOX.getName()));
         assertThat(fakeMailContext.getSentMails()).isEmpty();
     }
 
@@ -846,7 +916,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
         assertThat(fakeMailContext.getSentMails()).isEmpty();
     }
 
@@ -857,7 +928,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(INBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(INBOX.getName()));
         assertThat(fakeMailContext.getSentMails()).isEmpty();
     }
 
@@ -868,7 +940,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(INBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(INBOX.getName()));
         FakeMailContext.SentMail expectedSentMail = FakeMailContext.sentMailBuilder()
             .sender(new MailAddress(RECEIVER_DOMAIN_COM))
             .recipient(new MailAddress("sender@any.com"))
@@ -884,7 +957,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(SELECTED_MAILBOX.getName()));
         FakeMailContext.SentMail expectedSentMail = FakeMailContext.sentMailBuilder()
             .sender(new MailAddress(RECEIVER_DOMAIN_COM))
             .recipient(new MailAddress("sender@any.com"))
@@ -900,7 +974,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(INBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(INBOX.getName()));
         FakeMailContext.SentMail expectedSentMail = FakeMailContext.sentMailBuilder()
             .sender(new MailAddress("benwa@apache.org"))
             .recipient(new MailAddress("sender@any.com"))
@@ -916,7 +991,8 @@ public class SieveIntegrationTest {
         FakeMail mail = createMail();
         testee.service(mail);
 
-        assertThat(mail.getAttribute(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART)).isEqualTo(expressMailboxNameWithSlash(INBOX.getName()));
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + LOCAL_PART), String.class))
+            .contains(expressMailboxNameWithSlash(INBOX.getName()));
         FakeMailContext.SentMail expectedSentMail = FakeMailContext.sentMailBuilder()
             .sender(new MailAddress(RECEIVER_DOMAIN_COM))
             .recipient(new MailAddress("sender@any.com"))

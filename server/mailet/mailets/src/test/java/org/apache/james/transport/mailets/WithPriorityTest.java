@@ -23,6 +23,9 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.james.queue.api.MailPrioritySupport;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetConfig;
 import org.apache.mailet.base.test.FakeMail;
@@ -114,7 +117,8 @@ public class WithPriorityTest {
         Mail mail = FakeMail.builder().build();
         mailet.service(mail);
 
-        assertThat(mail.getAttribute(MailPrioritySupport.MAIL_PRIORITY)).isEqualTo(7);
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, Integer.class))
+            .contains(7);
     }
 
     @Test
@@ -126,10 +130,11 @@ public class WithPriorityTest {
 
         mailet.init(mockedMailetConfig);
         Mail mail = FakeMail.builder()
-                .attribute(MailPrioritySupport.MAIL_PRIORITY, 5)
+                .attribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, AttributeValue.of(5)))
                 .build();
         mailet.service(mail);
 
-        assertThat(mail.getAttribute(MailPrioritySupport.MAIL_PRIORITY)).isEqualTo(7);
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, Integer.class))
+            .contains(7);
     }
 }

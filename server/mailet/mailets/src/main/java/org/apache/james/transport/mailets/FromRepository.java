@@ -32,6 +32,9 @@ import org.apache.james.mailrepository.api.MailRepository;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.transport.mailets.managesieve.ManageSieveMailet;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
@@ -51,6 +54,8 @@ import org.slf4j.LoggerFactory;
  */
 @Experimental
 public class FromRepository extends GenericMailet {
+    private static final Attribute ATTRIBUTE_FROM_REPOSITORY = new Attribute(AttributeName.of("FromRepository"), AttributeValue.of(Boolean.TRUE));
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ManageSieveMailet.class);
 
     /** The repository from where this mailet spools mail. */
@@ -109,7 +114,7 @@ public class FromRepository extends GenericMailet {
                 if (mail != null && mail.getRecipients() != null) {
                     LOGGER.debug("Spooling mail {} from {}", mail.getName(), repositoryPath);
 
-                    mail.setAttribute("FromRepository", Boolean.TRUE);
+                    mail.setAttribute(ATTRIBUTE_FROM_REPOSITORY);
                     mail.setState(processor);
                     getMailetContext().sendMail(mail);
                     if (delete) {
