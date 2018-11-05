@@ -64,6 +64,10 @@ import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.server.core.MailImpl;
 import org.apache.james.server.core.MimeMessageCopyOnWriteProxy;
 import org.apache.james.util.SerializationUtil;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders;
 import org.slf4j.Logger;
@@ -73,6 +77,7 @@ import org.threeten.extra.Temporals;
 import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
 /**
@@ -247,11 +252,9 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
 
         try {
 
-            int msgPrio = NORMAL_PRIORITY;
-            Object prio = mail.getAttribute(MAIL_PRIORITY);
-            if (prio instanceof Integer) {
-                msgPrio = (Integer) prio;
-            }
+            int msgPrio = AttributeUtils
+                    .getValueAndCastFromMail(mail, MAIL_PRIORITY_ATTRIBUTE_NAME, Integer.class)
+                    .orElse(NORMAL_PRIORITY);
 
             Map<String, Object> props = getJMSProperties(mail, nextDeliveryTimestamp);
             produceMail(props, msgPrio, mail);
@@ -335,10 +338,14 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
 
         String sender = mail.getMaybeSender().asString("");
 
-        org.apache.james.util.streams.Iterators.toStream(mail.getAttributeNames())
-                .forEach(attrName -> props.put(attrName, SerializationUtil.serialize(mail.getAttribute(attrName))));
+        mail.attributesMap()
+            .forEach((attributeName, attribute) ->
+                props.put(attributeName.asString(), attribute.getValue().toJson().toString()));
 
-        props.put(JAMES_MAIL_ATTRIBUTE_NAMES, joiner.join(mail.getAttributeNames()));
+        ImmutableList<String> attributesNames = mail.attributeNames()
+                .map(AttributeName::asString)
+                .collect(ImmutableList.toImmutableList());
+        props.put(JAMES_MAIL_ATTRIBUTE_NAMES, joiner.join(attributesNames));
         props.put(JAMES_MAIL_SENDER, sender);
         props.put(JAMES_MAIL_STATE, mail.getState());
 
@@ -417,7 +424,7 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
         String attributeNames = message.getStringProperty(JAMES_MAIL_ATTRIBUTE_NAMES);
 
         splitter.split(attributeNames)
-                .forEach(name -> setMailAttribute(message, mail, name));
+                .forEach(Throwing.consumer(name -> setMailAttribute(message, mail, (String) name)).sneakyThrow());
 
         mail.setSender(MailAddress.getMailSender(message.getStringProperty(JAMES_MAIL_SENDER)));
         mail.setState(message.getStringProperty(JAMES_MAIL_STATE));
@@ -429,14 +436,15 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
      * @param message The attribute source.
      * @param mail    The mail on which attribute should be set.
      * @param name    The attribute name.
+     * @throws IOException 
      */
-    private void setMailAttribute(Message message, Mail mail, String name) {
+    private void setMailAttribute(Message message, Mail mail, String name) throws IOException {
         // Now cast the property back to Serializable and set it as attribute.
         // See JAMES-1241
         Object attrValue = Throwing.function(message::getObjectProperty).apply(name);
 
         if (attrValue instanceof String) {
-            mail.setAttribute(name, SerializationUtil.deserialize((String) attrValue));
+            mail.setAttribute(new Attribute(AttributeName.of(name), AttributeValue.fromJsonString((String) attrValue)));
         } else {
             LOGGER.error("Not supported mail attribute {} of type {} for mail {}", name, attrValue, mail.getName());
         }
