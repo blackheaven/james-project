@@ -33,6 +33,8 @@ import org.apache.james.protocols.api.handler.ProtocolHandler;
 import org.apache.james.protocols.smtp.SMTPSession;
 import org.apache.james.protocols.smtp.hook.HookResult;
 import org.apache.james.queue.api.MailPrioritySupport;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 
 /**
@@ -71,7 +73,7 @@ public class MailPriorityHandler implements JamesMessageHook, ProtocolHandler {
 
         // set the priority if one was found
         if (p != null) {
-            mail.setAttribute(MailPrioritySupport.MAIL_PRIORITY, p);
+            mail.setAttribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, AttributeValue.of(p)));
         }
         return HookResult.DECLINED;
     }
@@ -83,7 +85,7 @@ public class MailPriorityHandler implements JamesMessageHook, ProtocolHandler {
             Domain domain = Domain.of(prioConf.getString("domain"));
             int prio = prioConf.getInt("priority", MailPrioritySupport.NORMAL_PRIORITY);
             if (prio > MailPrioritySupport.HIGH_PRIORITY || prio < MailPrioritySupport.LOW_PRIORITY) {
-                throw new ConfigurationException("configured priority must be >= " + MailPrioritySupport.LOW_PRIORITY + " and <= " + MailPrioritySupport.HIGH_PRIORITY);
+                throw new ConfigurationException("configured priority must be >= " + MailPrioritySupport.LOW_PRIORITY_ATTRIBUTE_VALUE + " and <= " + MailPrioritySupport.HIGH_PRIORITY_ATTRIBUTE_VALUE);
             }
             prioMap.put(domain, prio);
         }        
