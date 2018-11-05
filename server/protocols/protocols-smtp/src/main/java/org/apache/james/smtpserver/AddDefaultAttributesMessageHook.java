@@ -23,6 +23,9 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.james.protocols.smtp.SMTPSession;
 import org.apache.james.protocols.smtp.hook.HookResult;
 import org.apache.james.server.core.MailImpl;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 
 /**
@@ -33,7 +36,7 @@ public class AddDefaultAttributesMessageHook implements JamesMessageHook {
     /**
      * The mail attribute which get set if the client is allowed to relay
      */
-    public static final String SMTP_AUTH_NETWORK_NAME = "org.apache.james.SMTPIsAuthNetwork";
+    public static final AttributeName SMTP_AUTH_NETWORK_NAME = AttributeName.of("org.apache.james.SMTPIsAuthNetwork");
 
     @Override
     public void init(Configuration config) throws ConfigurationException {
@@ -53,11 +56,11 @@ public class AddDefaultAttributesMessageHook implements JamesMessageHook {
             mailImpl.setRemoteHost(session.getRemoteAddress().getHostName());
             mailImpl.setRemoteAddr(session.getRemoteAddress().getAddress().getHostAddress());
             if (session.getUser() != null) {
-                mail.setAttribute(Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME, session.getUser());
+                mail.setAttribute(new Attribute(Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME, AttributeValue.of(session.getUser())));
             }
 
             if (session.isRelayingAllowed()) {
-                mail.setAttribute(SMTP_AUTH_NETWORK_NAME, "true");
+                mail.setAttribute(new Attribute(SMTP_AUTH_NETWORK_NAME, AttributeValue.of("true")));
             }
         }
         return HookResult.DECLINED;
