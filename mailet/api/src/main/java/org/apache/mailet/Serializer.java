@@ -80,7 +80,7 @@ public interface Serializer<T> {
                     FLOAT_SERIALIZER,
                     DOUBLE_SERIALIZER,
                     MESSAGE_ID_DTO_SERIALIZER,
-                    new Serializer.ArbitrarySerializableSerializer(),
+                    new Serializer.ArbitrarySerializableSerializer<>(),
                     URL_SERIALIZER,
                     new CollectionSerializer<>(),
                     new MapSerializer<>(),
