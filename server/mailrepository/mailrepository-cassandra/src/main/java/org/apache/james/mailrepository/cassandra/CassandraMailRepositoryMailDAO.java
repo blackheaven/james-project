@@ -44,12 +44,7 @@ import static org.apache.james.mailrepository.cassandra.MailRepositoryTable.REPO
 import static org.apache.james.mailrepository.cassandra.MailRepositoryTable.SENDER;
 import static org.apache.james.mailrepository.cassandra.MailRepositoryTable.STATE;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Date;
@@ -71,7 +66,9 @@ import org.apache.james.core.MailAddress;
 import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryUrl;
 import org.apache.james.server.core.MailImpl;
-import org.apache.james.util.streams.Iterators;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders;
 
@@ -204,11 +201,11 @@ public class CassandraMailRepositoryMailDAO {
             blobIdFactory.from(row.getString(BODY_BLOB_ID)));
     }
 
-    private Map<String, Serializable> toAttributes(Map<String, ByteBuffer> rowAttributes) {
+    private List<Attribute> toAttributes(Map<String, ByteBuffer> rowAttributes) {
         return rowAttributes.entrySet()
             .stream()
-            .map(entry -> Pair.of(entry.getKey(), fromByteBuffer(entry.getValue())))
-            .collect(Guavate.toImmutableMap(Pair::getLeft, Pair::getRight));
+            .map(entry -> new Attribute(AttributeName.of(entry.getKey()), fromByteBuffer(entry.getValue())))
+            .collect(ImmutableList.toImmutableList());
     }
 
     private ImmutableList<String> asStringList(Collection<MailAddress> mailAddresses) {
@@ -216,10 +213,13 @@ public class CassandraMailRepositoryMailDAO {
     }
 
     private ImmutableMap<String, ByteBuffer> toRawAttributeMap(Mail mail) {
-        return Iterators.toStream(mail.getAttributeNames())
-            .map(name -> Pair.of(name, mail.getAttribute(name)))
-            .map(pair -> Pair.of(pair.getLeft(), toByteBuffer(pair.getRight())))
-            .collect(Guavate.toImmutableMap(Pair::getLeft, Pair::getRight));
+        Map<AttributeName, Attribute> attributesMap = mail.attributesMap();
+        return attributesMap
+                .keySet()
+                .stream()
+                .collect(Guavate.toImmutableMap(
+                    AttributeName::asString,
+                    name -> toByteBuffer(attributesMap.get(name).getValue())));
     }
 
     private ImmutableMap<String, UDTValue> toHeaderMap(PerRecipientHeaders perRecipientHeaders) {
@@ -247,23 +247,20 @@ public class CassandraMailRepositoryMailDAO {
         return result;
     }
 
-    private ByteBuffer toByteBuffer(Serializable serializable) {
+    private ByteBuffer toByteBuffer(AttributeValue<?> attributeValue) {
         try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            new ObjectOutputStream(outputStream).writeObject(serializable);
-            return ByteBuffer.wrap(outputStream.toByteArray());
+            return ByteBuffer.wrap(attributeValue.toJson().toString().getBytes("UTF-8"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private Serializable fromByteBuffer(ByteBuffer byteBuffer) {
+    private AttributeValue<?> fromByteBuffer(ByteBuffer byteBuffer) {
         try {
             byte[] data = new byte[byteBuffer.remaining()];
             byteBuffer.get(data);
-            ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(data));
-            return (Serializable) objectInputStream.readObject();
-        } catch (IOException | ClassNotFoundException e) {
+            return AttributeValue.fromJsonString(new String(data, "UTF-8"));
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
