@@ -283,7 +283,7 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", allOf(
-                    containsInAnyOrder(messageFlagged.getMessageId().serialize()), 
+                    containsInAnyOrder(messageFlagged.getMessageId().serialize()),
                     not(containsInAnyOrder(messageNotFlagged.getMessageId().serialize()))));
     }
 
