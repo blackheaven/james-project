@@ -30,6 +30,8 @@ import java.util.List;
 import javax.mail.MessagingException;
 
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
 
@@ -65,35 +67,36 @@ public class IsX509CertificateSubject extends GenericMatcher {
     }
     
     @Override
-    @SuppressWarnings("unchecked")
     public Collection<MailAddress> match(Mail mail) throws MessagingException {
+        return AttributeUtils
+                .getAttributeValueFromMail(mail, AttributeName.of(sourceAttribute))
+                .map(obj -> checkCertificate(mail, obj))
+                .orElse(null);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Collection<MailAddress> checkCertificate(Mail mail, Object obj) {
         List<X509Certificate> certificates;
-        
-        Object obj = mail.getAttribute(sourceAttribute);
-        if (obj != null) {
-            if (obj instanceof X509Certificate) {
-                certificates = Collections.singletonList((X509Certificate)obj);
-            } else {
-                certificates = (List<X509Certificate>) obj;
-            }
+        if (obj instanceof X509Certificate) {
+            certificates = Collections.singletonList((X509Certificate)obj);
+        } else {
+            certificates = (List<X509Certificate>) obj;
+        }
 
-            boolean valid = false;
+        boolean valid = false;
 
-            for (X509Certificate cert : certificates) {
-                // Here I should use the method getSubjectX500Principal, but
-                // that would break the compatibility with jdk13.
-                Principal prin = cert.getSubjectDN();
-                // TODO: Maybe here a more strong check should be done ...
-                if ((prin.toString().indexOf(check)) > 0) {
-                    valid = true;
-                }
+        for (X509Certificate cert : certificates) {
+            // Here I should use the method getSubjectX500Principal, but
+            // that would break the compatibility with jdk13.
+            Principal prin = cert.getSubjectDN();
+            // TODO: Maybe here a more strong check should be done ...
+            if ((prin.toString().indexOf(check)) > 0) {
+                valid = true;
             }
+        }
 
-            if (valid) {
-                return mail.getRecipients();
-            } else {
-                return null;
-            }
+        if (valid) {
+            return mail.getRecipients();
         } else {
             return null;
         }
