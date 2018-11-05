@@ -42,6 +42,7 @@ import org.apache.james.transport.mailets.remote.delivery.Bouncer;
 import org.apache.james.transport.mailets.remote.delivery.DeliveryRunnable;
 import org.apache.james.transport.mailets.remote.delivery.RemoteDeliveryConfiguration;
 import org.apache.james.transport.mailets.remote.delivery.RemoteDeliverySocketFactory;
+import org.apache.mailet.Attribute;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
@@ -195,7 +196,7 @@ public class RemoteDelivery extends GenericMailet {
             LOGGER.debug("Remotely delivering mail {}", mail.getName());
         }
         if (configuration.isUsePriority()) {
-            mail.setAttribute(MailPrioritySupport.MAIL_PRIORITY, MailPrioritySupport.HIGH_PRIORITY);
+            mail.setAttribute(new Attribute(MailPrioritySupport.MAIL_PRIORITY_ATTRIBUTE_NAME, MailPrioritySupport.HIGH_PRIORITY_ATTRIBUTE_VALUE));
         }
         if (!mail.getRecipients().isEmpty()) {
             if (configuration.getGatewayServer().isEmpty()) {

@@ -37,6 +37,8 @@ import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.dlp.api.DLPConfigurationItem.Id;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.jupiter.api.Test;
 
@@ -521,7 +523,8 @@ class DlpTest {
 
         dlp.match(mail);
 
-        assertThat(mail.getAttribute("DlpMatchedRule")).isEqualTo("should match sender");
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of("DlpMatchedRule"), String.class))
+            .contains("should match sender");
     }
 
 }
