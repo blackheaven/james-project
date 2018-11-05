@@ -26,6 +26,7 @@ import java.util.Collection;
 import javax.mail.MessagingException;
 
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.AttributeName;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
 
@@ -62,7 +63,7 @@ public class HasMailAttribute extends GenericMatcher {
      **/
     @Override
     public Collection<MailAddress> match(Mail mail) throws MessagingException {
-        if (mail.getAttribute(attributeName) != null) {
+        if (mail.getAttribute(AttributeName.of(attributeName)).isPresent()) {
             return mail.getRecipients();
         } 
         return null;

@@ -27,6 +27,7 @@ import java.util.Collection;
 import javax.mail.MessagingException;
 
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,7 @@ public class SMTPAuthUserIsTest extends AbstractHasMailAttributeTest {
     protected void init() {
         super.init();
         setMailAttributeName(Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME);
-        setMailAttributeValue("test@james.apache.org");
+        setMailAttributeValue(AttributeValue.of("test@james.apache.org"));
     }
     
     
@@ -60,7 +61,7 @@ public class SMTPAuthUserIsTest extends AbstractHasMailAttributeTest {
     @Test
     public void testAttributeIsNotMatched() throws MessagingException {
         setupAll();
-        setMailAttributeValue("notmatched@james.apache.org");
+        setMailAttributeValue(AttributeValue.of("notmatched@james.apache.org"));
 
         Collection<MailAddress> matchedRecipients = matcher.match(mockedMail);
 

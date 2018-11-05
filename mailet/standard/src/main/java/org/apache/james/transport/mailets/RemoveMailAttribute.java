@@ -23,14 +23,17 @@ package org.apache.james.transport.mailets;
 
 import javax.mail.MessagingException;
 
+import org.apache.mailet.AttributeName;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.GenericMailet;
 
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Streams;
 
 /**
  * This mailet sets attributes on the Mail.
@@ -51,7 +54,7 @@ public class RemoveMailAttribute extends GenericMailet {
     private static final char ATTRIBUTE_SEPARATOR_CHAR = ',';
     protected static final String MAILET_NAME_PARAMETER = "name";
 
-    private ImmutableList<String> attributesToRemove;
+    private ImmutableList<AttributeName> attributesToRemove;
 
     @Override
     public String getMailetInfo() {
@@ -69,16 +72,18 @@ public class RemoveMailAttribute extends GenericMailet {
         attributesToRemove = getAttributes(name);
     }
 
-    private ImmutableList<String> getAttributes(String name) {
-        return ImmutableList.copyOf(Splitter.on(ATTRIBUTE_SEPARATOR_CHAR)
+    private ImmutableList<AttributeName> getAttributes(String name) {
+        return Streams.stream(Splitter.on(ATTRIBUTE_SEPARATOR_CHAR)
             .trimResults()
-            .split(name));
+            .split(name))
+            .map(AttributeName::of)
+            .collect(Guavate.toImmutableList());
     }
 
     @Override
     public void service(Mail mail) throws MessagingException {
         Preconditions.checkNotNull(mail);
-        for (String attributeToRemove : attributesToRemove) {
+        for (AttributeName attributeToRemove : attributesToRemove) {
             mail.removeAttribute(attributeToRemove);
         }
     }
