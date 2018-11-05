@@ -55,6 +55,8 @@ import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.server.core.MailImpl;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.LookupException;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetContext;
@@ -408,14 +410,14 @@ public class JamesMailetContext implements MailetContext, Configurable {
 
     @Override
     public void sendMail(Mail mail, String state) throws MessagingException {
-        mail.setAttribute(Mail.SENT_BY_MAILET, "true");
+        mail.setAttribute(new Attribute(Mail.SENT_BY_MAILET, AttributeValue.of("true")));
         mail.setState(state);
         rootMailQueue.enQueue(mail);
     }
     
     @Override
     public void sendMail(Mail mail, String state, long delay, TimeUnit unit) throws MessagingException {
-        mail.setAttribute(Mail.SENT_BY_MAILET, "true");
+        mail.setAttribute(new Attribute(Mail.SENT_BY_MAILET, AttributeValue.of("true")));
         mail.setState(state);
         rootMailQueue.enQueue(mail, delay, unit);
     }

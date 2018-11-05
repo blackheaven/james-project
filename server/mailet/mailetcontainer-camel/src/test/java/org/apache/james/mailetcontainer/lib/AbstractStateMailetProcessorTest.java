@@ -37,6 +37,7 @@ import org.apache.james.mailetcontainer.api.mock.MockMailet;
 import org.apache.james.mailetcontainer.api.mock.MockMatcher;
 import org.apache.james.mailetcontainer.lib.AbstractStateMailetProcessor.MailetProcessorListener;
 import org.apache.james.server.core.MailImpl;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.Mailet;
 import org.apache.mailet.Matcher;
@@ -233,7 +234,8 @@ public abstract class AbstractStateMailetProcessorTest {
         processor.service(mail);
 
         // the source mail should have captured the exception which was thrown
-        assertThat(mail.getAttribute(Mail.MAILET_ERROR_ATTRIBUTE_NAME).getClass()).isEqualTo(MessagingException.class);
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, Mail.MAILET_ERROR_ATTRIBUTE_NAME).get().getClass())
+            .isEqualTo(MessagingException.class);
         latch.await();
         processor.destroy();
     }
