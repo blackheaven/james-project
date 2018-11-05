@@ -20,7 +20,6 @@ package org.apache.james.transport.mailets;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -28,6 +27,10 @@ import java.util.stream.Stream;
 import javax.mail.MessagingException;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
@@ -104,18 +107,17 @@ public class ICalendarParser extends GenericMailet {
     @Override
     @SuppressWarnings("unchecked")
     public void service(Mail mail) throws MessagingException {
-        Object icsAttachmentsObj = mail.getAttribute(sourceAttributeName);
-        if (icsAttachmentsObj == null || !(icsAttachmentsObj instanceof Map)) {
-            return;
-        }
+        AttributeUtils
+            .getValueAndCastFromMail(mail, AttributeName.of(sourceAttributeName), (Class<Map<String, byte[]>>)(Object) Map.class)
+            .ifPresent(icsAttachments -> {
+                Map<String, Calendar> calendars = icsAttachments.entrySet()
+                    .stream()
+                    .flatMap(entry -> createCalendar(entry.getKey(), entry.getValue()))
+                    .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
 
-        Map<String, byte[]> icsAttachments = (Map<String, byte[]>) icsAttachmentsObj;
-        Map<String, Calendar> calendars = icsAttachments.entrySet()
-            .stream()
-            .flatMap(entry -> createCalendar(entry.getKey(), entry.getValue()))
-            .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
+                mail.setAttribute(new Attribute(AttributeName.of(destinationAttributeName), AttributeValue.ofAny(calendars)));
+            });
 
-        mail.setAttribute(destinationAttributeName, (Serializable) calendars);
     }
 
     @Override

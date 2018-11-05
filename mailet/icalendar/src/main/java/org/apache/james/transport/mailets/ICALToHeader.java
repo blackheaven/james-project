@@ -20,10 +20,13 @@
 package org.apache.james.transport.mailets;
 
 import java.util.Map;
+import java.util.Optional;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
@@ -60,8 +63,11 @@ import net.fortuna.ical4j.model.component.VEvent;
 public class ICALToHeader extends GenericMailet {
     private static final Logger LOGGER = LoggerFactory.getLogger(ICALToHeader.class);
 
-    public static final String ATTRIBUTE_PROPERTY = "attribute";
-    public static final String ATTRIBUTE_DEFAULT_NAME = "icalendar";
+    private static final String CONFIG_ATTRIBUTE_PROPERTY = "attribute";
+    private static final String CONFIG_ATTRIBUTE_DEFAULT_NAME = "icalendar";
+
+    public static final AttributeName ATTRIBUTE_PROPERTY = AttributeName.of(CONFIG_ATTRIBUTE_PROPERTY);
+    public static final AttributeName ATTRIBUTE_DEFAULT_NAME = AttributeName.of(CONFIG_ATTRIBUTE_DEFAULT_NAME);
 
     public static final String X_MEETING_UID_HEADER = "X-MEETING-UID";
     public static final String X_MEETING_METHOD_HEADER = "X-MEETING-METHOD";
@@ -82,7 +88,7 @@ public class ICALToHeader extends GenericMailet {
 
     @Override
     public void init() throws MessagingException {
-        attribute = getInitParameter(ATTRIBUTE_PROPERTY, ATTRIBUTE_DEFAULT_NAME);
+        attribute = getInitParameter(CONFIG_ATTRIBUTE_PROPERTY, CONFIG_ATTRIBUTE_DEFAULT_NAME);
         if (Strings.isNullOrEmpty(attribute)) {
             throw new MessagingException("Attribute " + attribute + " can not be empty or null");
         }
@@ -90,16 +96,19 @@ public class ICALToHeader extends GenericMailet {
 
     @Override
     public void service(Mail mail) throws MessagingException {
-        if (mail.getAttribute(attribute) == null) {
+        if (!mail.getAttribute(AttributeName.of(attribute)).isPresent()) {
             return;
         }
         try {
             getCalendarMap(mail)
-                .values()
-                .stream()
-                .findAny()
-                .ifPresent(Throwing.<Calendar>consumer(calendar -> writeToHeaders(calendar, mail))
-                    .sneakyThrow());
+                .ifPresent(calendarMap -> {
+                    calendarMap
+                        .values()
+                        .stream()
+                        .findAny()
+                        .ifPresent(Throwing.<Calendar>consumer(calendar -> writeToHeaders(calendar, mail))
+                            .sneakyThrow());
+                });
         } catch (ClassCastException e) {
             LOGGER.error("Received a mail with {} not being an ICAL object for mail {}", attribute, mail.getName(), e);
         }
@@ -111,8 +120,8 @@ public class ICALToHeader extends GenericMailet {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Calendar> getCalendarMap(Mail mail) {
-        return (Map<String, Calendar>) mail.getAttribute(attribute);
+    private Optional<Map<String, Calendar>> getCalendarMap(Mail mail) {
+        return AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(attribute), (Class<Map<String, Calendar>>)(Object) Map.class);
     }
 
     private void writeToHeaders(Calendar calendar, Mail mail) throws MessagingException {
