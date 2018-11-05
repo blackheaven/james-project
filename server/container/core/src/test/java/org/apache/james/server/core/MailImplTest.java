@@ -169,7 +169,7 @@ public class MailImplTest extends ContractMailTest {
     public void setAttributeShouldThrowOnNullAttributeName() throws MessagingException {
         MailImpl mail = newMail();
 
-        assertThatThrownBy(() -> mail.setAttribute(null, "toto"))
+        assertThatThrownBy(() -> mail.setAttribute(new Attribute(AttributeName.of(null), AttributeValue.of("toto"))))
             .isInstanceOf(NullPointerException.class);
     }
 

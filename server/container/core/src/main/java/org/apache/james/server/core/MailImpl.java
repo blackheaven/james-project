@@ -19,12 +19,8 @@
 
 package org.apache.james.server.core;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OptionalDataException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -60,8 +56,6 @@ import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.PerRecipientHeaders;
 import org.apache.mailet.PerRecipientHeaders.Header;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
 import com.google.common.annotations.VisibleForTesting;
@@ -344,9 +338,6 @@ public class MailImpl implements Disposable, Mail {
         }
     }
 
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MailImpl.class);
-
     /**
      * We hardcode the serialVersionUID so that from James 1.2 on, MailImpl will
      * be deserializable (so your mail doesn't get lost)
@@ -427,28 +418,16 @@ public class MailImpl implements Disposable, Mail {
         }
     }
 
-    @SuppressWarnings({"unchecked", "deprecation"})
+    @SuppressWarnings({"deprecation"})
     private MailImpl(Mail mail, String newName) throws MessagingException {
         this(newName, mail.getSender(), mail.getRecipients(), mail.getMessage());
         setRemoteHost(mail.getRemoteHost());
         setRemoteAddr(mail.getRemoteAddr());
         setLastUpdated(mail.getLastUpdated());
         setErrorMessage(mail.getErrorMessage());
-        try {
-            if (mail instanceof MailImpl) {
-                setAttributesRaw((Map<String, Object>) cloneSerializableObject(((MailImpl) mail).getAttributesRaw()));
-            } else {
-                HashMap<String, Object> attribs = new HashMap<>();
-                for (Iterator<String> i = mail.getAttributeNames(); i.hasNext(); ) {
-                    String hashKey = i.next();
-                    attribs.put(hashKey, cloneSerializableObject(mail.getAttribute(hashKey)));
-                }
-                setAttributesRaw(attribs);
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            LOGGER.error("Error while deserializing attributes", e);
-            setAttributesRaw(new HashMap<>());
-        }
+        this.attributes = mail.attributes()
+            .map(attribute -> attribute.duplicate())
+            .collect(Collectors.toMap(Attribute::getName, Function.identity()));
     }
 
     /**
@@ -829,27 +808,6 @@ public class MailImpl implements Disposable, Mail {
     @Override
     public boolean hasAttributes() {
         return !attributes.isEmpty();
-    }
-
-    /**
-     * This methods provide cloning for serializable objects. Mail Attributes
-     * are Serializable but not Clonable so we need a deep copy
-     *
-     * @param o Object to be cloned
-     * @return the cloned Object
-     * @throws IOException
-     * @throws ClassNotFoundException
-     */
-    private static Object cloneSerializableObject(Object o) throws IOException, ClassNotFoundException {
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        try (ObjectOutputStream out = new ObjectOutputStream(b)) {
-            out.writeObject(o);
-            out.flush();
-        }
-        ByteArrayInputStream bi = new ByteArrayInputStream(b.toByteArray());
-        try (ObjectInputStream in = new ObjectInputStream(bi)) {
-            return in.readObject();
-        }
     }
 
     /**
