@@ -208,8 +208,8 @@ public class CassandraMailRepositoryMailDAO {
     private List<Attribute> toAttributes(Map<String, ByteBuffer> rowAttributes) {
         return rowAttributes.entrySet()
             .stream()
-            .map(entry -> Pair.of(AttributeName.of(entry.getKey()), fromByteBuffer(entry.getValue())))
-            .collect(ImmutableList.toImmutableList(Pair::getLeft, Pair::getRight));
+            .map(entry -> new Attribute(AttributeName.of(entry.getKey()), fromByteBuffer(entry.getValue())))
+            .collect(ImmutableList.toImmutableList());
     }
 
     private ImmutableList<String> asStringList(Collection<MailAddress> mailAddresses) {
