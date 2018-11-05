@@ -19,7 +19,6 @@
 
 package org.apache.james.transport.mailets;
 
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
@@ -36,6 +35,10 @@ import org.apache.james.core.MailAddress;
 import org.apache.james.transport.mailets.model.ICAL;
 import org.apache.james.util.OptionalUtils;
 import org.apache.james.util.StreamUtils;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
@@ -45,8 +48,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.fge.lambdas.Throwing;
-import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 
 import net.fortuna.ical4j.model.Calendar;
 
@@ -82,14 +85,26 @@ import net.fortuna.ical4j.model.Calendar;
  * </pre>
  */
 public class ICALToJsonAttribute extends GenericMailet {
+    @SuppressWarnings("unchecked")
+    private static final Class<Map<String, Calendar>> MAP_CALENDAR_CLASS = (Class<Map<String, Calendar>>)(Object) Map.class;
+    @SuppressWarnings("unchecked")
+    private static final Class<Map<String, byte[]>> MAP_BYTES_CLASS = (Class<Map<String, byte[]>>)(Object) Map.class;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ICALToJsonAttribute.class);
 
-    public static final String SOURCE_ATTRIBUTE_NAME = "source";
-    public static final String RAW_SOURCE_ATTRIBUTE_NAME = "rawSource";
-    public static final String DESTINATION_ATTRIBUTE_NAME = "destination";
-    public static final String DEFAULT_SOURCE_ATTRIBUTE_NAME = "icalendar";
-    public static final String DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME = "attachments";
-    public static final String DEFAULT_DESTINATION_ATTRIBUTE_NAME = "icalendarJson";
+    private static final String SOURCE_CONFIG_ATTRIBUTE_NAME = "source";
+    private static final String RAW_SOURCE_CONFIG_ATTRIBUTE_NAME = "rawSource";
+    private static final String DESTINATION_CONFIG_ATTRIBUTE_NAME = "destination";
+    private static final String DEFAULT_SOURCE_CONFIG_ATTRIBUTE_NAME = "icalendar";
+    private static final String DEFAULT_RAW_SOURCE_CONFIG_ATTRIBUTE_NAME = "attachments";
+    private static final String DEFAULT_DESTINATION_CONFIG_ATTRIBUTE_NAME = "icalendarJson";
+
+    public static final AttributeName SOURCE_ATTRIBUTE_NAME = AttributeName.of(SOURCE_CONFIG_ATTRIBUTE_NAME);
+    public static final AttributeName RAW_SOURCE_ATTRIBUTE_NAME = AttributeName.of(RAW_SOURCE_CONFIG_ATTRIBUTE_NAME);
+    public static final AttributeName DESTINATION_ATTRIBUTE_NAME = AttributeName.of(DESTINATION_CONFIG_ATTRIBUTE_NAME);
+    public static final AttributeName DEFAULT_SOURCE_ATTRIBUTE_NAME = AttributeName.of(DEFAULT_SOURCE_CONFIG_ATTRIBUTE_NAME);
+    public static final AttributeName DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME = AttributeName.of(DEFAULT_RAW_SOURCE_CONFIG_ATTRIBUTE_NAME);
+    public static final AttributeName DEFAULT_DESTINATION_ATTRIBUTE_NAME = AttributeName.of(DEFAULT_DESTINATION_CONFIG_ATTRIBUTE_NAME);
 
     static {
         ICal4JConfigurator.configure();
@@ -124,54 +139,60 @@ public class ICALToJsonAttribute extends GenericMailet {
 
     @Override
     public void init() throws MessagingException {
-        sourceAttributeName = getInitParameter(SOURCE_ATTRIBUTE_NAME, DEFAULT_SOURCE_ATTRIBUTE_NAME);
-        rawSourceAttributeName = getInitParameter(RAW_SOURCE_ATTRIBUTE_NAME, DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME);
-        destinationAttributeName = getInitParameter(DESTINATION_ATTRIBUTE_NAME, DEFAULT_DESTINATION_ATTRIBUTE_NAME);
+        sourceAttributeName = getInitParameter(SOURCE_CONFIG_ATTRIBUTE_NAME, DEFAULT_SOURCE_CONFIG_ATTRIBUTE_NAME);
+        rawSourceAttributeName = getInitParameter(RAW_SOURCE_CONFIG_ATTRIBUTE_NAME, DEFAULT_RAW_SOURCE_CONFIG_ATTRIBUTE_NAME);
+        destinationAttributeName = getInitParameter(DESTINATION_CONFIG_ATTRIBUTE_NAME, DEFAULT_DESTINATION_CONFIG_ATTRIBUTE_NAME);
         if (Strings.isNullOrEmpty(sourceAttributeName)) {
-            throw new MessagingException(SOURCE_ATTRIBUTE_NAME + " configuration parameter can not be null or empty");
+            throw new MessagingException(SOURCE_CONFIG_ATTRIBUTE_NAME + " configuration parameter can not be null or empty");
         }
         if (Strings.isNullOrEmpty(rawSourceAttributeName)) {
-            throw new MessagingException(RAW_SOURCE_ATTRIBUTE_NAME + " configuration parameter can not be null or empty");
+            throw new MessagingException(RAW_SOURCE_CONFIG_ATTRIBUTE_NAME + " configuration parameter can not be null or empty");
         }
         if (Strings.isNullOrEmpty(destinationAttributeName)) {
-            throw new MessagingException(DESTINATION_ATTRIBUTE_NAME + " configuration parameter can not be null or empty");
+            throw new MessagingException(DESTINATION_CONFIG_ATTRIBUTE_NAME + " configuration parameter can not be null or empty");
         }
     }
 
     @Override
     public void service(Mail mail) throws MessagingException {
-        if (mail.getAttribute(sourceAttributeName) == null) {
+        if (!mail.getAttribute(AttributeName.of(sourceAttributeName)).isPresent()) {
             return;
         }
-        if (mail.getAttribute(rawSourceAttributeName) == null) {
+        if (!mail.getAttribute(AttributeName.of(rawSourceAttributeName)).isPresent()) {
             return;
         }
-        Optional<String> sender = retrieveSender(mail);
-        if (!sender.isPresent()) {
-            LOGGER.info("Skipping {} because no sender and no from", mail.getName());
-            return;
-        }
+
+        retrieveSender(mail)
+            .map(sender -> fillDestinationAttribute(mail, sender))
+            .orElseGet(() -> {
+                LOGGER.info("Skipping {} because no sender and no from", mail.getName());
+                return null;
+            });
+    }
+
+    public Object fillDestinationAttribute(Mail mail, String sender) {
         try {
-            Map<String, Calendar> calendars = getCalendarMap(mail);
-            Map<String, byte[]> rawCalendars = getRawCalendarMap(mail);
-            Map<String, byte[]> jsonsInByteForm = calendars.entrySet()
-                .stream()
-                .flatMap(calendar -> toJson(calendar, rawCalendars, mail, sender.get()))
-                .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
-            mail.setAttribute(destinationAttributeName, (Serializable) jsonsInByteForm);
+            getCalendarMap(mail).ifPresent(calendars -> {
+                getRawCalendarMap(mail).ifPresent(rawCalendars -> {
+                    Map<String, byte[]> jsonsInByteForm = calendars.entrySet()
+                        .stream()
+                        .flatMap(calendar -> toJson(calendar, rawCalendars, mail, sender))
+                        .collect(ImmutableMap.toImmutableMap(Pair::getKey, Pair::getValue));
+                    mail.setAttribute(new Attribute(AttributeName.of(destinationAttributeName), AttributeValue.ofAny(jsonsInByteForm)));
+                });
+            });
         } catch (ClassCastException e) {
             LOGGER.error("Received a mail with {} not being an ICAL object for mail {}", sourceAttributeName, mail.getName(), e);
         }
+        return null;
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<String, Calendar> getCalendarMap(Mail mail) {
-        return (Map<String, Calendar>) mail.getAttribute(sourceAttributeName);
+    private Optional<Map<String, Calendar>> getCalendarMap(Mail mail) {
+        return AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(sourceAttributeName), MAP_CALENDAR_CLASS);
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<String, byte[]> getRawCalendarMap(Mail mail) {
-        return (Map<String, byte[]>) mail.getAttribute(rawSourceAttributeName);
+    private Optional<Map<String, byte[]>> getRawCalendarMap(Mail mail) {
+        return AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(rawSourceAttributeName), MAP_BYTES_CLASS);
     }
 
     private Stream<Pair<String, byte[]>> toJson(Map.Entry<String, Calendar> entry, Map<String, byte[]> rawCalendars, Mail mail, String sender) {
