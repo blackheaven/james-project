@@ -20,15 +20,18 @@ package org.apache.james.spamassassin;
 
 import java.util.Map;
 
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 public class SpamAssassinResult {
     /** The mail attribute under which the status get stored */
-    public static final String STATUS_MAIL_ATTRIBUTE_NAME = "org.apache.james.spamassassin.status";
+    public static final AttributeName STATUS_MAIL_ATTRIBUTE_NAME = AttributeName.of("org.apache.james.spamassassin.status");
 
     /** The mail attribute under which the flag get stored */
-    public static final String FLAG_MAIL_ATTRIBUTE_NAME = "org.apache.james.spamassassin.flag";
+    public static final AttributeName FLAG_MAIL_ATTRIBUTE_NAME = AttributeName.of("org.apache.james.spamassassin.flag");
 
     public static final String NO_RESULT = "?";
 
@@ -71,13 +74,13 @@ public class SpamAssassinResult {
             Preconditions.checkNotNull(hits);
             Preconditions.checkNotNull(requiredHits);
 
-            ImmutableMap.Builder<String, String> headersAsAttribute = ImmutableMap.builder();
+            ImmutableMap.Builder<AttributeName, AttributeValue<String>> headersAsAttribute = ImmutableMap.builder();
             if (isSpam) {
-                headersAsAttribute.put(FLAG_MAIL_ATTRIBUTE_NAME, "YES");
-                headersAsAttribute.put(STATUS_MAIL_ATTRIBUTE_NAME, "Yes, hits=" + hits + " required=" + requiredHits);
+                headersAsAttribute.put(FLAG_MAIL_ATTRIBUTE_NAME, AttributeValue.of("YES"));
+                headersAsAttribute.put(STATUS_MAIL_ATTRIBUTE_NAME, AttributeValue.of("Yes, hits=" + hits + " required=" + requiredHits));
             } else {
-                headersAsAttribute.put(FLAG_MAIL_ATTRIBUTE_NAME, "NO");
-                headersAsAttribute.put(STATUS_MAIL_ATTRIBUTE_NAME, "No, hits=" + hits + " required=" + requiredHits);
+                headersAsAttribute.put(FLAG_MAIL_ATTRIBUTE_NAME, AttributeValue.of("NO"));
+                headersAsAttribute.put(STATUS_MAIL_ATTRIBUTE_NAME, AttributeValue.of("No, hits=" + hits + " required=" + requiredHits));
             }
 
             return new SpamAssassinResult(hits, requiredHits, headersAsAttribute.build());
@@ -86,9 +89,9 @@ public class SpamAssassinResult {
 
     private final String hits;
     private final String requiredHits;
-    private final Map<String, String> headersAsAttribute;
+    private final Map<AttributeName,AttributeValue<String>> headersAsAttribute;
 
-    private SpamAssassinResult(String hits, String requiredHits, Map<String, String> headersAsAttribute) {
+    private SpamAssassinResult(String hits, String requiredHits, ImmutableMap<AttributeName,AttributeValue<String>> headersAsAttribute) {
         this.hits = hits;
         this.requiredHits = requiredHits;
         this.headersAsAttribute = headersAsAttribute;
@@ -102,7 +105,7 @@ public class SpamAssassinResult {
         return requiredHits;
     }
 
-    public Map<String, String> getHeadersAsAttribute() {
+    public Map<AttributeName, AttributeValue<String>> getHeadersAsAttribute() {
         return headersAsAttribute;
     }
 
