@@ -64,6 +64,8 @@ import org.apache.james.jmap.api.filtering.Rule.Condition.Field;
 import org.apache.james.jmap.mailet.filter.JMAPFilteringExtension.JMAPFilteringTestSystem;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.util.StreamUtils;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.base.RFC2822Headers;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.jupiter.api.Nested;
@@ -564,8 +566,8 @@ class JMAPFilteringTest {
         FakeMail mail = testSystem.asMail(mimeMessageBuilder);
         testSystem.getJmapFiltering().service(mail);
 
-        assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-                .isEqualTo(RECIPIENT_1_MAILBOX_1);
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
+                .contains(RECIPIENT_1_MAILBOX_1);
     }
 
     @ParameterizedTest(name = "CONTAINS should not match for field {1}: {0}")
@@ -580,8 +582,8 @@ class JMAPFilteringTest {
         FakeMail mail = testSystem.asMail(mimeMessageBuilder);
         testSystem.getJmapFiltering().service(mail);
 
-        assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-                .isNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME)))
+                .isEmpty();
     }
 
     @ParameterizedTest(name = "NOT-CONTAINS should match for field {1}: {0}")
@@ -595,8 +597,8 @@ class JMAPFilteringTest {
         FakeMail mail = testSystem.asMail(mimeMessageBuilder);
         testSystem.getJmapFiltering().service(mail);
 
-        assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-            .isEqualTo(RECIPIENT_1_MAILBOX_1);
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
+            .contains(RECIPIENT_1_MAILBOX_1);
     }
 
 
@@ -612,8 +614,8 @@ class JMAPFilteringTest {
         FakeMail mail = testSystem.asMail(mimeMessageBuilder);
         testSystem.getJmapFiltering().service(mail);
 
-        assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-            .isNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME)))
+            .isEmpty();
     }
 
     @ParameterizedTest(name = "EXACTLY-EQUALS should match for field {1}: {0}")
@@ -628,8 +630,8 @@ class JMAPFilteringTest {
         FakeMail mail = testSystem.asMail(mimeMessageBuilder);
         testSystem.getJmapFiltering().service(mail);
 
-        assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-            .isEqualTo(RECIPIENT_1_MAILBOX_1);
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
+            .contains(RECIPIENT_1_MAILBOX_1);
     }
 
     @ParameterizedTest(name = "EXACTLY-EQUALS should not match for field {1}: {0}")
@@ -643,8 +645,8 @@ class JMAPFilteringTest {
         FakeMail mail = testSystem.asMail(mimeMessageBuilder);
         testSystem.getJmapFiltering().service(mail);
 
-        assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-            .isNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME)))
+            .isEmpty();
     }
 
     @ParameterizedTest(name = "NOT_EXACTLY_EQUALS should match for field {1}: {0}")
@@ -659,8 +661,8 @@ class JMAPFilteringTest {
         FakeMail mail = testSystem.asMail(mimeMessageBuilder);
         testSystem.getJmapFiltering().service(mail);
 
-        assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-            .isEqualTo(RECIPIENT_1_MAILBOX_1);
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
+            .contains(RECIPIENT_1_MAILBOX_1);
     }
 
     @ParameterizedTest(name = "NOT_EXACTLY_EQUALS should not match for field {1}: {0}")
@@ -674,8 +676,8 @@ class JMAPFilteringTest {
         FakeMail mail = testSystem.asMail(mimeMessageBuilder);
         testSystem.getJmapFiltering().service(mail);
 
-        assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-            .isNull();
+        assertThat(AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME)))
+            .isEmpty();
     }
 
     @Nested
@@ -713,8 +715,8 @@ class JMAPFilteringTest {
 
             testSystem.getJmapFiltering().service(mail);
 
-            assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-                .isEqualTo("RECIPIENT_1_MAILBOX_3");
+            assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
+                .contains("RECIPIENT_1_MAILBOX_3");
         }
 
         @Test
@@ -739,8 +741,8 @@ class JMAPFilteringTest {
 
             testSystem.getJmapFiltering().service(mail);
 
-            assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-                .isEqualTo("RECIPIENT_1_MAILBOX_1");
+            assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
+                .contains("RECIPIENT_1_MAILBOX_1");
         }
 
         @Test
@@ -767,8 +769,8 @@ class JMAPFilteringTest {
 
             testSystem.getJmapFiltering().service(mail);
 
-            assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-                .isEqualTo("RECIPIENT_1_MAILBOX_1");
+            assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
+                .contains("RECIPIENT_1_MAILBOX_1");
         }
 
         @Test
@@ -788,8 +790,8 @@ class JMAPFilteringTest {
             FakeMail mail = testSystem.asMail(mimeMessageBuilder());
             testSystem.getJmapFiltering().service(mail);
 
-            assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-                .isNull();
+            assertThat(AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME)))
+                .isEmpty();
         }
 
         @Test
@@ -806,8 +808,8 @@ class JMAPFilteringTest {
 
             testSystem.getJmapFiltering().service(mail);
 
-            assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-                .isNull();
+            assertThat(AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME)))
+                .isEmpty();
         }
     }
 
@@ -847,8 +849,8 @@ class JMAPFilteringTest {
 
             testSystem.getJmapFiltering().service(mail);
 
-            assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-                .isNull();
+            assertThat(AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME)))
+                .isEmpty();
         }
 
         @Test
@@ -874,8 +876,8 @@ class JMAPFilteringTest {
 
             testSystem.getJmapFiltering().service(mail);
 
-            assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-                .isEqualTo(RECIPIENT_1_MAILBOX_1);
+            assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
+                .contains(RECIPIENT_1_MAILBOX_1);
         }
 
         @Test
@@ -897,8 +899,8 @@ class JMAPFilteringTest {
 
             testSystem.getJmapFiltering().service(mail);
 
-            assertThat(mail.getAttribute(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME))
-                .isEqualTo(RECIPIENT_1_MAILBOX_1);
+            assertThat(AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(DELIVERY_PATH_PREFIX + RECIPIENT_1_USERNAME), String.class))
+                .contains(RECIPIENT_1_MAILBOX_1);
         }
     }
 }

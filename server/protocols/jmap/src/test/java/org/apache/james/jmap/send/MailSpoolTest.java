@@ -21,12 +21,14 @@ package org.apache.james.jmap.send;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.james.mailbox.model.MessageIdDto;
 import org.apache.james.mailbox.model.TestMessageId;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.james.queue.api.MailQueue.MailQueueItem;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.RawMailQueueItemDecoratorFactory;
 import org.apache.james.queue.memory.MemoryMailQueueFactory;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,10 +70,12 @@ public class MailSpoolTest {
         mailSpool.send(mail, new MailMetadata(MESSAGE_ID, USERNAME));
 
         MailQueueItem actual = myQueue.deQueue();
-        assertThat(actual.getMail().getAttribute(MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE))
-            .isEqualTo(USERNAME);
-        assertThat(actual.getMail().getAttribute(MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE))
-            .isEqualTo(MESSAGE_ID.serialize());
+        assertThat(AttributeUtils.getValueAndCastFromMail(actual.getMail(), MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE, String.class))
+            .contains(USERNAME);
+        assertThat(AttributeUtils.getValueAndCastFromMail(actual.getMail(), MailMetadata.MAIL_METADATA_MESSAGE_ID_ATTRIBUTE, MessageIdDto.class)
+                .get()
+                .instantiate(new TestMessageId.Factory()))
+            .isEqualTo(MESSAGE_ID);
     }
 
 }
