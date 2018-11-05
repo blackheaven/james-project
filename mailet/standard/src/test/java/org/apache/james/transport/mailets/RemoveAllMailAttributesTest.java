@@ -24,6 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.mail.MessagingException;
 
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.Mailet;
 import org.apache.mailet.base.test.FakeMailetConfig;
@@ -53,11 +56,11 @@ public class RemoveAllMailAttributesTest {
     @Test
     public void serviceShouldRemoveAllMailAttributes() throws MessagingException {
         mail = MailUtil.createMockMail2Recipients();
-        mail.setAttribute("org.apache.james.test.junit", "true");
+        mail.setAttribute(new Attribute(AttributeName.of("org.apache.james.test.junit"), AttributeValue.of("true")));
 
         mailet.service(mail);
 
-        assertThat(mail.getAttributeNames()).isEmpty();
+        assertThat(mail.attributeNames()).isEmpty();
     }
 
     @Test
@@ -66,6 +69,6 @@ public class RemoveAllMailAttributesTest {
 
         mailet.service(mail);
 
-        assertThat(mail.getAttributeNames()).isEmpty();
+        assertThat(mail.attributeNames()).isEmpty();
     }
 }

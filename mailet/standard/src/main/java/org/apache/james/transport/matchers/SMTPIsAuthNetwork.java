@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.Objects;
 
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
 
@@ -42,16 +44,14 @@ public class SMTPIsAuthNetwork extends GenericMatcher {
     /**
      * The mail attribute which is set if the client is allowed to relay
      */
-    public static final String SMTP_AUTH_NETWORK_NAME = "org.apache.james.SMTPIsAuthNetwork";
+    public static final AttributeName SMTP_AUTH_NETWORK_NAME = AttributeName.of("org.apache.james.SMTPIsAuthNetwork");
 
     @Override
     public Collection<MailAddress> match(Mail mail) {
-        String relayingAllowed = (String) mail
-                .getAttribute(SMTP_AUTH_NETWORK_NAME);
-        if (Objects.equals(relayingAllowed, "true")) {
-            return mail.getRecipients();
-        } else {
-            return ImmutableList.of();
-        }
+        return AttributeUtils
+                .getValueAndCastFromMail(mail, SMTP_AUTH_NETWORK_NAME, String.class)
+                .filter(relayingAllowed -> Objects.equals(relayingAllowed, "true"))
+                .map(ignored -> mail.getRecipients())
+                .orElse(ImmutableList.of());
     }
 }

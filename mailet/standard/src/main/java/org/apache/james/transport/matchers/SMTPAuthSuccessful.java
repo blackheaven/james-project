@@ -24,6 +24,7 @@ package org.apache.james.transport.matchers;
 import java.util.Collection;
 
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
 
@@ -47,11 +48,9 @@ public class SMTPAuthSuccessful extends GenericMatcher {
 
     @Override
     public Collection<MailAddress> match(Mail mail) {
-        String authUser = (String) mail.getAttribute(Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME);
-        if (authUser != null) {
-            return mail.getRecipients();
-        } else {
-            return ImmutableList.of();
-        }
+        return AttributeUtils
+                .getAttributeValueFromMail(mail, Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME)
+                .map(s -> mail.getRecipients())
+                .orElse(ImmutableList.of());
     }
 }

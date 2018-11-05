@@ -24,7 +24,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -48,12 +47,17 @@ import org.apache.commons.io.IOUtils;
 import org.apache.james.javax.MultipartUtil;
 import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.DecoderUtil;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -84,6 +88,12 @@ import com.google.common.collect.ImmutableList;
  * </p>
  */
 public class StripAttachment extends GenericMailet {
+
+    @SuppressWarnings("unchecked")
+    private static final Class<List<String>> LIST_OF_STRINGS = (Class<List<String>>)(Object) List.class;
+    @SuppressWarnings("unchecked")
+    private static final Class<Map<String, byte[]>> MAP_BYTES = (Class<Map<String, byte[]>>)(Object) Map.class;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(StripAttachment.class);
 
     private static final String MULTIPART_MIME_TYPE = "multipart/*";
@@ -100,14 +110,14 @@ public class StripAttachment extends GenericMailet {
     public static final String REMOVE_NONE = "no";
     public static final String REMOVE_ALL = "all";
     public static final String REMOVE_MATCHED = "matched";
-    public static final String REMOVED_ATTACHMENTS_ATTRIBUTE_KEY = "org.apache.james.mailet.standard.mailets.StripAttachment.removed";
-    public static final String SAVED_ATTACHMENTS_ATTRIBUTE_KEY = "org.apache.james.mailet.standard.mailets.StripAttachment.saved";
+    public static final AttributeName REMOVED_ATTACHMENTS_ATTRIBUTE_KEY = AttributeName.of("org.apache.james.mailet.standard.mailets.StripAttachment.removed");
+    public static final AttributeName SAVED_ATTACHMENTS_ATTRIBUTE_KEY = AttributeName.of("org.apache.james.mailet.standard.mailets.StripAttachment.saved");
 
     public static final boolean DECODE_FILENAME_DEFAULT_VALUE = false;
 
     @VisibleForTesting String removeAttachments;
     private String directoryName;
-    private String attributeName;
+    private Optional<AttributeName> attributeName;
     private Pattern regExPattern;
     private Pattern notRegExPattern;
     private String mimeType;
@@ -132,7 +142,7 @@ public class StripAttachment extends GenericMailet {
         }
 
         directoryName = getInitParameter(DIRECTORY_PARAMETER_NAME);
-        attributeName = getInitParameter(ATTRIBUTE_PARAMETER_NAME);
+        attributeName = Optional.ofNullable(getInitParameter(ATTRIBUTE_PARAMETER_NAME)).map(AttributeName::of);
 
         removeAttachments = getInitParameter(REMOVE_ATTACHMENT_PARAMETER_NAME, REMOVE_NONE).toLowerCase(Locale.US);
         if (!removeAttachments.equals(REMOVE_MATCHED) && !removeAttachments.equals(REMOVE_ALL) && !removeAttachments.equals(REMOVE_NONE)) {
@@ -193,11 +203,11 @@ public class StripAttachment extends GenericMailet {
                 logMessage.append(directoryName);
                 logMessage.append(']');
             }
-            if (attributeName != null) {
+            attributeName.ifPresent(name -> {
                 logMessage.append(" and will store attachments to attribute [");
-                logMessage.append(attributeName);
+                logMessage.append(name);
                 logMessage.append(']');
-            }
+            });
             LOGGER.debug(logMessage.toString());
         }
     }
@@ -331,32 +341,32 @@ public class StripAttachment extends GenericMailet {
         }
     }
 
-    private void addFilenameToAttribute(Mail mail, String filename, String attributeName) {
-        @SuppressWarnings("unchecked")
-        List<String> attributeValues = (List<String>) mail.getAttribute(attributeName);
-        if (attributeValues == null) {
-            attributeValues = new ArrayList<>();
-            mail.setAttribute(attributeName, (Serializable) attributeValues);
-        }
+    private void addFilenameToAttribute(Mail mail, String filename, AttributeName attributeName) {
+        List<String> attributeValues = AttributeUtils
+            .getValueAndCastFromMail(mail, attributeName, LIST_OF_STRINGS)
+            .orElse(new ArrayList<>());
         attributeValues.add(filename);
+        mail.setAttribute(new Attribute(attributeName, AttributeValue.ofAny(attributeValues)));
     }
 
     private void storeBodyPartAsMailAttribute(BodyPart bodyPart, Mail mail, String fileName) throws IOException, MessagingException {
-        if (attributeName != null) {
-            addPartContent(bodyPart, mail, fileName);
-        }
+        attributeName.ifPresent(Throwing.consumer(name -> 
+            addPartContent(bodyPart, convertFileNameToPartContent(mail, (AttributeName) name), fileName)
+        ).sneakyThrow());
     }
 
-    private void addPartContent(BodyPart bodyPart, Mail mail, String fileName) throws IOException, MessagingException {
-        @SuppressWarnings("unchecked")
-        Map<String, byte[]> fileNamesToPartContent = (Map<String, byte[]>) mail.getAttribute(attributeName);
-        if (fileNamesToPartContent == null) {
-            fileNamesToPartContent = new LinkedHashMap<>();
-            mail.setAttribute(attributeName, (Serializable) fileNamesToPartContent);
-        }
+    private void addPartContent(BodyPart bodyPart, Map<String, byte[]> fileNamesToPartContent, String fileName) throws IOException, MessagingException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bodyPart.writeTo(new BufferedOutputStream(byteArrayOutputStream));
         fileNamesToPartContent.put(fileName, byteArrayOutputStream.toByteArray());
+    }
+
+    public Map<String, byte[]> convertFileNameToPartContent(Mail mail, AttributeName name) {
+        Map<String, byte[]> fileNamesToPartContent = AttributeUtils
+            .getValueAndCastFromMail(mail, name, MAP_BYTES)
+            .orElse(new LinkedHashMap<>());
+        mail.setAttribute(new Attribute(name, AttributeValue.ofAny(fileNamesToPartContent)));
+        return fileNamesToPartContent;
     }
 
     private void storeFileNameAsAttribute(Mail mail, String fileName, boolean hasToBeStored) {

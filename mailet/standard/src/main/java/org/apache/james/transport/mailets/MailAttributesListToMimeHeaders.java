@@ -29,6 +29,8 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.util.OptionalUtils;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
@@ -72,16 +74,17 @@ public class MailAttributesListToMimeHeaders extends GenericMailet {
     }
 
     private void addAttributeToHeader(Mail mail, MimeMessage message, Entry<String, String> entry) {
-        Serializable attribute = mail.getAttribute(entry.getKey());
-        if (attribute instanceof Collection) {
-            @SuppressWarnings("unchecked")
-            Optional<Collection<Serializable>> values = Optional.of((Collection<Serializable>) attribute);
-            addCollectionToHeader(message, entry.getValue(), values);
-        } else {
-            if (attribute != null) {
-                LOGGER.warn("Can not add {} to headers. Expecting class Collection but got {}.", attribute, attribute.getClass());
-            }
-        }
+        AttributeUtils
+            .getAttributeValueFromMail(mail, AttributeName.of(entry.getKey()))
+            .ifPresent(attribute -> {
+                if (attribute instanceof Collection) {
+                    @SuppressWarnings("unchecked")
+                    Optional<Collection<Serializable>> values = Optional.of((Collection<Serializable>) attribute);
+                    addCollectionToHeader(message, entry.getValue(), values);
+                } else {
+                    LOGGER.warn("Can not add {} to headers. Expecting class Collection but got {}.", attribute, attribute.getClass());
+                }
+            });
     }
 
     private void addCollectionToHeader(MimeMessage message, String headerName, Optional<Collection<Serializable>> values) {

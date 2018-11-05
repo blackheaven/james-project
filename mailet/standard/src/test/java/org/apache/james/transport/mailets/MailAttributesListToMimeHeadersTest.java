@@ -27,6 +27,9 @@ import java.util.ArrayList;
 import javax.mail.MessagingException;
 
 import org.apache.james.core.builder.MimeMessageBuilder;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mailet;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
@@ -42,11 +45,15 @@ class MailAttributesListToMimeHeadersTest {
     private static final String VALUE_1_2 = "test1.2";
     private static final String VALUE_2_1 = "test2.1";
     private static final String VALUE_2_2 = "test2.2";
-    private static final ImmutableList<String> MAIL_ATTRIBUTE_VALUE1 = ImmutableList.of(VALUE_1_1, VALUE_1_2);
-    private static final ImmutableList<String> MAIL_ATTRIBUTE_VALUE2 = ImmutableList.of(VALUE_2_1, VALUE_2_2);
+    private static final ImmutableList<String> RAW_MAIL_ATTRIBUTE_VALUE1 = ImmutableList.of(VALUE_1_1, VALUE_1_2);
+    private static final ImmutableList<String> RAW_MAIL_ATTRIBUTE_VALUE2 = ImmutableList.of(VALUE_2_1, VALUE_2_2);
+    private static final AttributeValue<?> MAIL_ATTRIBUTE_VALUE1 = AttributeValue.ofAny(RAW_MAIL_ATTRIBUTE_VALUE1);
+    private static final AttributeValue<?> MAIL_ATTRIBUTE_VALUE2 = AttributeValue.ofAny(RAW_MAIL_ATTRIBUTE_VALUE2);
 
-    private static final String MAIL_ATTRIBUTE_NAME1 = "org.apache.james.test";
-    private static final String MAIL_ATTRIBUTE_NAME2 = "org.apache.james.test2";
+    private static final String RAW_MAIL_ATTRIBUTE_NAME1 = "org.apache.james.test";
+    private static final String RAW_MAIL_ATTRIBUTE_NAME2 = "org.apache.james.test2";
+    private static final AttributeName MAIL_ATTRIBUTE_NAME1 = AttributeName.of(RAW_MAIL_ATTRIBUTE_NAME1);
+    private static final AttributeName MAIL_ATTRIBUTE_NAME2 = AttributeName.of(RAW_MAIL_ATTRIBUTE_NAME2);
     private static final String HEADER_NAME1 = "JUNIT";
     private static final String HEADER_NAME2 = "JUNIT2";
 
@@ -83,8 +90,8 @@ class MailAttributesListToMimeHeadersTest {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
             .mailetName("Test")
             .setProperty("simplemapping",
-                MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1 +
-                    "," + MAIL_ATTRIBUTE_NAME2 + "; " + HEADER_NAME2 +
+                RAW_MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1 +
+                    "," + RAW_MAIL_ATTRIBUTE_NAME2 + "; " + HEADER_NAME2 +
                     "," + "another.attribute" + "; " + "Another-Header")
             .build();
 
@@ -92,8 +99,8 @@ class MailAttributesListToMimeHeadersTest {
 
         FakeMail mail = FakeMail.builder()
             .mimeMessage(MailUtil.createMimeMessage())
-            .attribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1)
-            .attribute(MAIL_ATTRIBUTE_NAME2, MAIL_ATTRIBUTE_VALUE2)
+            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1))
+            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME2, MAIL_ATTRIBUTE_VALUE2))
             .build();
 
         mailet.service(mail);
@@ -105,14 +112,14 @@ class MailAttributesListToMimeHeadersTest {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
             .mailetName("Test")
             .setProperty("simplemapping",
-                MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
+                RAW_MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
             .build();
 
         mailet.init(mailetConfig);
 
         FakeMail mail = FakeMail.builder()
             .mimeMessage(MailUtil.createMimeMessage())
-            .attribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1)
+            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1))
             .build();
 
         mailet.service(mail);
@@ -126,7 +133,7 @@ class MailAttributesListToMimeHeadersTest {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
             .mailetName("Test")
             .setProperty("simplemapping",
-                MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
+                RAW_MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
             .build();
 
         mailet.init(mailetConfig);
@@ -137,7 +144,7 @@ class MailAttributesListToMimeHeadersTest {
         listWithNull.add("2");
         FakeMail mail = FakeMail.builder()
             .mimeMessage(MailUtil.createMimeMessage())
-            .attribute(MAIL_ATTRIBUTE_NAME1, listWithNull)
+            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME1, AttributeValue.ofAny(listWithNull)))
             .build();
 
         mailet.service(mail);
@@ -151,33 +158,33 @@ class MailAttributesListToMimeHeadersTest {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
                 .mailetName("Test")
                 .setProperty("simplemapping",
-                        MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1 +
-                        "," + MAIL_ATTRIBUTE_NAME2 + "; " + HEADER_NAME2 +
+                        RAW_MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1 +
+                        "," + RAW_MAIL_ATTRIBUTE_NAME2 + "; " + HEADER_NAME2 +
                         "," + "another.attribute" + "; " + "Another-Header")
                 .build();
         mailet.init(mailetConfig);
 
         FakeMail mail = FakeMail.builder()
             .mimeMessage(MailUtil.createMimeMessage())
-            .attribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1)
-            .attribute(MAIL_ATTRIBUTE_NAME2, MAIL_ATTRIBUTE_VALUE2)
-            .attribute("unmatched.attribute", "value")
+            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1))
+            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME2, MAIL_ATTRIBUTE_VALUE2))
+            .attribute(new Attribute(AttributeName.of("unmatched.attribute"), AttributeValue.of("value")))
             .build();
 
         mailet.service(mail);
 
         assertThat(mail.getMessage().getHeader(HEADER_NAME1))
-            .containsExactlyElementsOf(MAIL_ATTRIBUTE_VALUE1);
+            .containsExactlyElementsOf(RAW_MAIL_ATTRIBUTE_VALUE1);
 
         assertThat(mail.getMessage().getHeader(HEADER_NAME2))
-            .containsExactlyElementsOf(MAIL_ATTRIBUTE_VALUE2);
+            .containsExactlyElementsOf(RAW_MAIL_ATTRIBUTE_VALUE2);
     }
 
     @Test
     void shouldNotRemovePreviousAttributeValueWhenAttributeAlreadyPresent() throws MessagingException {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
                 .mailetName("Test")
-                .setProperty("simplemapping", MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
+                .setProperty("simplemapping", RAW_MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
                 .build();
         mailet.init(mailetConfig);
 
@@ -185,7 +192,7 @@ class MailAttributesListToMimeHeadersTest {
         FakeMail mail = FakeMail.builder()
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                 .addHeader(HEADER_NAME1, firstValue))
-            .attribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1)
+            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1))
             .build();
 
         mailet.service(mail);
@@ -199,22 +206,22 @@ class MailAttributesListToMimeHeadersTest {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
             .mailetName("Test")
             .setProperty("simplemapping",
-                MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1 +
-                    "," + MAIL_ATTRIBUTE_NAME2 + "; " + HEADER_NAME2)
+                RAW_MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1 +
+                    "," + RAW_MAIL_ATTRIBUTE_NAME2 + "; " + HEADER_NAME2)
             .build();
         mailet.init(mailetConfig);
 
         FakeMail mail = FakeMail.builder()
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder())
-            .attribute(MAIL_ATTRIBUTE_NAME1, 3L)
-            .attribute(MAIL_ATTRIBUTE_NAME2, MAIL_ATTRIBUTE_VALUE2)
+            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME1, AttributeValue.of(3L)))
+            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME2, MAIL_ATTRIBUTE_VALUE2))
             .build();
 
         mailet.service(mail);
 
         assertThat(mail.getMessage().getHeader(HEADER_NAME1)).isNull();
         assertThat(mail.getMessage().getHeader(HEADER_NAME2))
-            .containsExactlyElementsOf(MAIL_ATTRIBUTE_VALUE2);
+            .containsExactlyElementsOf(RAW_MAIL_ATTRIBUTE_VALUE2);
     }
 
 
@@ -222,14 +229,14 @@ class MailAttributesListToMimeHeadersTest {
     void shouldFilterAttributeElementsOfWrongClass() throws MessagingException {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
             .mailetName("Test")
-            .setProperty("simplemapping", MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
+            .setProperty("simplemapping", RAW_MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
             .build();
         mailet.init(mailetConfig);
 
         String value = "value";
         FakeMail mail = FakeMail.builder()
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder())
-            .attribute(MAIL_ATTRIBUTE_NAME1, ImmutableList.of(3L, value))
+            .attribute(new Attribute(MAIL_ATTRIBUTE_NAME1, AttributeValue.ofAny(ImmutableList.of(3L, value))))
             .build();
 
         mailet.service(mail);

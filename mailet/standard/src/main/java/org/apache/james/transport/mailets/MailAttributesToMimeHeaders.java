@@ -21,13 +21,15 @@ package org.apache.james.transport.mailets;
 
 import java.util.Map;
 import java.util.Map.Entry;
-
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Strings;
 
 /**
@@ -61,11 +63,12 @@ public class MailAttributesToMimeHeaders extends GenericMailet {
     public void service(Mail mail) throws MessagingException {
         MimeMessage message = mail.getMessage();
         for (Entry<String, String> entry : mappings.entrySet()) {
-            String value = (String) mail.getAttribute(entry.getKey());
-            if (value != null) {
-                String headerName = entry.getValue();
-                message.addHeader(headerName, value);
-            }
+            AttributeUtils
+                .getValueAndCastFromMail(mail, AttributeName.of(entry.getKey()), String.class)
+                .ifPresent(Throwing.consumer(value -> {
+                    String headerName = entry.getValue();
+                    message.addHeader(headerName, (String) value);
+                }).sneakyThrow());
         }
         message.saveChanges();
     }
