@@ -111,8 +111,8 @@ public class SpamAssassin extends GenericMailet {
         // Add headers per recipient to mail object
         for (String key : result.getHeadersAsAttribute().keySet()) {
             mail.addSpecificHeaderForRecipient(PerRecipientHeaders.Header.builder()
-                    .name(key)
-                    .value(result.getHeadersAsAttribute().get(key))
+                    .name(key.asString())
+                    .value((String) result.getHeadersAsAttribute().get(key).getValue().getValue())
                     .build(), recipient);
         }
     }
