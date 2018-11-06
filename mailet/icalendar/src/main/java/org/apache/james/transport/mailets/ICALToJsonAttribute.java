@@ -85,6 +85,11 @@ import net.fortuna.ical4j.model.Calendar;
  * </pre>
  */
 public class ICALToJsonAttribute extends GenericMailet {
+    @SuppressWarnings("unchecked")
+    private static final Class<Map<String, Calendar>> MAP_CALENDAR_CLASS = (Class<Map<String, Calendar>>)(Object) Map.class;
+    @SuppressWarnings("unchecked")
+    private static final Class<Map<String, byte[]>> MAP_BYTES_CLASS = (Class<Map<String, byte[]>>)(Object) Map.class;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ICALToJsonAttribute.class);
 
     private static final String SOURCE_CONFIG_ATTRIBUTE_NAME = "source";
@@ -181,14 +186,12 @@ public class ICALToJsonAttribute extends GenericMailet {
             });
     }
 
-    @SuppressWarnings("unchecked")
     private Optional<Map<String, Calendar>> getCalendarMap(Mail mail) {
-        return AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(sourceAttributeName), (Class<Map<String, Calendar>>)(Object) Map.class);
+        return AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(sourceAttributeName), MAP_CALENDAR_CLASS);
     }
 
-    @SuppressWarnings("unchecked")
     private Optional<Map<String, byte[]>> getRawCalendarMap(Mail mail) {
-        return AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(rawSourceAttributeName), (Class<Map<String, byte[]>>)(Object) Map.class);
+        return AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(rawSourceAttributeName), MAP_BYTES_CLASS);
     }
 
     private Stream<Pair<String, byte[]>> toJson(Map.Entry<String, Calendar> entry, Map<String, byte[]> rawCalendars, Mail mail, String sender) {
