@@ -20,6 +20,7 @@ package org.apache.james.spamassassin;
 
 import java.util.Map;
 
+import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeValue;
 
@@ -74,13 +75,13 @@ public class SpamAssassinResult {
             Preconditions.checkNotNull(hits);
             Preconditions.checkNotNull(requiredHits);
 
-            ImmutableMap.Builder<AttributeName, AttributeValue<String>> headersAsAttribute = ImmutableMap.builder();
+            ImmutableMap.Builder<AttributeName, Attribute> headersAsAttribute = ImmutableMap.builder();
             if (isSpam) {
-                headersAsAttribute.put(FLAG_MAIL_ATTRIBUTE_NAME, AttributeValue.of("YES"));
-                headersAsAttribute.put(STATUS_MAIL_ATTRIBUTE_NAME, AttributeValue.of("Yes, hits=" + hits + " required=" + requiredHits));
+                headersAsAttribute.put(FLAG_MAIL_ATTRIBUTE_NAME, new Attribute(FLAG_MAIL_ATTRIBUTE_NAME, AttributeValue.of("YES")));
+                headersAsAttribute.put(STATUS_MAIL_ATTRIBUTE_NAME, new Attribute(STATUS_MAIL_ATTRIBUTE_NAME, AttributeValue.of("Yes, hits=" + hits + " required=" + requiredHits)));
             } else {
-                headersAsAttribute.put(FLAG_MAIL_ATTRIBUTE_NAME, AttributeValue.of("NO"));
-                headersAsAttribute.put(STATUS_MAIL_ATTRIBUTE_NAME, AttributeValue.of("No, hits=" + hits + " required=" + requiredHits));
+                headersAsAttribute.put(FLAG_MAIL_ATTRIBUTE_NAME, new Attribute(FLAG_MAIL_ATTRIBUTE_NAME, AttributeValue.of("NO")));
+                headersAsAttribute.put(STATUS_MAIL_ATTRIBUTE_NAME, new Attribute(STATUS_MAIL_ATTRIBUTE_NAME, AttributeValue.of("No, hits=" + hits + " required=" + requiredHits)));
             }
 
             return new SpamAssassinResult(hits, requiredHits, headersAsAttribute.build());
@@ -89,9 +90,9 @@ public class SpamAssassinResult {
 
     private final String hits;
     private final String requiredHits;
-    private final Map<AttributeName,AttributeValue<String>> headersAsAttribute;
+    private final Map<AttributeName, Attribute> headersAsAttribute;
 
-    private SpamAssassinResult(String hits, String requiredHits, ImmutableMap<AttributeName,AttributeValue<String>> headersAsAttribute) {
+    private SpamAssassinResult(String hits, String requiredHits, Map<AttributeName, Attribute> headersAsAttribute) {
         this.hits = hits;
         this.requiredHits = requiredHits;
         this.headersAsAttribute = headersAsAttribute;
@@ -105,7 +106,7 @@ public class SpamAssassinResult {
         return requiredHits;
     }
 
-    public Map<AttributeName, AttributeValue<String>> getHeadersAsAttribute() {
+    public Map<AttributeName, Attribute> getHeadersAsAttribute() {
         return headersAsAttribute;
     }
 
