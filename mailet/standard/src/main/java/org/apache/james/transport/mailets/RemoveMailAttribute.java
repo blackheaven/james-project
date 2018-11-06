@@ -33,7 +33,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Streams;
 
 /**
  * This mailet sets attributes on the Mail.
@@ -73,9 +72,10 @@ public class RemoveMailAttribute extends GenericMailet {
     }
 
     private ImmutableList<AttributeName> getAttributes(String name) {
-        return Streams.stream(Splitter.on(ATTRIBUTE_SEPARATOR_CHAR)
+        return Splitter.on(ATTRIBUTE_SEPARATOR_CHAR)
             .trimResults()
-            .split(name))
+            .splitToList(name)
+            .stream()
             .map(AttributeName::of)
             .collect(Guavate.toImmutableList());
     }
