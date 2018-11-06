@@ -44,11 +44,7 @@ import static org.apache.james.mailrepository.cassandra.MailRepositoryTable.REPO
 import static org.apache.james.mailrepository.cassandra.MailRepositoryTable.SENDER;
 import static org.apache.james.mailrepository.cassandra.MailRepositoryTable.STATE;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Date;
@@ -253,9 +249,7 @@ public class CassandraMailRepositoryMailDAO {
 
     private ByteBuffer toByteBuffer(AttributeValue<?> attributeValue) {
         try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            new ObjectOutputStream(outputStream).writeObject(attributeValue.toJson().toString());
-            return ByteBuffer.wrap(outputStream.toByteArray());
+            return ByteBuffer.wrap(attributeValue.toJson().toString().getBytes("UTF-8"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -265,9 +259,8 @@ public class CassandraMailRepositoryMailDAO {
         try {
             byte[] data = new byte[byteBuffer.remaining()];
             byteBuffer.get(data);
-            ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(data));
-            return AttributeValue.fromJsonString((String) objectInputStream.readObject());
-        } catch (IOException | ClassNotFoundException e) {
+            return AttributeValue.fromJsonString(new String(data, "UTF-8"));
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
