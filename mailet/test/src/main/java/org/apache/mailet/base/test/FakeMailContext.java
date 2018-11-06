@@ -70,18 +70,8 @@ public class FakeMailContext implements MailetContext {
             .recipients(mail.getRecipients())
             .message(mail.getMessage())
             .state(mail.getState())
-            .attributes(buildAttributesMap(mail))
+            .attributes(mail.attributesMap())
             .fromMailet();
-    }
-
-    private static Map<AttributeName, Attribute> buildAttributesMap(Mail mail) {
-        Map<AttributeName, Attribute> result = new HashMap<>();
-        mail.attributeNames()
-            .forEach(attributeName -> 
-                mail.getAttribute(attributeName)
-                    .ifPresent(attribute -> result.put(attributeName, attribute)));
-
-        return ImmutableMap.copyOf(result);
     }
 
     public static FakeMailContext defaultContext() {
