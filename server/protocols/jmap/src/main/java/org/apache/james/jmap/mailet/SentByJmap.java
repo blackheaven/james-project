@@ -37,6 +37,6 @@ public class SentByJmap extends GenericMatcher {
         return AttributeUtils
                 .getAttributeValueFromMail(mail, MailMetadata.MAIL_METADATA_USERNAME_ATTRIBUTE)
                 .map(ignored -> mail.getRecipients())
-                .orElseGet(() -> ImmutableList.of());
+                .orElse(ImmutableList.of());
     }
 }
