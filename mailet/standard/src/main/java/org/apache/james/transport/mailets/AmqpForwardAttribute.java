@@ -131,15 +131,19 @@ public class AmqpForwardAttribute extends GenericMailet {
             .map(Throwing.function(this::toByteStream).sneakyThrow());
     }
 
+    @SuppressWarnings("unchecked")
     private Stream<byte[]> toByteStream(Object attributeContent) throws MailetException {
         if (attributeContent instanceof Map) {
-            return ((Map<String, AttributeValue<byte[]>>) attributeContent).values().stream().map(AttributeValue::getValue);
+            Map<String, AttributeValue<byte[]>> attributeMap = (Map<String, AttributeValue<byte[]>>) attributeContent;
+            return attributeMap.values().stream().map(AttributeValue::getValue);
         }
         if (attributeContent instanceof List) {
-            return ((List<AttributeValue<byte[]>>) attributeContent).stream().map(AttributeValue::getValue);
+            List<AttributeValue<byte[]>> attributeList = (List<AttributeValue<byte[]>>) attributeContent;
+            return attributeList.stream().map(AttributeValue::getValue);
         }
         if (attributeContent instanceof String) {
-            return Stream.of(((String) attributeContent).getBytes(StandardCharsets.UTF_8));
+            String attributeString = (String) attributeContent;
+            return Stream.of(attributeString.getBytes(StandardCharsets.UTF_8));
         }
         throw new MailetException("Invalid attribute found into attribute "
                 + attribute + "class Map or List or String expected but "
