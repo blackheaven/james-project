@@ -109,7 +109,7 @@ public class IsMarkedAsSpamTest {
                     .value("Yes, hits=6.8 required=5.0")
                     .build(),
                 new MailAddress("to@james.org"))
-            .attribute(new Attribute(AttributeName.of("org.apache.james.spamassassin.status"), AttributeValue.of("Yes, AttributeValue.of(hits=6.8 required=5.0")))
+            .attribute(new Attribute(AttributeName.of("org.apache.james.spamassassin.status"), AttributeValue.of("Yes, hits=6.8 required=5.0")))
             .build();
 
         Collection<MailAddress> matches = matcher.match(mail);
