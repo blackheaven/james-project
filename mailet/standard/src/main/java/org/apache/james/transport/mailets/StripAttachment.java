@@ -88,6 +88,12 @@ import com.google.common.collect.ImmutableList;
  * </p>
  */
 public class StripAttachment extends GenericMailet {
+
+    @SuppressWarnings("unchecked")
+    private static final Class<List<String>> LIST_OF_STRINGS = (Class<List<String>>)(Object) List.class;
+    @SuppressWarnings("unchecked")
+    private static final Class<Map<String, byte[]>> MAP_BYTES = (Class<Map<String, byte[]>>)(Object) Map.class;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(StripAttachment.class);
 
     private static final String MULTIPART_MIME_TYPE = "multipart/*";
@@ -336,15 +342,11 @@ public class StripAttachment extends GenericMailet {
     }
 
     private void addFilenameToAttribute(Mail mail, String filename, AttributeName attributeName) {
-        @SuppressWarnings("unchecked")
         List<String> attributeValues = AttributeUtils
-            .getValueAndCastFromMail(mail, attributeName, (Class<List<String>>)(Object) List.class)
-            .orElseGet(() -> {
-                List<String> newAttributeValues = new ArrayList<>();
-                mail.setAttribute(new Attribute(attributeName, AttributeValue.ofAny(newAttributeValues)));
-                return newAttributeValues;
-            });
+            .getValueAndCastFromMail(mail, attributeName, LIST_OF_STRINGS)
+            .orElse(new ArrayList<>());
         attributeValues.add(filename);
+        mail.setAttribute(new Attribute(attributeName, AttributeValue.ofAny(attributeValues)));
     }
 
     private void storeBodyPartAsMailAttribute(BodyPart bodyPart, Mail mail, String fileName) throws IOException, MessagingException {
@@ -359,15 +361,12 @@ public class StripAttachment extends GenericMailet {
         fileNamesToPartContent.put(fileName, byteArrayOutputStream.toByteArray());
     }
 
-    @SuppressWarnings("unchecked")
     public Map<String, byte[]> convertFileNameToPartContent(Mail mail, AttributeName name) {
-        return AttributeUtils
-            .getValueAndCastFromMail(mail, name, (Class<Map<String, byte[]>>)(Object) Map.class)
-            .orElseGet(() -> {
-                Map<String, byte[]> newFileNamesToPartContent = new LinkedHashMap<>();
-                mail.setAttribute(new Attribute(name, AttributeValue.ofAny(newFileNamesToPartContent)));
-                return newFileNamesToPartContent;
-            });
+        Map<String, byte[]> fileNamesToPartContent = AttributeUtils
+            .getValueAndCastFromMail(mail, name, MAP_BYTES)
+            .orElse(new LinkedHashMap<>());
+        mail.setAttribute(new Attribute(name, AttributeValue.ofAny(fileNamesToPartContent)));
+        return fileNamesToPartContent;
     }
 
     private void storeFileNameAsAttribute(Mail mail, String fileName, boolean hasToBeStored) {
