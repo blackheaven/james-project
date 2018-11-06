@@ -87,7 +87,7 @@ public class SieveIntegrationTest {
 
         assertThat(AttributeUtils.getAttributeValueFromMail(mail, AttributeName.of(MailStore.DELIVERY_PATH_PREFIX + RECEIVER_DOMAIN_COM)))
             .isEmpty();
-        assertThat(mail.getState()).contains(Mail.DEFAULT);
+        assertThat(mail.getState()).isEqualTo(Mail.DEFAULT);
     }
 
     @Test

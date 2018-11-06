@@ -63,6 +63,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractRecipientRewriteTable extends GenericMailet {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRecipientRewriteTable.class);
     private static final AttributeName MARKER = AttributeName.of("org.apache.james.transport.mailets.AbstractRecipientRewriteTable.mapped");
+    private static final Attribute ATTRIBUTE_MARKER = new Attribute(MARKER, AttributeValue.of(Boolean.TRUE));
     private DNSService dns;
     private DomainList domainList;
 
@@ -206,7 +207,7 @@ public abstract class AbstractRecipientRewriteTable extends GenericMailet {
                 }
 
                 newMail.setRecipients(recipientsToAddForward);
-                newMail.setAttribute(new Attribute(MARKER, AttributeValue.of(Boolean.TRUE)));
+                newMail.setAttribute(ATTRIBUTE_MARKER);
                 getMailetContext().sendMail(newMail);
             } finally {
                 newMail.dispose();

@@ -54,6 +54,8 @@ import org.slf4j.LoggerFactory;
  */
 @Experimental
 public class FromRepository extends GenericMailet {
+    private static final Attribute ATTRIBUTE_FROM_REPOSITORY = new Attribute(AttributeName.of("FromRepository"), AttributeValue.of(Boolean.TRUE));
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ManageSieveMailet.class);
 
     /** The repository from where this mailet spools mail. */
@@ -112,7 +114,7 @@ public class FromRepository extends GenericMailet {
                 if (mail != null && mail.getRecipients() != null) {
                     LOGGER.debug("Spooling mail {} from {}", mail.getName(), repositoryPath);
 
-                    mail.setAttribute(new Attribute(AttributeName.of("FromRepository"), AttributeValue.of(Boolean.TRUE)));
+                    mail.setAttribute(ATTRIBUTE_FROM_REPOSITORY);
                     mail.setState(processor);
                     getMailetContext().sendMail(mail);
                     if (delete) {
