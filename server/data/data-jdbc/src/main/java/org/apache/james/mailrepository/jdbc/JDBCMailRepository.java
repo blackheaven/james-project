@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -473,7 +474,10 @@ public class JDBCMailRepository extends AbstractMailRepository {
                             if (mc instanceof MailImpl) {
                                 oos.writeObject(((MailImpl) mc).getAttributesRaw());
                             } else {
-                                oos.writeObject(mc.attributesMap());
+                                oos.writeObject(mc.attributes()
+                                    .collect(Collectors.toMap(
+                                        attribute -> attribute.getName().asString(),
+                                        attribute -> attribute.getValue().value())));
                             }
                             oos.flush();
                             ByteArrayInputStream attrInputStream = new ByteArrayInputStream(baos.toByteArray());
