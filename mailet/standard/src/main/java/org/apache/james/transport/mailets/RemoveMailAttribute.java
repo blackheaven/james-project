@@ -83,8 +83,6 @@ public class RemoveMailAttribute extends GenericMailet {
     @Override
     public void service(Mail mail) throws MessagingException {
         Preconditions.checkNotNull(mail);
-        for (AttributeName attributeToRemove : attributesToRemove) {
-            mail.removeAttribute(attributeToRemove);
-        }
+        attributesToRemove.forEach(mail::removeAttribute);
     }
 }
