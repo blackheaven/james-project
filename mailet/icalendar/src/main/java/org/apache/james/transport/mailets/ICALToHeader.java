@@ -101,17 +101,18 @@ public class ICALToHeader extends GenericMailet {
         }
         try {
             getCalendarMap(mail)
-                .ifPresent(calendarMap -> {
-                    calendarMap
-                        .values()
-                        .stream()
-                        .findAny()
-                        .ifPresent(Throwing.<Calendar>consumer(calendar -> writeToHeaders(calendar, mail))
-                            .sneakyThrow());
-                });
+                .ifPresent(calendarMap -> writeFirstValueFromCalendarMap(mail, calendarMap));
         } catch (ClassCastException e) {
             LOGGER.error("Received a mail with {} not being an ICAL object for mail {}", attribute, mail.getName(), e);
         }
+    }
+
+    public void writeFirstValueFromCalendarMap(Mail mail, Map<String, Calendar> calendarMap) {
+        calendarMap
+            .values()
+            .stream()
+            .findAny()
+            .ifPresent(Throwing.<Calendar>consumer(calendar -> writeToHeaders(calendar, mail)).sneakyThrow());
     }
 
     @VisibleForTesting

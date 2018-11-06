@@ -67,6 +67,9 @@ import net.fortuna.ical4j.model.Calendar;
  * </p>
  */
 public class ICalendarParser extends GenericMailet {
+    @SuppressWarnings("unchecked")
+    private static final Class<Map<String, byte[]>> MAP_BYTES_CLASS = (Class<Map<String, byte[]>>)(Object) Map.class;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ICalendarParser.class);
 
     public static final String SOURCE_ATTRIBUTE_PARAMETER_NAME = "sourceAttribute";
@@ -79,45 +82,48 @@ public class ICalendarParser extends GenericMailet {
         ICal4JConfigurator.configure();
     }
 
-    private String sourceAttributeName;
-    private String destinationAttributeName;
+    private AttributeName sourceAttributeName;
+    private AttributeName destinationAttributeName;
 
     @Override
     public void init() throws MessagingException {
-        sourceAttributeName = getInitParameter(SOURCE_ATTRIBUTE_PARAMETER_NAME, SOURCE_ATTRIBUTE_PARAMETER_DEFAULT_VALUE);
-        if (Strings.isNullOrEmpty(sourceAttributeName)) {
+        String sourceAttributeNameRaw = getInitParameter(SOURCE_ATTRIBUTE_PARAMETER_NAME, SOURCE_ATTRIBUTE_PARAMETER_DEFAULT_VALUE);
+        if (Strings.isNullOrEmpty(sourceAttributeNameRaw)) {
             throw new MessagingException("source attribute cannot be empty");
         }
-        destinationAttributeName = getInitParameter(DESTINATION_ATTRIBUTE_PARAMETER_NAME, DESTINATION_ATTRIBUTE_PARAMETER_DEFAULT_VALUE);
-        if (Strings.isNullOrEmpty(destinationAttributeName)) {
+        sourceAttributeName = AttributeName.of(sourceAttributeNameRaw);
+        String destinationAttributeNameRaw = getInitParameter(DESTINATION_ATTRIBUTE_PARAMETER_NAME, DESTINATION_ATTRIBUTE_PARAMETER_DEFAULT_VALUE);
+        if (Strings.isNullOrEmpty(destinationAttributeNameRaw)) {
             throw new MessagingException("destination attribute cannot be empty");
         }
+        destinationAttributeName = AttributeName.of(destinationAttributeNameRaw);
     }
 
     @VisibleForTesting
-    public String getSourceAttributeName() {
+    public AttributeName getSourceAttributeName() {
         return sourceAttributeName;
     }
 
     @VisibleForTesting
-    public String getDestinationAttributeName() {
+    public AttributeName getDestinationAttributeName() {
         return destinationAttributeName;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void service(Mail mail) throws MessagingException {
         AttributeUtils
-            .getValueAndCastFromMail(mail, AttributeName.of(sourceAttributeName), (Class<Map<String, byte[]>>)(Object) Map.class)
-            .ifPresent(icsAttachments -> {
-                Map<String, Calendar> calendars = icsAttachments.entrySet()
-                    .stream()
-                    .flatMap(entry -> createCalendar(entry.getKey(), entry.getValue()))
-                    .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
+            .getValueAndCastFromMail(mail, sourceAttributeName, MAP_BYTES_CLASS)
+            .ifPresent(icsAttachments -> setDestinationAttribute(mail, icsAttachments));
 
-                mail.setAttribute(new Attribute(AttributeName.of(destinationAttributeName), AttributeValue.ofAny(calendars)));
-            });
+    }
 
+    public void setDestinationAttribute(Mail mail, Map<String, byte[]> icsAttachments) {
+        Map<String, Calendar> calendars = icsAttachments.entrySet()
+            .stream()
+            .flatMap(entry -> createCalendar(entry.getKey(), entry.getValue()))
+            .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
+
+        mail.setAttribute(new Attribute(destinationAttributeName, AttributeValue.ofAny(calendars)));
     }
 
     @Override
