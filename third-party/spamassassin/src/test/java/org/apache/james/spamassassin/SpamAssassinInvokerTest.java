@@ -81,7 +81,8 @@ public class SpamAssassinInvokerTest {
 
         SpamAssassinResult result = testee.scanMail(mimeMessage, USER);
 
-        assertThat(result.getHeadersAsAttribute().get(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME).getValue()).isEqualTo("YES");
+        assertThat(result.getHeadersAsAttribute().get(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME).getValue().getValue())
+            .isEqualTo("YES");
     }
 
     @Test
@@ -105,7 +106,8 @@ public class SpamAssassinInvokerTest {
 
         SpamAssassinResult result = testee.scanMail(mimeMessage, USER);
 
-        assertThat(result.getHeadersAsAttribute().get(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME).getValue()).isEqualTo("YES");
+        assertThat(result.getHeadersAsAttribute().get(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME).getValue().getValue())
+            .isEqualTo("YES");
     }
 
     @Test
@@ -127,7 +129,8 @@ public class SpamAssassinInvokerTest {
 
         SpamAssassinResult result = testee.scanMail(mimeMessage, USER);
 
-        assertThat(result.getHeadersAsAttribute().get(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME).getValue()).isEqualTo("NO");
+        assertThat(result.getHeadersAsAttribute().get(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME).getValue().getValue())
+            .isEqualTo("NO");
     }
 
     @Test
@@ -142,6 +145,7 @@ public class SpamAssassinInvokerTest {
 
         SpamAssassinResult result = testee.scanMail(mimeMessage, USER);
 
-        assertThat(result.getHeadersAsAttribute().get(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME).getValue()).isEqualTo("NO");
+        assertThat(result.getHeadersAsAttribute().get(SpamAssassinResult.FLAG_MAIL_ATTRIBUTE_NAME).getValue().getValue())
+            .isEqualTo("NO");
     }
 }
