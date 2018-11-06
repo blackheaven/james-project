@@ -43,7 +43,7 @@ public class SentByMailet extends GenericMatcher {
     public Collection<MailAddress> match(Mail mail) {
         return AttributeUtils
                 .getAttributeValueFromMail(mail, Mail.SENT_BY_MAILET)
-                .map(s -> mail.getRecipients())
-                .orElseGet(() -> ImmutableList.of());
+                .map(ignored -> mail.getRecipients())
+                .orElse(ImmutableList.of());
     }
 }

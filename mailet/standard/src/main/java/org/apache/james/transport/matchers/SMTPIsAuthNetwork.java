@@ -21,7 +21,6 @@ package org.apache.james.transport.matchers;
 
 import java.util.Collection;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.apache.james.core.MailAddress;
 import org.apache.mailet.AttributeName;
@@ -51,14 +50,8 @@ public class SMTPIsAuthNetwork extends GenericMatcher {
     public Collection<MailAddress> match(Mail mail) {
         return AttributeUtils
                 .getValueAndCastFromMail(mail, SMTP_AUTH_NETWORK_NAME, String.class)
-                .flatMap(relayingAllowed -> {
-                    if (Objects.equals(relayingAllowed, "true")) {
-                        return Optional.of(mail.getRecipients());
-                    } else {
-                        return Optional.empty();
-                    }
-                })
-                .map(e -> mail.getRecipients())
-                .orElseGet(() -> ImmutableList.of());
+                .filter(relayingAllowed -> Objects.equals(relayingAllowed, "true"))
+                .map(ignored -> mail.getRecipients())
+                .orElse(ImmutableList.of());
     }
 }

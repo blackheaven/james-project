@@ -51,6 +51,6 @@ public class SMTPAuthSuccessful extends GenericMatcher {
         return AttributeUtils
                 .getAttributeValueFromMail(mail, Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME)
                 .map(s -> mail.getRecipients())
-                .orElseGet(() -> ImmutableList.of());
+                .orElse(ImmutableList.of());
     }
 }
