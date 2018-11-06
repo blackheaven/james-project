@@ -129,3 +129,20 @@ $ nodetool stop
 $ nodetool upgradesstables apache_james
 ```
 
+### JMSMailQueue
+
+Date: ?/11/2018
+
+SHA-1: ?
+
+JIRA: https://issues.apache.org/jira/browse/JAMES-2578
+
+Required: Yes
+
+Concerned products: Any product with a JMS implementation active
+
+#### Upgrade procedure
+
+The upgrade should be done with an empty JMS queue.
+
+To empty the JMS queue, start a James with SMTP, LMTP & JMAP being disabled, and wait for the queue to be empty.
