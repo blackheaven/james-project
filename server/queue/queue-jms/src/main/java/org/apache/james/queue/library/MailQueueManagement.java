@@ -152,7 +152,7 @@ public class MailQueueManagement extends StandardMBean implements MailQueueManag
             Map<String, String> attrs = m.attributes()
                     .collect(ImmutableMap.toImmutableMap(
                             attribute -> attribute.getName().asString(),
-                            attribute -> attribute.getValue().toString()));
+                            attribute -> attribute.getValue().getValue().toString()));
             map.put(names[9], attrs.toString());
             map.put(names[10], nextDelivery);
             CompositeDataSupport c = new CompositeDataSupport(new CompositeType(Mail.class.getName(), "Queue Mail", names, descs, types), map);
