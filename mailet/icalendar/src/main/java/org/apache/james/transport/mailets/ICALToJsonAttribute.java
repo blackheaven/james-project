@@ -48,8 +48,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.fge.lambdas.Throwing;
-import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 
 import net.fortuna.ical4j.model.Calendar;
 
@@ -163,27 +163,28 @@ public class ICALToJsonAttribute extends GenericMailet {
         }
 
         retrieveSender(mail)
-            .map(sender -> {
-                try {
-                    getCalendarMap(mail)
-                        .ifPresent(calendars -> {
-                            getRawCalendarMap(mail)
-                                .ifPresent(rawCalendars -> {
-                                    Map<String, byte[]> jsonsInByteForm = calendars.entrySet()
-                                        .stream()
-                                        .flatMap(calendar -> toJson(calendar, rawCalendars, mail, sender))
-                                        .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
-                                    mail.setAttribute(new Attribute(AttributeName.of(destinationAttributeName), AttributeValue.ofAny(jsonsInByteForm)));
-                                });
-                        });
-                } catch (ClassCastException e) {
-                    LOGGER.error("Received a mail with {} not being an ICAL object for mail {}", sourceAttributeName, mail.getName(), e);
-                }
-                return null;
-            }).orElseGet(() -> {
+            .map(sender -> fillDestinationAttribute(mail, sender))
+            .orElseGet(() -> {
                 LOGGER.info("Skipping {} because no sender and no from", mail.getName());
                 return null;
             });
+    }
+
+    public Object fillDestinationAttribute(Mail mail, String sender) {
+        try {
+            getCalendarMap(mail).ifPresent(calendars -> {
+                getRawCalendarMap(mail).ifPresent(rawCalendars -> {
+                    Map<String, byte[]> jsonsInByteForm = calendars.entrySet()
+                        .stream()
+                        .flatMap(calendar -> toJson(calendar, rawCalendars, mail, sender))
+                        .collect(ImmutableMap.toImmutableMap(Pair::getKey, Pair::getValue));
+                    mail.setAttribute(new Attribute(AttributeName.of(destinationAttributeName), AttributeValue.ofAny(jsonsInByteForm)));
+                });
+            });
+        } catch (ClassCastException e) {
+            LOGGER.error("Received a mail with {} not being an ICAL object for mail {}", sourceAttributeName, mail.getName(), e);
+        }
+        return null;
     }
 
     private Optional<Map<String, Calendar>> getCalendarMap(Mail mail) {
