@@ -56,6 +56,7 @@ public class PostDequeueDecorator extends MailQueueItemDecorator {
     private static final Logger LOG = LoggerFactory.getLogger(PostDequeueDecorator.class);
     private static final String IS_DELIVERED = "DELIVERED";
     private static final AttributeName IS_DELIVERED_NAME = AttributeName.of(IS_DELIVERED);
+    private static final Attribute IS_DELIVERED_ATTRIBUTE = new Attribute(IS_DELIVERED_NAME, AttributeValue.of(IS_DELIVERED));
 
     private final MailboxManager mailboxManager;
     private final Factory messageIdFactory;
@@ -90,7 +91,7 @@ public class PostDequeueDecorator extends MailQueueItemDecorator {
                 try {
                     MailboxSession mailboxSession = mailboxManager.createSystemSession(username.get());
                     moveFromOutboxToSentWithSeenFlag(messageId.get().instantiate(messageIdFactory), mailboxSession);
-                    getMail().setAttribute(new Attribute(IS_DELIVERED_NAME, AttributeValue.of(IS_DELIVERED)));
+                    getMail().setAttribute(IS_DELIVERED_ATTRIBUTE);
                 } catch (MailShouldBeInOutboxException e) {
                     LOG.info("Message does not exist on Outbox anymore, it could have already been sent", e);
                 } catch (MailboxException e) {
