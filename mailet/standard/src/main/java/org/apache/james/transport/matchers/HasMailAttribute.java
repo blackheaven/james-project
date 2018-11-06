@@ -43,7 +43,7 @@ import org.apache.mailet.base.GenericMatcher;
  **/
 public class HasMailAttribute extends GenericMatcher {
     
-    private String attributeName;
+    private AttributeName attributeName;
 
     @Override
     public String getMatcherInfo() {
@@ -52,7 +52,7 @@ public class HasMailAttribute extends GenericMatcher {
 
     @Override
     public void init() throws MessagingException {
-        attributeName = getCondition();
+        attributeName = AttributeName.of(getCondition());
     }
 
     /**
@@ -63,7 +63,7 @@ public class HasMailAttribute extends GenericMatcher {
      **/
     @Override
     public Collection<MailAddress> match(Mail mail) throws MessagingException {
-        if (mail.getAttribute(AttributeName.of(attributeName)).isPresent()) {
+        if (mail.getAttribute(attributeName).isPresent()) {
             return mail.getRecipients();
         } 
         return null;
