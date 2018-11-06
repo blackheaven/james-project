@@ -70,7 +70,7 @@ public class HasException extends GenericMatcher {
         return AttributeUtils
                 .getValueAndCastFromMail(mail, Mail.MAILET_ERROR_ATTRIBUTE_NAME, exceptionClass)
                 .map(e -> mail.getRecipients())
-                .orElseGet(() -> ImmutableList.of());
+                .orElse(ImmutableList.of());
     }
 
     @Override
