@@ -46,6 +46,7 @@ import static org.apache.james.mailrepository.cassandra.MailRepositoryTable.STAT
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -248,18 +249,14 @@ public class CassandraMailRepositoryMailDAO {
     }
 
     private ByteBuffer toByteBuffer(AttributeValue<?> attributeValue) {
-        try {
-            return ByteBuffer.wrap(attributeValue.toJson().toString().getBytes("UTF-8"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return ByteBuffer.wrap(attributeValue.toJson().toString().getBytes(StandardCharsets.UTF_8));
     }
 
     private AttributeValue<?> fromByteBuffer(ByteBuffer byteBuffer) {
         try {
             byte[] data = new byte[byteBuffer.remaining()];
             byteBuffer.get(data);
-            return AttributeValue.fromJsonString(new String(data, "UTF-8"));
+            return AttributeValue.fromJsonString(new String(data, StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
