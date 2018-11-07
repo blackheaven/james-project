@@ -61,7 +61,9 @@ class MailDTOTest {
 
     @Test
     void mailDtoShouldBeSerializedToTheRightFormat() throws Exception {
-        assertThatJson(objectMapper.writeValueAsString(mailDTO1()))
+        String writeValueAsString = objectMapper.writeValueAsString(mailDTO1());
+        System.out.println(writeValueAsString);
+        assertThatJson(writeValueAsString)
             .isEqualTo(getSystemResourceAsString("json/mail1.json"));
     }
 
