@@ -60,7 +60,7 @@ public class AddDefaultAttributesMessageHook implements JamesMessageHook {
             }
 
             if (session.isRelayingAllowed()) {
-                mail.setAttribute(new Attribute(SMTP_AUTH_NETWORK_NAME, AttributeValue.of("true")));
+                mail.setAttribute(new Attribute(SMTP_AUTH_NETWORK_NAME, AttributeValue.of(true)));
             }
         }
         return HookResult.DECLINED;
