@@ -1237,7 +1237,7 @@ public class MessageProcessor extends ProcessorAbstract {
         aMail.setAttribute(new Attribute(AttributeName.of(getAttributePrefix() + "folderName"), AttributeValue.of(getMessageIn().getFolder().getFullName())));
 
         if (isRemoteRecipient()) {
-            aMail.setAttribute(new Attribute(AttributeName.of(getAttributePrefix() + "isRemoteRecipient"), AttributeValue.of((String) null)));
+            aMail.removeAttribute(AttributeName.of(getAttributePrefix() + "isRemoteRecipient"));
         }
 
         if (isUserUndefined()) {
