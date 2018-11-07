@@ -27,12 +27,13 @@ import org.apache.mailet.Mail;
 
 public class DeliveryRetriesHelper {
 
+    private static final int NONE_YET = 0;
     public static final AttributeName DELIVERY_RETRY_COUNT = AttributeName.of("delivery_retry_count");
 
     public static int retrieveRetries(Mail mail) {
         return AttributeUtils
                 .getValueAndCastFromMail(mail, DELIVERY_RETRY_COUNT, Integer.class)
-                .orElse(0);
+                .orElse(NONE_YET);
     }
 
     public static void initRetries(Mail mail) {
