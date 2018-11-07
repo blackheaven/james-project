@@ -66,7 +66,8 @@ public class ICalendarParserTest {
             .mailetName("ICalendarParser")
             .build());
 
-        assertThat(mailet.getSourceAttributeName()).isEqualTo(ICalendarParser.SOURCE_ATTRIBUTE_PARAMETER_DEFAULT_VALUE);
+        assertThat(mailet.getSourceAttributeName().asString())
+            .isEqualTo(ICalendarParser.SOURCE_ATTRIBUTE_PARAMETER_DEFAULT_VALUE);
     }
 
     @Test
@@ -75,7 +76,8 @@ public class ICalendarParserTest {
             .mailetName("ICalendarParser")
             .build());
 
-        assertThat(mailet.getDestinationAttributeName()).isEqualTo(ICalendarParser.DESTINATION_ATTRIBUTE_PARAMETER_DEFAULT_VALUE);
+        assertThat(mailet.getDestinationAttributeName().asString())
+            .isEqualTo(ICalendarParser.DESTINATION_ATTRIBUTE_PARAMETER_DEFAULT_VALUE);
     }
 
     @Test
@@ -86,7 +88,8 @@ public class ICalendarParserTest {
             .setProperty(ICalendarParser.SOURCE_ATTRIBUTE_PARAMETER_NAME, sourceAttribute)
             .build());
 
-        assertThat(mailet.getSourceAttributeName()).isEqualTo(sourceAttribute);
+        assertThat(mailet.getSourceAttributeName().asString())
+            .isEqualTo(sourceAttribute);
     }
 
     @Test
@@ -97,7 +100,8 @@ public class ICalendarParserTest {
             .setProperty(ICalendarParser.DESTINATION_ATTRIBUTE_PARAMETER_NAME, destinationAttribute)
             .build());
 
-        assertThat(mailet.getDestinationAttributeName()).isEqualTo(destinationAttribute);
+        assertThat(mailet.getDestinationAttributeName().asString())
+            .isEqualTo(destinationAttribute);
     }
 
     @Test
