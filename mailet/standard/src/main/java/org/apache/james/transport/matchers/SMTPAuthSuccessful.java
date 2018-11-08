@@ -50,7 +50,7 @@ public class SMTPAuthSuccessful extends GenericMatcher {
     public Collection<MailAddress> match(Mail mail) {
         return AttributeUtils
                 .getAttributeValueFromMail(mail, Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME)
-                .map(s -> mail.getRecipients())
+                .map(ignored -> mail.getRecipients())
                 .orElse(ImmutableList.of());
     }
 }

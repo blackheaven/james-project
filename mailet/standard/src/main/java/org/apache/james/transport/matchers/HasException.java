@@ -69,7 +69,7 @@ public class HasException extends GenericMatcher {
     public Collection<MailAddress> match(Mail mail) throws MessagingException {
         return AttributeUtils
                 .getValueAndCastFromMail(mail, Mail.MAILET_ERROR_ATTRIBUTE_NAME, exceptionClass)
-                .map(e -> mail.getRecipients())
+                .map(ignored -> mail.getRecipients())
                 .orElse(ImmutableList.of());
     }
 

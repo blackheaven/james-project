@@ -63,6 +63,9 @@ import org.slf4j.LoggerFactory;
  */
 @Experimental
 public class RecoverAttachment extends GenericMailet {
+    @SuppressWarnings("unchecked")
+    private static final Class<Map<String, byte[]>> MAP_BYTES = (Class<Map<String, byte[]>>)(Object) Map.class;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(RecoverAttachment.class);
 
     public static final String ATTRIBUTE_PARAMETER_NAME = "attribute";
@@ -92,8 +95,7 @@ public class RecoverAttachment extends GenericMailet {
      */
     @Override
     public void service(Mail mail) throws MailetException {
-        @SuppressWarnings("unchecked")
-        Optional<Map<String, byte[]>> attachments = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(attributeName), (Class<Map<String, byte[]>>)(Object) Map.class);
+        Optional<Map<String, byte[]>> attachments = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(attributeName), MAP_BYTES);
         if (attachments.isPresent()) {
 
             MimeMessage message;
