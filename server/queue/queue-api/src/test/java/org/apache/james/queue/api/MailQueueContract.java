@@ -255,8 +255,9 @@ public interface MailQueueContract {
     default void queueShouldPreserveNonStringMailAttribute() throws Exception {
         AttributeName attributeName = AttributeName.of("any");
         SerializableAttribute attributeValue = new SerializableAttribute("value");
+        Attribute attribute = new Attribute(attributeName, AttributeValue.ofAny(attributeValue));
         enQueue(defaultMail()
-                .attribute(new Attribute(attributeName, AttributeValue.ofAny(attributeValue)))
+                .attribute(attribute)
                 .build());
 
         MailQueue.MailQueueItem mailQueueItem = getMailQueue().deQueue();
