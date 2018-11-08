@@ -61,6 +61,9 @@ import net.fortuna.ical4j.model.component.VEvent;
  * </pre>
  */
 public class ICALToHeader extends GenericMailet {
+    @SuppressWarnings("unchecked")
+    private static final Class<Map<String, Calendar>> MAP_CALENDAR = (Class<Map<String, Calendar>>)(Object) Map.class;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ICALToHeader.class);
 
     private static final String CONFIG_ATTRIBUTE_PROPERTY = "attribute";
@@ -120,9 +123,8 @@ public class ICALToHeader extends GenericMailet {
         return attribute;
     }
 
-    @SuppressWarnings("unchecked")
     private Optional<Map<String, Calendar>> getCalendarMap(Mail mail) {
-        return AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(attribute), (Class<Map<String, Calendar>>)(Object) Map.class);
+        return AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(attribute), MAP_CALENDAR);
     }
 
     private void writeToHeaders(Calendar calendar, Mail mail) throws MessagingException {
