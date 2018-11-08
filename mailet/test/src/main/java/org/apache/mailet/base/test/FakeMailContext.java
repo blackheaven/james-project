@@ -114,7 +114,7 @@ public class FakeMailContext implements MailetContext {
 
         public static class Builder {
             private MailAddress sender;
-            private Optional<Collection<MailAddress>> recipients = Optional.empty();
+            private Optional<ImmutableList<MailAddress>> recipients = Optional.empty();
             private MimeMessage msg;
             private Map<AttributeName, Attribute> attributes = new HashMap<>();
             private Optional<String> state = Optional.empty();
@@ -136,7 +136,7 @@ public class FakeMailContext implements MailetContext {
             }
 
             public Builder recipients(Collection<MailAddress> recipients) {
-                this.recipients = Optional.of(recipients);
+                this.recipients = Optional.of(ImmutableList.copyOf(recipients));
                 return this;
             }
 
@@ -146,7 +146,7 @@ public class FakeMailContext implements MailetContext {
             }
 
             public Builder recipients(MailAddress... recipients) {
-                this.recipients = Optional.<Collection<MailAddress>>of(ImmutableList.copyOf(recipients));
+                this.recipients = Optional.of(ImmutableList.copyOf(recipients));
                 return this;
             }
 
@@ -202,12 +202,12 @@ public class FakeMailContext implements MailetContext {
         private final String state;
         private final Optional<Delay> delay;
 
-        private SentMail(MailAddress sender, Collection<MailAddress> recipients, MimeMessage msg, ImmutableMap<AttributeName, Attribute> immutableMap, String state, Optional<Delay> delay) throws MessagingException {
+        private SentMail(MailAddress sender, ImmutableList<MailAddress> recipients, MimeMessage msg, ImmutableMap<AttributeName, Attribute> attributes, String state, Optional<Delay> delay) throws MessagingException {
             this.sender = sender;
-            this.recipients = ImmutableList.copyOf(recipients);
+            this.recipients = recipients;
             this.msg = tryCopyMimeMessage(msg);
             this.subject = getSubject(msg);
-            this.attributes = ImmutableMap.copyOf(immutableMap);
+            this.attributes = attributes;
             this.state = state;
             this.delay = delay;
         }
