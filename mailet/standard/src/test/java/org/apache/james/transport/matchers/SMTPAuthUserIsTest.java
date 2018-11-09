@@ -27,6 +27,7 @@ import java.util.Collection;
 import javax.mail.MessagingException;
 
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
@@ -52,7 +53,7 @@ public class SMTPAuthUserIsTest extends AbstractHasMailAttributeTest {
     @Override
     protected void init() {
         super.init();
-        setMailAttributeName(Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME);
+        setMailAttributeName(AttributeName.of(Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME));
         setMailAttributeValue(AttributeValue.of("test@james.apache.org"));
     }
     

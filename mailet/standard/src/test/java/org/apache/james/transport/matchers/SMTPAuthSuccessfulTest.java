@@ -25,6 +25,7 @@ import java.util.Collection;
 
 import org.apache.james.core.MailAddress;
 import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.MailAddressFixture;
@@ -51,7 +52,9 @@ public class SMTPAuthSuccessfulTest {
         MailAddress recipient = MailAddressFixture.OTHER_AT_JAMES;
         FakeMail fakeMail = FakeMail.builder()
             .recipient(recipient)
-            .attribute(new Attribute(Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME, AttributeValue.of("other")))
+            .attribute(new Attribute(
+                AttributeName.of(Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME),
+                AttributeValue.of("other")))
             .build();
 
         Collection<MailAddress> results =  testee.match(fakeMail);

@@ -25,6 +25,7 @@ import java.util.Collection;
 
 import org.apache.james.core.MailAddress;
 import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.MailAddressFixture;
@@ -51,7 +52,7 @@ public class SentByMailetTest {
         MailAddress recipient = MailAddressFixture.ANY_AT_JAMES;
         FakeMail fakeMail = FakeMail.builder()
             .recipient(recipient)
-            .attribute(new Attribute(Mail.SENT_BY_MAILET, AttributeValue.of("true")))
+            .attribute(new Attribute(AttributeName.of(Mail.SENT_BY_MAILET), AttributeValue.of("true")))
             .build();
 
         Collection<MailAddress> results =  testee.match(fakeMail);
@@ -85,7 +86,7 @@ public class SentByMailetTest {
     public void matchShouldReturnEmptyCollectionWhenAuthUserAttributeIsPresentAndThereIsNoRecipient() throws Exception {
         FakeMail fakeMail = FakeMail.builder()
             .recipients()
-            .attribute(new Attribute(Mail.SENT_BY_MAILET, AttributeValue.of("true")))
+            .attribute(new Attribute(AttributeName.of(Mail.SENT_BY_MAILET), AttributeValue.of("true")))
             .build();
 
         Collection<MailAddress> results =  testee.match(fakeMail);
