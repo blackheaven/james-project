@@ -331,7 +331,51 @@ class AttributeValueTest {
     }
 
     @Nested
-    class QueueSerializableTest {
+    class ByteArraySerialization {
+        @Test
+        void byteArrayShouldBeSerializedAndBack() {
+            AttributeValue<byte[]> expected = AttributeValue.of("value".getBytes());
+
+            JsonNode json = expected.toJson();
+            AttributeValue<?> actual = AttributeValue.fromJson(json);
+
+            assertThat(actual).isEqualTo(expected);
+        }
+
+        @Test
+        void emptyByteArrayShouldBeSerializedAndBack() {
+            AttributeValue<byte[]> expected = AttributeValue.of("".getBytes());
+
+            JsonNode json = expected.toJson();
+            AttributeValue<?> actual = AttributeValue.fromJson(json);
+
+            assertThat(actual).isEqualTo(expected);
+        }
+
+        @Test
+        void nullByteArrayShouldThrowAnException() {
+            assertThatNullPointerException().
+                isThrownBy(() -> AttributeValue.of((byte[]) null));
+        }
+
+        @Test
+        void fromJsonStringShouldReturnByteArrayAttributeValueWhenByteArray() throws Exception {
+            AttributeValue<byte[]> expected = AttributeValue.of("value".getBytes());
+
+            AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"ByteArraySerializer\",\"value\": \"dmFsdWU=\"}");
+
+            assertThat(actual).isEqualTo(expected);
+        }
+
+        @Test
+        void fromJsonByteArrayShouldThrowOnMalformedFormattedJson() {
+            assertThatIllegalStateException()
+                .isThrownBy(() -> AttributeValue.fromJsonString("{\"serializer\":\"ByteArraySerializer\",\"value\": []}"));
+        }
+    }
+
+    @Nested
+    class ArbitrarySerializableTest {
         @Test
         void queueSerializableShouldBeSerializedAndBack() {
             AttributeValue<TestArbitrarySerializable> expected = AttributeValue.of(new TestArbitrarySerializable(42));

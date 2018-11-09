@@ -78,6 +78,11 @@ public class AttributeValue<T> {
         return new AttributeValue<>(value, Serializer.DOUBLE_SERIALIZER);
     }
 
+    public static AttributeValue<byte[]> of(byte[] value) {
+        Preconditions.checkNotNull(value, "value should not be null");
+        return new AttributeValue<>(value, Serializer.BYTE_ARRAY_SERIALIZER);
+    }
+
     public static AttributeValue<MessageIdDto> of(MessageIdDto value) {
         Preconditions.checkNotNull(value, "value should not be null");
         return new AttributeValue<>(value, Serializer.MESSAGE_ID_DTO_SERIALIZER);
@@ -137,6 +142,9 @@ public class AttributeValue<T> {
         }
         if (value instanceof Double) {
             return of((Double) value);
+        }
+        if (value instanceof byte[]) {
+            return of((byte[]) value);
         }
         if (value instanceof Collection<?>) {
             return of(((Collection<AttributeValue<?>>) value));

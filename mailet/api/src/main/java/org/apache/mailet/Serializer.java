@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +80,7 @@ public interface Serializer<T> {
                     LONG_SERIALIZER,
                     FLOAT_SERIALIZER,
                     DOUBLE_SERIALIZER,
+                    BYTE_ARRAY_SERIALIZER,
                     MESSAGE_ID_DTO_SERIALIZER,
                     new Serializer.ArbitrarySerializableSerializer<>(),
                     URL_SERIALIZER,
@@ -265,6 +267,30 @@ public interface Serializer<T> {
     }
 
     Serializer<Double> DOUBLE_SERIALIZER = new DoubleSerializer();
+
+    class ByteArraySerializer implements Serializer<byte[]> {
+        @Override
+        public JsonNode serialize(byte[] object) {
+            return STRING_SERIALIZER.serialize(Base64.getEncoder().encodeToString(object));
+        }
+
+        @Override
+        public Optional<byte[]> deserialize(JsonNode json) {
+            return STRING_SERIALIZER.deserialize(json).map(byteArray -> Base64.getDecoder().decode(byteArray));
+        }
+
+        @Override
+        public String getName() {
+            return "ByteArraySerializer";
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return this.getClass() == other.getClass();
+        }
+    }
+
+    Serializer<byte[]> BYTE_ARRAY_SERIALIZER = new ByteArraySerializer();
 
     class MessageIdDtoSerializer implements Serializer<MessageIdDto> {
 
