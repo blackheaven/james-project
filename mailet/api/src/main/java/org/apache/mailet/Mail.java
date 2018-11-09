@@ -148,6 +148,7 @@ public interface Mail extends Serializable, Cloneable {
      * @since Mailet API v3.2.0
      * @return the sender of this message wrapped in an optional
      */
+    @SuppressWarnings("deprecation")
     default MaybeSender getMaybeSender() {
         return MaybeSender.of(getSender());
     }

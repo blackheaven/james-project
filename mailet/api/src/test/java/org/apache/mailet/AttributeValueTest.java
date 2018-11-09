@@ -430,9 +430,14 @@ class AttributeValueTest {
     @Nested
     class ListSerialization {
         @Test
-        void nullStringListShouldThrowAnException() {
-            assertThatNullPointerException()
-                .isThrownBy(() -> AttributeValue.ofAny((List<String>) null));
+        void nullListShouldThrowAnException() {
+            assertThatNullPointerException().
+                isThrownBy(() -> AttributeValue.of((List<AttributeValue<?>>) null));
+        }
+
+        @Test
+        void stringListShouldThrowAnException() {
+            assertThatThrownBy(() -> AttributeValue.ofAny((List<String>) ImmutableList.of("not an AttributeValue")));
         }
 
         @Test
@@ -487,6 +492,11 @@ class AttributeValueTest {
         void nullMapShouldThrowAnException() {
             assertThatNullPointerException()
                 .isThrownBy(() -> AttributeValue.of((Map) null));
+        }
+
+        @Test
+        void stringMapShouldThrowAnException() {
+            assertThatThrownBy(() -> AttributeValue.ofAny(ImmutableMap.of("not an", "AttributeValue")));
         }
 
         @Test
