@@ -22,6 +22,7 @@ package org.apache.james.transport.matchers;
 import java.util.Collection;
 
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
@@ -42,7 +43,7 @@ public class SentByMailet extends GenericMatcher {
     @Override
     public Collection<MailAddress> match(Mail mail) {
         return AttributeUtils
-                .getAttributeValueFromMail(mail, Mail.SENT_BY_MAILET)
+                .getAttributeValueFromMail(mail, AttributeName.of(Mail.SENT_BY_MAILET))
                 .map(ignored -> mail.getRecipients())
                 .orElse(ImmutableList.of());
     }

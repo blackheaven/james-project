@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.StringTokenizer;
 
 import org.apache.james.core.MailAddress;
+import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMatcher;
@@ -59,7 +60,7 @@ public class SMTPAuthUserIs extends GenericMatcher {
 
     @Override
     public Collection<MailAddress> match(Mail mail) {
-        Optional<String> authUser = AttributeUtils.getValueAndCastFromMail(mail, Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME, String.class);
+        Optional<String> authUser = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(Mail.SMTP_AUTH_USER_ATTRIBUTE_NAME), String.class);
         if (authUser.isPresent() && users.contains(authUser.get())) {
             return mail.getRecipients();
         } else {
