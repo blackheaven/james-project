@@ -9,10 +9,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.MapConfiguration;
-import org.apache.james.blob.objectstorage.AESPayloadCodec;
 import org.apache.james.blob.objectstorage.ContainerName;
-import org.apache.james.blob.objectstorage.DefaultPayloadCodec;
-import org.apache.james.blob.objectstorage.PayloadCodec;
 import org.apache.james.blob.objectstorage.swift.Credentials;
 import org.apache.james.blob.objectstorage.swift.DomainName;
 import org.apache.james.blob.objectstorage.swift.IdentityV3;

@@ -33,7 +33,7 @@ import org.apache.james.blob.objectstorage.swift.SwiftTempAuthObjectStorage;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 
-class ObjectStorageBlobConfiguration {
+public class ObjectStorageBlobConfiguration {
 
     private static final String OBJECTSTORAGE_CONFIGURATION_NAME = "objectstorage";
     private static final String OBJECTSTORAGE_NAMESPACE = "objectstorage.namespace";

@@ -19,19 +19,21 @@
 
 package org.apache.james.modules.objectstorage.guice;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.UUID;
 
-import org.apache.commons.configuration.MapConfiguration;
 import org.apache.james.GuiceModuleTestRule;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.objectstorage.ContainerName;
 import org.apache.james.blob.objectstorage.ObjectStorageBlobsDAO;
 import org.apache.james.blob.objectstorage.PayloadCodec;
+import org.apache.james.modules.objectstorage.ObjectStorageBlobConfiguration;
 import org.apache.james.blob.objectstorage.swift.Credentials;
 import org.apache.james.blob.objectstorage.swift.SwiftKeystone2ObjectStorage;
+import org.apache.james.blob.objectstorage.swift.SwiftTempAuthObjectStorage;
+import org.apache.james.blob.objectstorage.swift.SwiftTempAuthObjectStorage.Configuration;
 import org.apache.james.blob.objectstorage.swift.TenantName;
 import org.apache.james.blob.objectstorage.swift.UserName;
 import org.apache.james.modules.objectstorage.PayloadCodecFactory;
@@ -53,15 +55,29 @@ public class DockerSwiftTestRule implements GuiceModuleTestRule {
         this(PayloadCodecFactory.DEFAULT);
     }
 
-    public DockerSwiftTestRule(PayloadCodecFactory payloadCodec) {
-        //FIXME
-        /*
-        Map<String, Object> payloadCodecConfig = new HashMap<>();
-        payloadCodecConfig.put(PayloadCodecFactory.OBJECTSTORAGE_AES256_HEXSALT, "c603a7327ee3dcbc031d8d34b1096c605feca5e1");
-        payloadCodecConfig.put(PayloadCodecFactory.OBJECTSTORAGE_AES256_PASSWORD, "dockerSwiftEncryption");
+    public DockerSwiftTestRule(PayloadCodecFactory payloadCodecFactory) {
+        Configuration authConfiguration = null;
+        try {
+            authConfiguration = SwiftTempAuthObjectStorage.configBuilder()
+                    .endpoint(new URI(""))
+                    .tenantName(TenantName.of("should not be read"))
+                    .userName(UserName.of("not read"))
+                    .credentials(Credentials.of("not read"))
+                    .build();
+        } catch (URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        ObjectStorageBlobConfiguration configuration = ObjectStorageBlobConfiguration.builder()
+                .codec(payloadCodecFactory)
+                .swift()
+                .container(ContainerName.of("should not be read"))
+                .tempAuth(authConfiguration)
+                .aesSalt("c603a7327ee3dcbc031d8d34b1096c605feca5e1")
+                .aesPassword("dockerSwiftEncryption".toCharArray())
+                .build();
 
-        this.payloadCodec = payloadCodec.create(new MapConfiguration(payloadCodecConfig));
-        */
+        this.payloadCodec = payloadCodecFactory.create(configuration);
     }
 
     @Override
