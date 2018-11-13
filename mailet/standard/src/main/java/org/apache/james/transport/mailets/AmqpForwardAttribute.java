@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeValue;
+import org.apache.mailet.BytesArrayDto;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.GenericMailet;
@@ -129,12 +130,12 @@ public class AmqpForwardAttribute extends GenericMailet {
     @SuppressWarnings("unchecked")
     private Stream<byte[]> toByteStream(Object attributeContent) throws MailetException {
         if (attributeContent instanceof Map) {
-            Map<String, AttributeValue<byte[]>> attributeMap = (Map<String, AttributeValue<byte[]>>) attributeContent;
-            return attributeMap.values().stream().map(AttributeValue::getValue);
+            Map<String, AttributeValue<BytesArrayDto>> attributeMap = (Map<String, AttributeValue<BytesArrayDto>>) attributeContent;
+            return attributeMap.values().stream().map(attributeValue -> attributeValue.getValue().getValues());
         }
         if (attributeContent instanceof List) {
-            List<AttributeValue<byte[]>> attributeList = (List<AttributeValue<byte[]>>) attributeContent;
-            return attributeList.stream().map(AttributeValue::getValue);
+            List<AttributeValue<BytesArrayDto>> attributeList = (List<AttributeValue<BytesArrayDto>>) attributeContent;
+            return attributeList.stream().map(attributeValue -> attributeValue.getValue().getValues());
         }
         if (attributeContent instanceof String) {
             String attributeString = (String) attributeContent;

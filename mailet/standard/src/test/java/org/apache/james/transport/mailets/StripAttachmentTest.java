@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
@@ -47,6 +48,8 @@ import org.apache.james.junit.TemporaryFolderExtension.TemporaryFolder;
 import org.apache.james.transport.mailets.StripAttachment.OutputFileName;
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
+import org.apache.mailet.BytesArrayDto;
 import org.apache.mailet.Mail;
 import org.apache.mailet.Mailet;
 import org.apache.mailet.MailetException;
@@ -120,11 +123,11 @@ class StripAttachmentTest {
         mailet.service(mail);
 
         @SuppressWarnings("unchecked")
-        Optional<Collection<String>> savedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS_ATTRIBUTE_KEY, (Class<Collection<String>>)(Object)Collection.class);
+        Optional<Collection<AttributeValue<String>>> savedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS_ATTRIBUTE_KEY, (Class<Collection<AttributeValue<String>>>)(Object)Collection.class);
         assertThat(savedAttachments).isNotEmpty();
         assertThat(savedAttachments.get()).hasSize(1);
 
-        String attachmentFilename = savedAttachments.get().iterator().next();
+        String attachmentFilename = savedAttachments.get().iterator().next().getValue();
 
         assertThat(new File(temporaryFolder.getFolderPath() + attachmentFilename)).hasContent(expectedAttachmentContent);
     }
@@ -154,9 +157,9 @@ class StripAttachmentTest {
         mailet.service(mail);
 
         @SuppressWarnings("unchecked")
-        Optional<List<String>> removedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.REMOVED_ATTACHMENTS_ATTRIBUTE_KEY, (Class<List<String>>)(Object) List.class);
+        Optional<List<AttributeValue<String>>> removedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.REMOVED_ATTACHMENTS_ATTRIBUTE_KEY, (Class<List<AttributeValue<String>>>)(Object) List.class);
         assertThat(removedAttachments).isPresent();
-        assertThat(removedAttachments.get()).containsOnly(expectedFileName);
+        assertThat(removedAttachments.get().stream().map(AttributeValue::getValue)).containsOnly(expectedFileName);
     }
 
     private MimeMessageBuilder.BodyPartBuilder createAttachmentBodyPart(String body, String fileName, MimeMessageBuilder.Header... headers) {
@@ -192,17 +195,17 @@ class StripAttachmentTest {
         mailet.service(mail);
 
         @SuppressWarnings("unchecked")
-        Optional<Collection<String>> savedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS_ATTRIBUTE_KEY, (Class<Collection<String>>)(Object) Collection.class);
+        Optional<Collection<AttributeValue<String>>> savedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS_ATTRIBUTE_KEY, (Class<Collection<AttributeValue<String>>>)(Object) Collection.class);
         assertThat(savedAttachments).isPresent();
         assertThat(savedAttachments.get()).hasSize(2);
 
-        String attachmentFilename = retrieveFilenameStartingWith(savedAttachments.get(), "temp_filname");
+        String attachmentFilename = retrieveFilenameStartingWith(savedAttachments.get().stream().map(AttributeValue::getValue), "temp_filname");
         assertThat(attachmentFilename).isNotNull();
         assertThat(new File(temporaryFolder.getFolderPath() + attachmentFilename)).hasContent(expectedAttachmentContent);
     }
 
-    private String retrieveFilenameStartingWith(Collection<String> savedAttachments, String filename) {
-        return savedAttachments.stream()
+    private String retrieveFilenameStartingWith(Stream<String> savedAttachments, String filename) {
+        return savedAttachments
                 .filter(attachmentFilename -> attachmentFilename.startsWith(filename))
                 .findFirst()
                 .get();
@@ -226,11 +229,11 @@ class StripAttachmentTest {
         mailet.service(mail);
 
         @SuppressWarnings("unchecked")
-        Optional<Collection<String>> savedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS_ATTRIBUTE_KEY, (Class<Collection<String>>)(Object) Collection.class);
+        Optional<Collection<AttributeValue<String>>> savedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS_ATTRIBUTE_KEY, (Class<Collection<AttributeValue<String>>>)(Object) Collection.class);
         assertThat(savedAttachments).isPresent();
         assertThat(savedAttachments.get()).hasSize(1);
 
-        String name = savedAttachments.get().iterator().next();
+        String name = savedAttachments.get().iterator().next().getValue();
 
         assertThat(name.startsWith("e_Pubblicita_e_vietata_Milano9052")).isTrue();
         
@@ -264,11 +267,11 @@ class StripAttachmentTest {
         mailet.service(mail);
 
         @SuppressWarnings("unchecked")
-        Optional<Map<String, byte[]>> saved = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(customAttribute), (Class<Map<String, byte[]>>)(Object) Map.class);
+        Optional<Map<String, AttributeValue<BytesArrayDto>>> saved = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(customAttribute), (Class<Map<String, AttributeValue<BytesArrayDto>>>)(Object) Map.class);
         assertThat(saved).isPresent();
         assertThat(saved.get()).hasSize(1);
         assertThat(saved.get()).containsKey(expectedKey);
-        MimeBodyPart savedBodyPart = new MimeBodyPart(new ByteArrayInputStream(saved.get().get(expectedKey)));
+        MimeBodyPart savedBodyPart = new MimeBodyPart(new ByteArrayInputStream(saved.get().get(expectedKey).getValue().getValues()));
         String content = IOUtils.toString(savedBodyPart.getInputStream(), StandardCharsets.UTF_8);
         assertThat(content).isEqualTo(EXPECTED_ATTACHMENT_CONTENT);
     }
@@ -297,11 +300,11 @@ class StripAttachmentTest {
         mailet.service(mail);
 
         @SuppressWarnings("unchecked")
-        Optional<Map<String, byte[]>> saved = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(customAttribute), (Class<Map<String, byte[]>>)(Object) Map.class);
+        Optional<Map<String, AttributeValue<BytesArrayDto>>> saved = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(customAttribute), (Class<Map<String, AttributeValue<BytesArrayDto>>>)(Object) Map.class);
         assertThat(saved).isPresent();
         assertThat(saved.get()).hasSize(1);
         assertThat(saved.get()).containsKey(expectedKey);
-        MimeBodyPart savedBodyPart = new MimeBodyPart(new ByteArrayInputStream(saved.get().get(expectedKey)));
+        MimeBodyPart savedBodyPart = new MimeBodyPart(new ByteArrayInputStream(saved.get().get(expectedKey).getValue().getValues()));
         String content = IOUtils.toString(savedBodyPart.getInputStream(), StandardCharsets.UTF_8);
         assertThat(content).isEqualTo(EXPECTED_ATTACHMENT_CONTENT);
     }
@@ -625,7 +628,7 @@ class StripAttachmentTest {
         //Then
         assertThat(actual).isTrue();
         @SuppressWarnings("unchecked")
-        Optional<Map<String, byte[]>> values = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(customAttribute), (Class<Map<String, byte[]>>)(Object) Map.class);
+        Optional<Map<String, BytesArrayDto>> values = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(customAttribute), (Class<Map<String, BytesArrayDto>>)(Object) Map.class);
         assertThat(values).isPresent();
         assertThat(values.get()).hasSize(2);
     }

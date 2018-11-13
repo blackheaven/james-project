@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -53,6 +54,7 @@ import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.AttributeValue;
+import org.apache.mailet.BytesArrayDto;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.GenericMailet;
@@ -60,6 +62,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
+import com.github.fge.lambdas.consumers.ThrowingConsumer;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -94,7 +97,7 @@ public class StripAttachment extends GenericMailet {
     @SuppressWarnings("unchecked")
     private static final Class<List<AttributeValue<String>>> LIST_OF_STRINGS = (Class<List<AttributeValue<String>>>)(Object) List.class;
     @SuppressWarnings("unchecked")
-    private static final Class<Map<String, AttributeValue<byte[]>>> MAP_BYTES = (Class<Map<String, AttributeValue<byte[]>>>)(Object) Map.class;
+    private static final Class<Map<String, AttributeValue<BytesArrayDto>>> MAP_BYTES = (Class<Map<String, AttributeValue<BytesArrayDto>>>)(Object) Map.class;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StripAttachment.class);
 
@@ -355,26 +358,25 @@ public class StripAttachment extends GenericMailet {
     }
 
     private void storeBodyPartAsMailAttribute(BodyPart bodyPart, Mail mail, String fileName) throws IOException, MessagingException {
-        attributeName.ifPresent(Throwing.consumer(name -> 
-            addPartContent(bodyPart, convertFileNameToPartContent(mail, (AttributeName) name), fileName)
-        ).sneakyThrow());
+        ThrowingConsumer<Map<String, AttributeValue<BytesArrayDto>>> partAdder = map -> addPartContent(bodyPart, map, fileName);
+        attributeName.ifPresent(name -> convertFileNameToPartContent(mail, name, Throwing.consumer(partAdder).sneakyThrow()));
     }
 
-    private void addPartContent(BodyPart bodyPart, Map<String, AttributeValue<byte[]>> map, String fileName) throws IOException, MessagingException {
+    private void addPartContent(BodyPart bodyPart, Map<String, AttributeValue<BytesArrayDto>> map, String fileName) throws IOException, MessagingException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bodyPart.writeTo(new BufferedOutputStream(byteArrayOutputStream));
-        map.put(fileName, AttributeValue.of(byteArrayOutputStream.toByteArray()));
+        map.put(fileName, AttributeValue.of(new BytesArrayDto(byteArrayOutputStream.toByteArray())));
     }
 
-    public Map<String, AttributeValue<byte[]>> convertFileNameToPartContent(Mail mail, AttributeName name) {
-        Function<Map<String, AttributeValue<byte[]>>, Map<String, AttributeValue<?>>> typeWeakner = entries ->
+    public void convertFileNameToPartContent(Mail mail, AttributeName name, Consumer<Map<String, AttributeValue<BytesArrayDto>>> modifier) {
+        Function<Map<String, AttributeValue<BytesArrayDto>>, Map<String, AttributeValue<?>>> typeWeakner = entries ->
             entries.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> (AttributeValue<?>) entry.getValue()));
 
-        Map<String, AttributeValue<byte[]>> fileNamesToPartContent = AttributeUtils
+        Map<String, AttributeValue<BytesArrayDto>> fileNamesToPartContent = AttributeUtils
             .getValueAndCastFromMail(mail, name, MAP_BYTES)
             .orElse(new LinkedHashMap<>());
+        modifier.accept(fileNamesToPartContent);
         mail.setAttribute(new Attribute(name, AttributeValue.of(typeWeakner.apply(fileNamesToPartContent))));
-        return fileNamesToPartContent;
     }
 
     private void storeFileNameAsAttribute(Mail mail, AttributeValue<String> fileName, boolean hasToBeStored) {
