@@ -43,7 +43,6 @@ import com.google.common.base.Strings;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
-import net.fortuna.ical4j.model.Calendar;
 
 /**
  * <p>
@@ -119,12 +118,12 @@ public class ICalendarParser extends GenericMailet {
     }
 
     public void setDestinationAttribute(Mail mail, Map<String, AttributeValue<BytesArrayDto>> icsAttachments) {
-        Map<String, Calendar> calendars = icsAttachments.entrySet()
+        Map<String, AttributeValue<?>> calendars = icsAttachments.entrySet()
             .stream()
             .flatMap(entry -> createCalendar(entry.getKey(), entry.getValue().getValue().getValues()))
             .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
 
-        mail.setAttribute(new Attribute(destinationAttributeName, AttributeValue.ofAny(calendars)));
+        mail.setAttribute(new Attribute(destinationAttributeName, AttributeValue.of(calendars)));
     }
 
     @Override
@@ -132,11 +131,11 @@ public class ICalendarParser extends GenericMailet {
         return "Calendar Parser";
     }
 
-    private Stream<Pair<String, Calendar>> createCalendar(String key, byte[] icsContent) {
+    private Stream<Pair<String, AttributeValue<?>>> createCalendar(String key, byte[] icsContent) {
         CalendarBuilder builder = new CalendarBuilder();
         try {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(icsContent);
-            return Stream.of(Pair.of(key, builder.build(inputStream)));
+            return Stream.of(Pair.of(key, AttributeValue.ofSerializable(builder.build(inputStream))));
         } catch (IOException e) {
             if (LOGGER.isErrorEnabled()) {
                 LOGGER.error("Error while reading input: " + new String(icsContent, StandardCharsets.UTF_8), e);
