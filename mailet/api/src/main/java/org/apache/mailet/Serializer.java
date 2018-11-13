@@ -268,15 +268,15 @@ public interface Serializer<T> {
 
     Serializer<Double> DOUBLE_SERIALIZER = new DoubleSerializer();
 
-    class ByteArraySerializer implements Serializer<byte[]> {
+    class ByteArraySerializer implements Serializer<BytesArrayDto> {
         @Override
-        public JsonNode serialize(byte[] object) {
-            return STRING_SERIALIZER.serialize(Base64.getEncoder().encodeToString(object));
+        public JsonNode serialize(BytesArrayDto object) {
+            return STRING_SERIALIZER.serialize(Base64.getEncoder().encodeToString(object.getValues()));
         }
 
         @Override
-        public Optional<byte[]> deserialize(JsonNode json) {
-            return STRING_SERIALIZER.deserialize(json).map(byteArray -> Base64.getDecoder().decode(byteArray));
+        public Optional<BytesArrayDto> deserialize(JsonNode json) {
+            return STRING_SERIALIZER.deserialize(json).map(byteArray -> new BytesArrayDto(Base64.getDecoder().decode(byteArray)));
         }
 
         @Override
@@ -290,7 +290,7 @@ public interface Serializer<T> {
         }
     }
 
-    Serializer<byte[]> BYTE_ARRAY_SERIALIZER = new ByteArraySerializer();
+    Serializer<BytesArrayDto> BYTE_ARRAY_SERIALIZER = new ByteArraySerializer();
 
     class MessageIdDtoSerializer implements Serializer<MessageIdDto> {
 

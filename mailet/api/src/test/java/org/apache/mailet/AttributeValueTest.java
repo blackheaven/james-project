@@ -334,7 +334,7 @@ class AttributeValueTest {
     class ByteArraySerialization {
         @Test
         void byteArrayShouldBeSerializedAndBack() {
-            AttributeValue<byte[]> expected = AttributeValue.of("value".getBytes());
+            AttributeValue<BytesArrayDto> expected = AttributeValue.of(new BytesArrayDto("value".getBytes()));
 
             JsonNode json = expected.toJson();
             AttributeValue<?> actual = AttributeValue.fromJson(json);
@@ -344,7 +344,7 @@ class AttributeValueTest {
 
         @Test
         void emptyByteArrayShouldBeSerializedAndBack() {
-            AttributeValue<byte[]> expected = AttributeValue.of("".getBytes());
+            AttributeValue<BytesArrayDto> expected = AttributeValue.of(new BytesArrayDto("".getBytes()));
 
             JsonNode json = expected.toJson();
             AttributeValue<?> actual = AttributeValue.fromJson(json);
@@ -355,12 +355,12 @@ class AttributeValueTest {
         @Test
         void nullByteArrayShouldThrowAnException() {
             assertThatNullPointerException().
-                isThrownBy(() -> AttributeValue.of((byte[]) null));
+                isThrownBy(() -> AttributeValue.of((BytesArrayDto) null));
         }
 
         @Test
         void fromJsonStringShouldReturnByteArrayAttributeValueWhenByteArray() throws Exception {
-            AttributeValue<byte[]> expected = AttributeValue.of("value".getBytes());
+            AttributeValue<BytesArrayDto> expected = AttributeValue.of(new BytesArrayDto("value".getBytes()));
 
             AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"ByteArraySerializer\",\"value\": \"dmFsdWU=\"}");
 
