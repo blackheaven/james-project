@@ -436,6 +436,11 @@ class AttributeValueTest {
         }
 
         @Test
+        void mixedListShouldThrowAnException() {
+            assertThatThrownBy(() -> AttributeValue.ofAny((List<Object>) ImmutableList.of(AttributeValue.of(true), "not an AttributeValue")));
+        }
+
+        @Test
         void emptyStringListShouldBeSerializedAndBack() {
             AttributeValue<?> expected = AttributeValue.ofAny(ImmutableList.<String>of());
 
@@ -487,6 +492,11 @@ class AttributeValueTest {
         void nullMapShouldThrowAnException() {
             assertThatNullPointerException()
                 .isThrownBy(() -> AttributeValue.of((Map) null));
+        }
+
+        @Test
+        void mixtedMapShouldThrowAnException() {
+            assertThatThrownBy(() -> AttributeValue.ofAny(ImmutableMap.of("an", AttributeValue.of("AttributeValue"), "not an", "AttributeValue")));
         }
 
         @Test
