@@ -31,6 +31,7 @@ import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.AttributeValue;
+import org.apache.mailet.BytesArrayDto;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
@@ -68,7 +69,7 @@ import net.fortuna.ical4j.model.Calendar;
  */
 public class ICalendarParser extends GenericMailet {
     @SuppressWarnings("unchecked")
-    private static final Class<Map<String, byte[]>> MAP_BYTES_CLASS = (Class<Map<String, byte[]>>)(Object) Map.class;
+    private static final Class<Map<String, AttributeValue<BytesArrayDto>>> MAP_BYTES_CLASS = (Class<Map<String, AttributeValue<BytesArrayDto>>>)(Object) Map.class;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ICalendarParser.class);
 
@@ -117,10 +118,10 @@ public class ICalendarParser extends GenericMailet {
 
     }
 
-    public void setDestinationAttribute(Mail mail, Map<String, byte[]> icsAttachments) {
+    public void setDestinationAttribute(Mail mail, Map<String, AttributeValue<BytesArrayDto>> icsAttachments) {
         Map<String, Calendar> calendars = icsAttachments.entrySet()
             .stream()
-            .flatMap(entry -> createCalendar(entry.getKey(), entry.getValue()))
+            .flatMap(entry -> createCalendar(entry.getKey(), entry.getValue().getValue().getValues()))
             .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
 
         mail.setAttribute(new Attribute(destinationAttributeName, AttributeValue.ofAny(calendars)));
