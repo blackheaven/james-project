@@ -266,6 +266,30 @@ public interface Serializer<T> {
 
     Serializer<Double> DOUBLE_SERIALIZER = new DoubleSerializer();
 
+    class ByteArraySerializer implements Serializer<BytesArrayDto> {
+        @Override
+        public JsonNode serialize(BytesArrayDto object) {
+            return STRING_SERIALIZER.serialize(Base64.getEncoder().encodeToString(object.getValues()));
+        }
+
+        @Override
+        public Optional<BytesArrayDto> deserialize(JsonNode json) {
+            return STRING_SERIALIZER.deserialize(json).map(byteArray -> new BytesArrayDto(Base64.getDecoder().decode(byteArray)));
+        }
+
+        @Override
+        public String getName() {
+            return "ByteArraySerializer";
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return this.getClass() == other.getClass();
+        }
+    }
+
+    Serializer<BytesArrayDto> BYTE_ARRAY_SERIALIZER = new ByteArraySerializer();
+
     class MessageIdDtoSerializer implements Serializer<MessageIdDto> {
 
         @Override
