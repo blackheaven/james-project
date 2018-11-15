@@ -45,7 +45,7 @@ public class PropertiesProvider {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(fileName));
         File file = fileSystem.getFile(FileSystem.FILE_PROTOCOL_AND_CONF + fileName + ".properties");
         if (!file.exists()) {
-            throw new FileNotFoundException();
+            throw new FileNotFoundException(file.toString());
         }
         return new PropertiesConfiguration(file);
     }

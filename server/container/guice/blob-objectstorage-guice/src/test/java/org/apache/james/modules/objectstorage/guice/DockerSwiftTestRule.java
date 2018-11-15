@@ -62,7 +62,6 @@ public class DockerSwiftTestRule implements GuiceModuleTestRule {
     private final PayloadCodecFactory payloadCodecFactory;
     private org.apache.james.blob.objectstorage.DockerSwiftRule swiftContainer =
         new org.apache.james.blob.objectstorage.DockerSwiftRule();
-    private PayloadCodec payloadCodec;
 
     public DockerSwiftTestRule() {
         this(PayloadCodecFactory.DEFAULT);

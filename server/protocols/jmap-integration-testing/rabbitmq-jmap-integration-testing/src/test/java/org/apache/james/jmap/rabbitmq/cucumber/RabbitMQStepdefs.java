@@ -19,14 +19,13 @@
 
 package org.apache.james.jmap.rabbitmq.cucumber;
 
-import static org.apache.james.CassandraJamesServerMain.ALL_BUT_JMX_CASSANDRA_MODULE;
-
 import java.util.Arrays;
 
 import javax.inject.Inject;
 
 import org.apache.activemq.store.PersistenceAdapter;
 import org.apache.activemq.store.memory.MemoryPersistenceAdapter;
+import org.apache.james.CassandraRabbitMQJamesServerMain;
 import org.apache.james.CleanupTasksPerformer;
 import org.apache.james.DockerCassandraRule;
 import org.apache.james.GuiceJamesServer;
@@ -86,7 +85,7 @@ public class RabbitMQStepdefs {
             .build();
 
         mainStepdefs.jmapServer = GuiceJamesServer.forConfiguration(configuration)
-            .combineWith(ALL_BUT_JMX_CASSANDRA_MODULE)
+            .combineWith(CassandraRabbitMQJamesServerMain.MODULES)
             .overrideWith(new TestJMAPServerModule(10))
             .overrideWith(new TestESMetricReporterModule())
             .overrideWith(new TestRabbitMQModule(rabbitMQServer.dockerRabbitMQ()))
