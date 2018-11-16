@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;

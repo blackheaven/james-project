@@ -180,7 +180,6 @@ public class ICALToJsonAttribute extends GenericMailet {
                 getRawCalendarMap(mail).ifPresent(rawCalendars -> {
                     Map<String, AttributeValue<?>> jsonsInByteForm = calendars.entrySet()
                         .stream()
-                        A
                         .flatMap(calendar -> toJson(calendar, rawCalendars, mail, sender))
                         .collect(ImmutableMap.toImmutableMap(Pair::getKey, Pair::getValue));
                     mail.setAttribute(new Attribute(destinationAttributeName, AttributeValue.of(jsonsInByteForm)));
