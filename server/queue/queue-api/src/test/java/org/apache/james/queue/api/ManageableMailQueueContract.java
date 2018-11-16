@@ -457,6 +457,7 @@ public interface ManageableMailQueueContract extends MailQueueContract {
         });
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     default void browseShouldReturnMailsWithAttributes() throws Exception {
         ManageableMailQueue mailQueue = getManageableMailQueue();
