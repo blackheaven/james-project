@@ -24,6 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import javax.mail.MessagingException;
 
 import org.apache.james.util.MimeMessageUtil;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
@@ -60,7 +62,7 @@ public class ICALToHeadersTest {
             .mailetName("ICALToHeader")
             .build());
 
-        assertThat(testee.getAttribute()).isEqualTo(ICALToHeader.ATTRIBUTE_DEFAULT_NAME);
+        assertThat(testee.getAttribute()).isEqualTo(ICALToHeader.ATTRIBUTE_DEFAULT_NAME.asString());
     }
 
     @Test
@@ -68,7 +70,7 @@ public class ICALToHeadersTest {
         String attribute = "attribute";
         testee.init(FakeMailetConfig.builder()
             .mailetName("ICALToHeader")
-            .setProperty(ICALToHeader.ATTRIBUTE_PROPERTY, attribute)
+            .setProperty(ICALToHeader.ATTRIBUTE_PROPERTY.asString(), attribute)
             .build());
 
         assertThat(testee.getAttribute()).isEqualTo(attribute);
@@ -80,7 +82,7 @@ public class ICALToHeadersTest {
 
         testee.init(FakeMailetConfig.builder()
             .mailetName("ICALToHeader")
-            .setProperty(ICALToHeader.ATTRIBUTE_PROPERTY, "")
+            .setProperty(ICALToHeader.ATTRIBUTE_PROPERTY.asString(), "")
             .build());
     }
 
@@ -101,7 +103,7 @@ public class ICALToHeadersTest {
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, "This is the wrong type")
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of("This is the wrong type")))
             .build();
 
         testee.service(mail);
@@ -111,14 +113,14 @@ public class ICALToHeadersTest {
 
     @Test
     public void serviceShouldNotFailOnMailsWithWrongParametrizedAttribute() throws Exception {
-        ImmutableMap<String, String> wrongParametrizedMap = ImmutableMap.<String, String>builder()
-            .put("key", "value")
+        ImmutableMap<String, AttributeValue<?>> wrongParametrizedMap = ImmutableMap.<String, AttributeValue<?>>builder()
+            .put("key", AttributeValue.of("value"))
             .build();
 
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, wrongParametrizedMap)
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(wrongParametrizedMap)))
             .build();
 
         testee.service(mail);
@@ -129,14 +131,14 @@ public class ICALToHeadersTest {
     @Test
     public void serviceShouldWriteSingleICalendarToHeaders() throws Exception {
         Calendar calendar = new CalendarBuilder().build(ClassLoader.getSystemResourceAsStream("ics/meeting.ics"));
-        ImmutableMap<String, Calendar> icals = ImmutableMap.<String, Calendar>builder()
-            .put("key", calendar)
+        ImmutableMap<String, AttributeValue<?>> icals = ImmutableMap.<String, AttributeValue<?>>builder()
+            .put("key", AttributeValue.ofSerializable(calendar))
             .build();
 
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, icals)
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(icals)))
             .build();
 
         testee.service(mail);
@@ -152,14 +154,14 @@ public class ICALToHeadersTest {
     @Test
     public void serviceShouldNotWriteHeaderWhenPropertyIsAbsent() throws Exception {
         Calendar calendar = new CalendarBuilder().build(ClassLoader.getSystemResourceAsStream("ics/meeting_without_dtstamp.ics"));
-        ImmutableMap<String, Calendar> icals = ImmutableMap.<String, Calendar>builder()
-            .put("key", calendar)
+        ImmutableMap<String, AttributeValue<?>> icals = ImmutableMap.<String, AttributeValue<?>>builder()
+            .put("key", AttributeValue.ofSerializable(calendar))
             .build();
 
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, icals)
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(icals)))
             .build();
 
         testee.service(mail);
@@ -176,15 +178,15 @@ public class ICALToHeadersTest {
     public void serviceShouldWriteOnlyOneICalendarToHeaders() throws Exception {
         Calendar calendar = new CalendarBuilder().build(ClassLoader.getSystemResourceAsStream("ics/meeting.ics"));
         Calendar calendar2 = new CalendarBuilder().build(ClassLoader.getSystemResourceAsStream("ics/meeting_2.ics"));
-        ImmutableMap<String, Calendar> icals = ImmutableMap.<String, Calendar>builder()
-            .put("key", calendar)
-            .put("key2", calendar2)
+        ImmutableMap<String, AttributeValue<?>> icals = ImmutableMap.<String, AttributeValue<?>>builder()
+            .put("key", AttributeValue.ofSerializable(calendar))
+            .put("key2", AttributeValue.ofSerializable(calendar2))
             .build();
 
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, icals)
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(icals)))
             .build();
 
         testee.service(mail);
@@ -194,13 +196,13 @@ public class ICALToHeadersTest {
 
     @Test
     public void serviceShouldNotFailOnEmptyMaps() throws Exception {
-        ImmutableMap<String, Calendar> icals = ImmutableMap.<String, Calendar>builder()
+        ImmutableMap<String, AttributeValue<?>> icals = ImmutableMap.<String, AttributeValue<?>>builder()
             .build();
 
         testee.init(FakeMailetConfig.builder().build());
         Mail mail = FakeMail.builder()
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
-            .attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, icals)
+            .attribute(new Attribute(ICALToHeader.ATTRIBUTE_DEFAULT_NAME, AttributeValue.of(icals)))
             .build();
 
         testee.service(mail);
