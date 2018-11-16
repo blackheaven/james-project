@@ -27,6 +27,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
@@ -62,7 +63,7 @@ import net.fortuna.ical4j.model.component.VEvent;
  */
 public class ICALToHeader extends GenericMailet {
     @SuppressWarnings("unchecked")
-    private static final Class<Map<String, Calendar>> MAP_CALENDAR = (Class<Map<String, Calendar>>)(Object) Map.class;
+    private static final Class<Map<String, AttributeValue<Calendar>>> MAP_CALENDAR = (Class<Map<String, AttributeValue<Calendar>>>)(Object) Map.class;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ICALToHeader.class);
 
@@ -110,12 +111,12 @@ public class ICALToHeader extends GenericMailet {
         }
     }
 
-    public void writeFirstValueFromCalendarMap(Mail mail, Map<String, Calendar> calendarMap) {
+    public void writeFirstValueFromCalendarMap(Mail mail, Map<String, AttributeValue<Calendar>> calendarMap) {
         calendarMap
             .values()
             .stream()
             .findAny()
-            .ifPresent(Throwing.<Calendar>consumer(calendar -> writeToHeaders(calendar, mail)).sneakyThrow());
+            .ifPresent(Throwing.<AttributeValue<Calendar>>consumer(calendar -> writeToHeaders(calendar.getValue(), mail)).sneakyThrow());
     }
 
     @VisibleForTesting
@@ -123,7 +124,7 @@ public class ICALToHeader extends GenericMailet {
         return attribute;
     }
 
-    private Optional<Map<String, Calendar>> getCalendarMap(Mail mail) {
+    private Optional<Map<String, AttributeValue<Calendar>>> getCalendarMap(Mail mail) {
         return AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(attribute), MAP_CALENDAR);
     }
 
