@@ -76,8 +76,8 @@ public class ICALToJsonAttributeTest {
     public void initShouldSetAttributesWhenAbsent() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
-        assertThat(testee.getSourceAttributeName()).isEqualTo(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME.asString());
-        assertThat(testee.getDestinationAttributeName()).isEqualTo(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME.asString());
+        assertThat(testee.getSourceAttributeName()).isEqualTo(ICALToJsonAttribute.DEFAULT_SOURCE_ATTRIBUTE_NAME);
+        assertThat(testee.getDestinationAttributeName()).isEqualTo(ICALToJsonAttribute.DEFAULT_DESTINATION_ATTRIBUTE_NAME);
     }
 
     @Test
