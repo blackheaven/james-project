@@ -152,7 +152,7 @@ public abstract class ContractMailTest {
 
     @SuppressWarnings("deprecation")
     @Nested
-    public class DeprecatedAttributes {
+    public class DeprecatedtedAttributes {
         @Test
         void setAttributeShouldReturnNullWhenNoPreviousValue() {
             Mail mail = newMail();
