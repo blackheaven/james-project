@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 import javax.mail.MessagingException;
@@ -162,9 +162,7 @@ public class SMIMEDecrypt extends GenericMailet {
             // behavior of the SMIMEVerifySignature mailet. In that way
             // it is possible to reuse the same matchers to analyze
             // the result of the operation.
-            ArrayList<X509Certificate> list = new ArrayList<>(1);
-            list.add(keyHolder.getCertificate());
-            mail.setAttribute(new Attribute(mailAttribute, AttributeValue.ofAny(list)));
+            mail.setAttribute(new Attribute(mailAttribute, AttributeValue.of(Arrays.asList(AttributeValue.ofSerializable(keyHolder.getCertificate())))));
 
             // I start the message stripping.
             try {
