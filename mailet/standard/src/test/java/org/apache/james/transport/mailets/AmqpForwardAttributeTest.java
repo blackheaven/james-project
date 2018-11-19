@@ -37,6 +37,7 @@ import javax.mail.MessagingException;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeValue;
+import org.apache.mailet.BytesArrayDto;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetContext;
 import org.apache.mailet.MailetException;
@@ -66,7 +67,7 @@ class AmqpForwardAttributeTest {
     private static final String ROUTING_KEY = "routingKey";
     private static final String AMQP_URI = "amqp://host";
     private static final byte[] ATTACHMENT_CONTENT = "Attachment content".getBytes(StandardCharsets.UTF_8);
-    private static final Optional<Attribute> ATTRIBUTE_CONTENT = Optional.of(new Attribute(MAIL_ATTRIBUTE, AttributeValue.of(ImmutableMap.of("attachment1.txt", AttributeValue.ofAny(ATTACHMENT_CONTENT)))));
+    private static final Optional<Attribute> ATTRIBUTE_CONTENT = Optional.of(new Attribute(MAIL_ATTRIBUTE, AttributeValue.of(ImmutableMap.of("attachment1.txt", AttributeValue.of(new BytesArrayDto(ATTACHMENT_CONTENT))))));
 
     private AmqpForwardAttribute mailet;
     private MailetContext mailetContext;
@@ -251,7 +252,7 @@ class AmqpForwardAttributeTest {
         when(connectionFactory.newConnection()).thenReturn(connection);
         mailet.setConnectionFactory(connectionFactory);
         Mail mail = mock(Mail.class);
-        when(mail.getAttribute(MAIL_ATTRIBUTE)).thenReturn(Optional.of(new Attribute(MAIL_ATTRIBUTE, AttributeValue.of(ImmutableList.of(AttributeValue.ofAny(ATTACHMENT_CONTENT))))));
+        when(mail.getAttribute(MAIL_ATTRIBUTE)).thenReturn(Optional.of(new Attribute(MAIL_ATTRIBUTE, AttributeValue.of(ImmutableList.of(AttributeValue.of(new BytesArrayDto(ATTACHMENT_CONTENT)))))));
         BasicProperties expectedProperties = new AMQP.BasicProperties();
 
         mailet.service(mail);

@@ -32,6 +32,7 @@ import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.AttributeValue;
+import org.apache.mailet.BytesArrayDto;
 import org.apache.mailet.MailetContext;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.test.FakeMail;
@@ -108,7 +109,7 @@ class MimeDecodingMailetTest {
         testee.init(mailetConfig);
 
         FakeMail mail = FakeMail.defaultFakeMail();
-        mail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME, AttributeValue.ofAny(ImmutableMap.of("1", "2"))));
+        mail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME, AttributeValue.of(ImmutableMap.of("1", AttributeValue.of("2")))));
 
         testee.service(mail);
     }
@@ -145,13 +146,14 @@ class MimeDecodingMailetTest {
                 + "Content-Type: application/octet-stream; charset=utf-8\r\n\r\n"
                 + text;
         String expectedKey = "mimePart1";
-        mail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME, AttributeValue.ofAny(ImmutableMap.of(expectedKey, content.getBytes(StandardCharsets.UTF_8)))));
+        mail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME, AttributeValue.of(ImmutableMap.of(expectedKey, AttributeValue.of(new BytesArrayDto(content.getBytes(StandardCharsets.UTF_8)))))));
 
-        byte[] expectedValue = text.getBytes(StandardCharsets.UTF_8);
+        AttributeValue<BytesArrayDto> expectedValue = AttributeValue.of(new BytesArrayDto(text.getBytes(StandardCharsets.UTF_8)));
         testee.service(mail);
 
-        Optional<Map<String, byte[]>> processedAttribute = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MAIL_ATTRIBUTE), (Class<Map<String, byte[]>>)(Object) Map.class);
+        Optional<Map<String, AttributeValue<BytesArrayDto>>> processedAttribute = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(MAIL_ATTRIBUTE), (Class<Map<String, AttributeValue<BytesArrayDto>>>)(Object) Map.class);
         assertThat(processedAttribute).isPresent();
+        assertThat(new String(processedAttribute.get().get(expectedKey).getValue().getValues())).isEqualTo(new String(expectedValue.getValue().getValues()));
         assertThat(processedAttribute.get()).containsExactly(MapEntry.entry(expectedKey, expectedValue));
     }
 }

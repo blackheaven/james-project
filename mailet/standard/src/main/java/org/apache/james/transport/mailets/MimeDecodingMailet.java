@@ -18,10 +18,19 @@
  ****************************************************************/
 package org.apache.james.transport.mailets;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import javax.mail.MessagingException;
+import java.util.Map.Entry;
+import java.util.Optional;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeBodyPart;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeUtils;
@@ -33,6 +42,8 @@ import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.fge.lambdas.functions.ThrowingFunction;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
@@ -70,29 +81,58 @@ public class MimeDecodingMailet extends GenericMailet {
             return;
         }
 
-        ImmutableMap<String, AttributeValue<?>> extractedMimeContentByName = getAttributeContent(mail)
-            .entrySet()
-            .stream()
-            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        mail.setAttribute(new Attribute(attribute, AttributeValue.of(extractedMimeContentByName)));
+        mail.setAttribute(new Attribute(attribute, AttributeValue.of(getExtractedContent(mail))));
     }
 
-    private Map<String, AttributeValue<BytesArrayDto>> getAttributeContent(Mail mail) throws MailetException {
+    private ImmutableMap<String, AttributeValue<?>> getExtractedContent(Mail mail) throws MailetException {
         return AttributeUtils
                 .getValueAndCastFromMail(mail, attribute, Serializable.class)
-                .map(this::castAttributeContent)
-                .orElse(ImmutableMap.<String, AttributeValue<BytesArrayDto>>of());
+                .map(this::extractAttributeContent)
+                .orElse(ImmutableMap.<String, AttributeValue<?>>of());
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, AttributeValue<BytesArrayDto>> castAttributeContent(Serializable attributeContent) {
+    private ImmutableMap<String, AttributeValue<?>> extractAttributeContent(Serializable attributeContent) {
         if (! (attributeContent instanceof Map)) {
             LOGGER.debug("Invalid attribute found into attribute {} class Map expected but {} found.",
                     attribute, attributeContent.getClass());
             return ImmutableMap.of();
         }
-        return (Map<String, AttributeValue<BytesArrayDto>>) attributeContent;
+
+        Map<String, AttributeValue<?>> attributeMap = (Map<String, AttributeValue<?>>) attributeContent;
+        ThrowingFunction<Entry<String, AttributeValue<?>>, Optional<Pair<String, AttributeValue<BytesArrayDto>>>> performExtraction =
+                entry -> convertToByteArray(entry.getValue().getValue()).flatMap(Throwing.function(this::extractContent).sneakyThrow())
+                            .map(extractedContent -> Pair.of(entry.getKey(), AttributeValue.of(extractedContent)));
+
+        return attributeMap
+                .entrySet()
+                .stream()
+                .map(performExtraction)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(ImmutableMap.toImmutableMap(Pair::getLeft, Pair::getRight));
+    }
+
+    private Optional<byte[]> convertToByteArray(Object value) {
+        if (value instanceof BytesArrayDto) {
+            return Optional.of(((BytesArrayDto) value).getValues());
+        } else if (value instanceof String) {
+            return Optional.of(((String) value).getBytes(StandardCharsets.UTF_8));
+        } 
+        return Optional.empty();
+    }
+
+    private Optional<BytesArrayDto> extractContent(byte[] rawMime) throws MessagingException {
+        try {
+            MimeBodyPart mimeBodyPart = new MimeBodyPart(new ByteArrayInputStream(rawMime));
+            return Optional.ofNullable(IOUtils.toByteArray(mimeBodyPart.getInputStream())).map(BytesArrayDto::new);
+        } catch (IOException e) {
+            LOGGER.error("Error while extracting content from mime part", e);
+            return Optional.empty();
+        } catch (ClassCastException e) {
+            LOGGER.error("Invalid map attribute types.", e);
+            return Optional.empty();
+        }
     }
 
     @Override
