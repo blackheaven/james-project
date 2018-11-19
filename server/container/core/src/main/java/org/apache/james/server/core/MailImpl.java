@@ -715,7 +715,23 @@ public class MailImpl implements Disposable, Mail {
             .stream()
             .collect(Collectors.toMap(
                 attribute -> attribute.getName().asString(),
-                attribute -> attribute.getValue().value()));
+                attribute -> unwrapAttributeValue(attribute.getValue())));
+    }
+    
+    private Object unwrapAttributeValue(Object value) {
+        if (value instanceof AttributeValue) {
+            return unwrapAttributeValue(((AttributeValue<?>) value).value());
+        } else if (value instanceof Map) {
+            return ((Map<?,?>) value).entrySet()
+                    .stream()
+                    .collect(ImmutableMap.toImmutableMap(
+                                entry -> entry.getKey(),
+                                entry -> unwrapAttributeValue(entry.getValue())));
+        } else if (value instanceof Collection) {
+            return ((Collection<?>) value).stream().map(this::unwrapAttributeValue).collect(ImmutableList.toImmutableList());
+        } else {
+            return value;
+        }
     }
 
     /**
