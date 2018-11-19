@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
@@ -34,12 +33,16 @@ import javax.mail.internet.MimeMultipart;
 
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
+import org.apache.mailet.BytesArrayDto;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.fge.lambdas.Throwing;
 
 /**
  * <p>
@@ -64,23 +67,24 @@ import org.slf4j.LoggerFactory;
 @Experimental
 public class RecoverAttachment extends GenericMailet {
     @SuppressWarnings("unchecked")
-    private static final Class<Map<String, byte[]>> MAP_BYTES = (Class<Map<String, byte[]>>)(Object) Map.class;
+    private static final Class<Map<String, AttributeValue<BytesArrayDto>>> MAP_BYTES = (Class<Map<String, AttributeValue<BytesArrayDto>>>)(Object) Map.class;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RecoverAttachment.class);
 
     public static final String ATTRIBUTE_PARAMETER_NAME = "attribute";
 
-    private String attributeName = null;
+    private AttributeName attributeName;
 
     @Override
     public void init() throws MailetException {
-        attributeName = getInitParameter(ATTRIBUTE_PARAMETER_NAME);
+        String rawAttributeName = getInitParameter(ATTRIBUTE_PARAMETER_NAME);
 
-        if (attributeName == null) {
+        if (rawAttributeName == null) {
             throw new MailetException(ATTRIBUTE_PARAMETER_NAME
                     + " is a mandatory parameter");
         }
 
+        attributeName = AttributeName.of(rawAttributeName);
         LOGGER.debug("RecoverAttachment is initialised with attribute [{}]", attributeName);
     }
 
@@ -93,10 +97,10 @@ public class RecoverAttachment extends GenericMailet {
      * @throws MailetException
      *             Thrown when an error situation is encountered.
      */
+    @SuppressWarnings("unchecked")
     @Override
     public void service(Mail mail) throws MailetException {
-        Optional<Map<String, byte[]>> attachments = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(attributeName), MAP_BYTES);
-        if (attachments.isPresent()) {
+        AttributeUtils.getValueAndCastFromMail(mail, attributeName, MAP_BYTES).ifPresent(Throwing.consumer(attachments -> {
 
             MimeMessage message;
             try {
@@ -106,12 +110,12 @@ public class RecoverAttachment extends GenericMailet {
                         "Could not retrieve message from Mail object", e);
             }
 
-            Iterator<byte[]> i = attachments.get().values().iterator();
+            Iterator<AttributeValue<BytesArrayDto>> i = ((Map<String, AttributeValue<BytesArrayDto>>) attachments).values().iterator();
             try {
                 while (i.hasNext()) {
-                    byte[] bytes = i.next();
+                    AttributeValue<BytesArrayDto> bytes = i.next();
                     InputStream is = new BufferedInputStream(
-                            new ByteArrayInputStream(bytes));
+                            new ByteArrayInputStream(bytes.getValue().getValues()));
                     MimeBodyPart p = new MimeBodyPart(is);
                     if (!(message.isMimeType("multipart/*") && (message
                             .getContent() instanceof MimeMultipart))) {
@@ -136,7 +140,7 @@ public class RecoverAttachment extends GenericMailet {
             } catch (IOException e) {
                 LOGGER.error("IOException in recoverAttachment", e);
             }
-        }
+        }).sneakyThrow());
     }
 
     @Override
