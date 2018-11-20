@@ -41,8 +41,8 @@ import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class MailboxManagementTest {
 
@@ -54,7 +54,7 @@ public class MailboxManagementTest {
     private MailboxSessionMapperFactory mapperFactory;
     private MailboxSession session;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         StoreMailboxManager mailboxManager = new InMemoryIntegrationResources()
             .createMailboxManager(new SimpleGroupMembershipResolver());
@@ -109,14 +109,16 @@ public class MailboxManagementTest {
         assertThat(mapperFactory.createMailboxMapper(session).list()).isEmpty();
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void deleteMailboxesShouldThrowOnNullUserName() throws Exception {
-        mailboxManagerManagement.deleteMailboxes(null);
+        assertThatThrownBy(() -> mailboxManagerManagement.deleteMailboxes(null))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void deleteMailboxesShouldThrowOnEmptyUserName() throws Exception {
-        mailboxManagerManagement.deleteMailboxes("");
+        assertThatThrownBy(() -> mailboxManagerManagement.deleteMailboxes(""))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -155,34 +157,40 @@ public class MailboxManagementTest {
         assertThat(mapperFactory.createMailboxMapper(session).list()).containsExactly(mailbox);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void createMailboxShouldThrowOnNullNamespace() {
-        mailboxManagerManagement.createMailbox(null, "a", "a");
+        assertThatThrownBy(() -> mailboxManagerManagement.createMailbox(null, "a", "a"))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void createMailboxShouldThrowOnNullUser() {
-        mailboxManagerManagement.createMailbox("a", null, "a");
+        assertThatThrownBy(() -> mailboxManagerManagement.createMailbox("a", null, "a"))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void createMailboxShouldThrowOnNullName() {
-        mailboxManagerManagement.createMailbox("a", "a", null);
+        assertThatThrownBy(() -> mailboxManagerManagement.createMailbox("a", "a", null))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createMailboxShouldThrowOnEmptyNamespace() {
-        mailboxManagerManagement.createMailbox("", "a", "a");
+        assertThatThrownBy(() -> mailboxManagerManagement.createMailbox("", "a", "a"))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createMailboxShouldThrowOnEmptyUser() {
-        mailboxManagerManagement.createMailbox("a", "", "a");
+        assertThatThrownBy(() -> mailboxManagerManagement.createMailbox("a", "", "a"))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createMailboxShouldThrowOnEmptyName() {
-        mailboxManagerManagement.createMailbox("a", "a", "");
+        assertThatThrownBy(() -> mailboxManagerManagement.createMailbox("a", "a", ""))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -202,14 +210,16 @@ public class MailboxManagementTest {
         assertThat(mailboxManagerManagement.listMailboxes(USER)).containsOnly("name2", "name4", "INBOX", "INBOX.toto");
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void listMailboxesShouldThrowOnNullUserName() {
-        mailboxManagerManagement.listMailboxes(null);
+        assertThatThrownBy(() -> mailboxManagerManagement.listMailboxes(null))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void listMailboxesShouldThrowOnEmptyUserName() {
-        mailboxManagerManagement.listMailboxes("");
+        assertThatThrownBy(() -> mailboxManagerManagement.listMailboxes(""))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -275,34 +285,40 @@ public class MailboxManagementTest {
     }
 
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void deleteMailboxShouldThrowOnNullNamespace() {
-        mailboxManagerManagement.deleteMailbox(null, "a", "a");
+        assertThatThrownBy(() -> mailboxManagerManagement.deleteMailbox(null, "a", "a"))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void deleteMailboxShouldThrowOnNullUser() {
-        mailboxManagerManagement.deleteMailbox("a", null, "a");
+        assertThatThrownBy(() -> mailboxManagerManagement.deleteMailbox("a", null, "a"))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void deleteMailboxShouldThrowOnNullName() {
-        mailboxManagerManagement.deleteMailbox("a", "a", null);
+        assertThatThrownBy(() -> mailboxManagerManagement.deleteMailbox("a", "a", null))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void deleteMailboxShouldThrowOnEmptyNamespace() {
-        mailboxManagerManagement.deleteMailbox("", "a", "a");
+        assertThatThrownBy(() -> mailboxManagerManagement.deleteMailbox("", "a", "a"))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void deleteMailboxShouldThrowOnEmptyUser() {
-        mailboxManagerManagement.deleteMailbox("a", "", "a");
+        assertThatThrownBy(() -> mailboxManagerManagement.deleteMailbox("a", "", "a"))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void deleteMailboxShouldThrowOnEmptyName() {
-        mailboxManagerManagement.deleteMailbox("a", "a", "");
+        assertThatThrownBy(() -> mailboxManagerManagement.deleteMailbox("a", "a", ""))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
 }
