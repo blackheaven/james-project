@@ -22,14 +22,14 @@ public class ReIndexerManagementTest {
     private ReIndexer reIndexer;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         taskManager = new MemoryTaskManager();
         reIndexer = mock(ReIndexer.class);
         testee = new ReIndexerManagement(taskManager, reIndexer);
     }
 
     @Test
-    public void reIndexMailboxWaitsForExecution() throws MailboxException {
+    void reIndexMailboxWaitsForExecution() throws MailboxException {
         TaskId.generateTaskId();
         Task task = mock(Task.class);
         String namespace = "namespace";
@@ -44,7 +44,7 @@ public class ReIndexerManagementTest {
     }
 
     @Test
-    public void reIndexWaitsForExecution() throws MailboxException {
+    void reIndexWaitsForExecution() throws MailboxException {
         Task task = mock(Task.class);
         when(reIndexer.reIndex()).thenReturn(task);
 
