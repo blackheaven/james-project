@@ -49,7 +49,6 @@ public class ReIndexerManagementTest {
 
     @Test
     void reIndexMailboxWaitsForExecution() throws MailboxException {
-        TaskId.generateTaskId();
         Task task = mock(Task.class);
         String namespace = "namespace";
         String user = "user";
