@@ -9,50 +9,48 @@ import static org.mockito.Mockito.when;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.indexer.ReIndexer;
 import org.apache.james.mailbox.model.MailboxPath;
+import org.apache.james.task.MemoryTaskManager;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskId;
 import org.apache.james.task.TaskManager;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ReIndexerManagementTest {
     private ReIndexerManagement testee;
     private TaskManager taskManager;
     private ReIndexer reIndexer;
-    
-    @Before
+
+    @BeforeEach
     public void setUp() {
-        taskManager = mock(TaskManager.class);
+        taskManager = new MemoryTaskManager();
         reIndexer = mock(ReIndexer.class);
         testee = new ReIndexerManagement(taskManager, reIndexer);
     }
-    
+
     @Test
     public void reIndexMailboxWaitsForExecution() throws MailboxException {
-        TaskId taskId = TaskId.generateTaskId();
+        TaskId.generateTaskId();
         Task task = mock(Task.class);
         String namespace = "namespace";
         String user = "user";
         String name = "name";
         when(reIndexer.reIndex(any(MailboxPath.class))).thenReturn(task);
-        when(taskManager.submit(task)).thenReturn(taskId);
 
-        assertThat(testee.reIndex(namespace, user, name)).isSameAs(taskId);
+        assertThat(taskManager.list()).isEmpty();
+        testee.reIndex(namespace, user, name);
         verify(reIndexer).reIndex(new MailboxPath(namespace, user, name));
-        verify(taskManager).submit(task);
-        verify(taskManager).await(taskId);
+        assertThat(taskManager.list()).hasSize(1);
     }
 
     @Test
     public void reIndexWaitsForExecution() throws MailboxException {
-        TaskId taskId = TaskId.generateTaskId();
         Task task = mock(Task.class);
         when(reIndexer.reIndex()).thenReturn(task);
-        when(taskManager.submit(task)).thenReturn(taskId);
 
-        assertThat(testee.reIndex()).isSameAs(taskId);
+        assertThat(taskManager.list()).isEmpty();
+        testee.reIndex();
         verify(reIndexer).reIndex();
-        verify(taskManager).submit(task);
-        verify(taskManager).await(taskId);
+        assertThat(taskManager.list()).hasSize(1);
     }
 }
