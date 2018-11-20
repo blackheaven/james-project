@@ -55,7 +55,7 @@ public class MailboxManagementTest {
     private MailboxSession session;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         StoreMailboxManager mailboxManager = new InMemoryIntegrationResources()
             .createMailboxManager(new SimpleGroupMembershipResolver());
         mapperFactory = mailboxManager.getMapperFactory();
@@ -66,28 +66,28 @@ public class MailboxManagementTest {
     }
 
     @Test
-    public void deleteMailboxesShouldDeleteMailboxes() throws Exception {
+    void deleteMailboxesShouldDeleteMailboxes() throws Exception {
         mapperFactory.createMailboxMapper(session).save(new SimpleMailbox(MailboxPath.forUser(USER, "name"), UID_VALIDITY));
         mailboxManagerManagement.deleteMailboxes(USER);
         assertThat(mapperFactory.createMailboxMapper(session).list()).isEmpty();
     }
 
     @Test
-    public void deleteMailboxesShouldDeleteInbox() throws Exception {
+    void deleteMailboxesShouldDeleteInbox() throws Exception {
         mapperFactory.createMailboxMapper(session).save(new SimpleMailbox(MailboxPath.forUser(USER, "INBOX"), UID_VALIDITY));
         mailboxManagerManagement.deleteMailboxes(USER);
         assertThat(mapperFactory.createMailboxMapper(session).list()).isEmpty();
     }
 
     @Test
-    public void deleteMailboxesShouldDeleteMailboxesChildren() throws Exception {
+    void deleteMailboxesShouldDeleteMailboxesChildren() throws Exception {
         mapperFactory.createMailboxMapper(session).save(new SimpleMailbox(MailboxPath.forUser(USER, "INBOX.test"), UID_VALIDITY));
         mailboxManagerManagement.deleteMailboxes(USER);
         assertThat(mapperFactory.createMailboxMapper(session).list()).isEmpty();
     }
 
     @Test
-    public void deleteMailboxesShouldNotDeleteMailboxesBelongingToNotPrivateNamespace() throws Exception {
+    void deleteMailboxesShouldNotDeleteMailboxesBelongingToNotPrivateNamespace() throws Exception {
         Mailbox mailbox = new SimpleMailbox(new MailboxPath("#top", USER, "name"), UID_VALIDITY);
         mapperFactory.createMailboxMapper(session).save(mailbox);
         mailboxManagerManagement.deleteMailboxes(USER);
@@ -95,7 +95,7 @@ public class MailboxManagementTest {
     }
 
     @Test
-    public void deleteMailboxesShouldNotDeleteMailboxesBelongingToOtherUsers() throws Exception {
+    void deleteMailboxesShouldNotDeleteMailboxesBelongingToOtherUsers() throws Exception {
         Mailbox mailbox = new SimpleMailbox(MailboxPath.forUser("userbis", "name"), UID_VALIDITY);
         mapperFactory.createMailboxMapper(session).save(mailbox);
         mailboxManagerManagement.deleteMailboxes(USER);
@@ -103,26 +103,26 @@ public class MailboxManagementTest {
     }
 
     @Test
-    public void deleteMailboxesShouldDeleteMailboxesWithEmptyNames() throws Exception {
+    void deleteMailboxesShouldDeleteMailboxesWithEmptyNames() throws Exception {
         mapperFactory.createMailboxMapper(session).save(new SimpleMailbox(MailboxPath.forUser(USER, ""), UID_VALIDITY));
         mailboxManagerManagement.deleteMailboxes(USER);
         assertThat(mapperFactory.createMailboxMapper(session).list()).isEmpty();
     }
 
     @Test
-    public void deleteMailboxesShouldThrowOnNullUserName() throws Exception {
+    void deleteMailboxesShouldThrowOnNullUserName() throws Exception {
         assertThatThrownBy(() -> mailboxManagerManagement.deleteMailboxes(null))
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    public void deleteMailboxesShouldThrowOnEmptyUserName() throws Exception {
+    void deleteMailboxesShouldThrowOnEmptyUserName() throws Exception {
         assertThatThrownBy(() -> mailboxManagerManagement.deleteMailboxes(""))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void deleteMailboxesShouldDeleteMultipleMailboxes() throws Exception {
+    void deleteMailboxesShouldDeleteMultipleMailboxes() throws Exception {
         mapperFactory.createMailboxMapper(session).save(new SimpleMailbox(MailboxPath.forUser(USER, "name"), UID_VALIDITY));
         mapperFactory.createMailboxMapper(session).save(new SimpleMailbox(MailboxPath.forUser(USER, "INBOX"), UID_VALIDITY));
         mapperFactory.createMailboxMapper(session).save(new SimpleMailbox(MailboxPath.forUser(USER, "INBOX.test"), UID_VALIDITY));
@@ -131,14 +131,14 @@ public class MailboxManagementTest {
     }
 
     @Test
-    public void createMailboxShouldCreateAMailbox() throws Exception {
+    void createMailboxShouldCreateAMailbox() throws Exception {
         mailboxManagerManagement.createMailbox(MailboxConstants.USER_NAMESPACE, USER, "name");
         assertThat(mapperFactory.createMailboxMapper(session).list()).hasSize(1);
         assertThat(mapperFactory.createMailboxMapper(session).findMailboxByPath(MailboxPath.forUser(USER, "name"))).isNotNull();
     }
 
     @Test
-    public void createMailboxShouldThrowIfMailboxAlreadyExists() throws Exception {
+    void createMailboxShouldThrowIfMailboxAlreadyExists() throws Exception {
         MailboxPath path = MailboxPath.forUser(USER, "name");
         Mailbox mailbox = new SimpleMailbox(path, UID_VALIDITY);
         mapperFactory.createMailboxMapper(session).save(mailbox);
@@ -149,7 +149,7 @@ public class MailboxManagementTest {
     }
 
     @Test
-    public void createMailboxShouldNotCreateAdditionalMailboxesIfMailboxAlreadyExists() throws Exception {
+    void createMailboxShouldNotCreateAdditionalMailboxesIfMailboxAlreadyExists() throws Exception {
         MailboxPath path = MailboxPath.forUser(USER, "name");
         Mailbox mailbox = new SimpleMailbox(path, UID_VALIDITY);
         mapperFactory.createMailboxMapper(session).save(mailbox);
@@ -158,43 +158,43 @@ public class MailboxManagementTest {
     }
 
     @Test
-    public void createMailboxShouldThrowOnNullNamespace() {
+    void createMailboxShouldThrowOnNullNamespace() {
         assertThatThrownBy(() -> mailboxManagerManagement.createMailbox(null, "a", "a"))
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    public void createMailboxShouldThrowOnNullUser() {
+    void createMailboxShouldThrowOnNullUser() {
         assertThatThrownBy(() -> mailboxManagerManagement.createMailbox("a", null, "a"))
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    public void createMailboxShouldThrowOnNullName() {
+    void createMailboxShouldThrowOnNullName() {
         assertThatThrownBy(() -> mailboxManagerManagement.createMailbox("a", "a", null))
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    public void createMailboxShouldThrowOnEmptyNamespace() {
+    void createMailboxShouldThrowOnEmptyNamespace() {
         assertThatThrownBy(() -> mailboxManagerManagement.createMailbox("", "a", "a"))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void createMailboxShouldThrowOnEmptyUser() {
+    void createMailboxShouldThrowOnEmptyUser() {
         assertThatThrownBy(() -> mailboxManagerManagement.createMailbox("a", "", "a"))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void createMailboxShouldThrowOnEmptyName() {
+    void createMailboxShouldThrowOnEmptyName() {
         assertThatThrownBy(() -> mailboxManagerManagement.createMailbox("a", "a", ""))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void listMailboxesShouldReturnUserMailboxes() throws Exception {
+    void listMailboxesShouldReturnUserMailboxes() throws Exception {
         Mailbox mailbox1 = new SimpleMailbox(new MailboxPath("#top", USER, "name1"), UID_VALIDITY);
         Mailbox mailbox2 = new SimpleMailbox(MailboxPath.forUser(USER, "name2"), UID_VALIDITY);
         Mailbox mailbox3 = new SimpleMailbox(MailboxPath.forUser("other_user", "name3"), UID_VALIDITY);
@@ -211,26 +211,26 @@ public class MailboxManagementTest {
     }
 
     @Test
-    public void listMailboxesShouldThrowOnNullUserName() {
+    void listMailboxesShouldThrowOnNullUserName() {
         assertThatThrownBy(() -> mailboxManagerManagement.listMailboxes(null))
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    public void listMailboxesShouldThrowOnEmptyUserName() {
+    void listMailboxesShouldThrowOnEmptyUserName() {
         assertThatThrownBy(() -> mailboxManagerManagement.listMailboxes(""))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void deleteMailboxShouldDeleteGivenMailbox() throws Exception {
+    void deleteMailboxShouldDeleteGivenMailbox() throws Exception {
         mapperFactory.createMailboxMapper(session).save(new SimpleMailbox(MailboxPath.forUser(USER, "name"), UID_VALIDITY));
         mailboxManagerManagement.deleteMailbox(MailboxConstants.USER_NAMESPACE, USER, "name");
         assertThat(mapperFactory.createMailboxMapper(session).list()).isEmpty();
     }
 
     @Test
-    public void deleteMailboxShouldNotDeleteGivenMailboxIfWrongNamespace() throws Exception {
+    void deleteMailboxShouldNotDeleteGivenMailboxIfWrongNamespace() throws Exception {
         Mailbox mailbox = new SimpleMailbox(new MailboxPath("#top", USER, "name"), UID_VALIDITY);
         mapperFactory.createMailboxMapper(session).save(mailbox);
         mailboxManagerManagement.deleteMailbox(MailboxConstants.USER_NAMESPACE, USER, "name");
@@ -238,7 +238,7 @@ public class MailboxManagementTest {
     }
 
     @Test
-    public void deleteMailboxShouldNotDeleteGivenMailboxIfWrongUser() throws Exception {
+    void deleteMailboxShouldNotDeleteGivenMailboxIfWrongUser() throws Exception {
         Mailbox mailbox = new SimpleMailbox(MailboxPath.forUser("userbis", "name"), UID_VALIDITY);
         mapperFactory.createMailboxMapper(session).save(mailbox);
         mailboxManagerManagement.deleteMailbox(MailboxConstants.USER_NAMESPACE, USER, "name");
@@ -246,7 +246,7 @@ public class MailboxManagementTest {
     }
 
     @Test
-    public void deleteMailboxShouldNotDeleteGivenMailboxIfWrongName() throws Exception {
+    void deleteMailboxShouldNotDeleteGivenMailboxIfWrongName() throws Exception {
         Mailbox mailbox = new SimpleMailbox(MailboxPath.forUser(USER, "wrong_name"), UID_VALIDITY);
         mapperFactory.createMailboxMapper(session).save(mailbox);
         mailboxManagerManagement.deleteMailbox(MailboxConstants.USER_NAMESPACE, USER, "name");
@@ -254,7 +254,7 @@ public class MailboxManagementTest {
     }
 
     @Test
-    public void importEmlFileToMailboxShouldImportEmlFileToGivenMailbox() throws Exception {
+    void importEmlFileToMailboxShouldImportEmlFileToGivenMailbox() throws Exception {
         Mailbox mailbox = new SimpleMailbox(MailboxPath.forUser(USER, "name"),
                 UID_VALIDITY);
         mapperFactory.createMailboxMapper(session).save(mailbox);
@@ -271,7 +271,7 @@ public class MailboxManagementTest {
     }
 
     @Test
-    public void importEmlFileToMailboxShouldNotImportEmlFileWithWrongPathToGivenMailbox() throws Exception {
+    void importEmlFileToMailboxShouldNotImportEmlFileWithWrongPathToGivenMailbox() throws Exception {
         Mailbox mailbox = new SimpleMailbox(MailboxPath.forUser(USER, "name"),
                 UID_VALIDITY);
         mapperFactory.createMailboxMapper(session).save(mailbox);
@@ -286,37 +286,37 @@ public class MailboxManagementTest {
 
 
     @Test
-    public void deleteMailboxShouldThrowOnNullNamespace() {
+    void deleteMailboxShouldThrowOnNullNamespace() {
         assertThatThrownBy(() -> mailboxManagerManagement.deleteMailbox(null, "a", "a"))
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    public void deleteMailboxShouldThrowOnNullUser() {
+    void deleteMailboxShouldThrowOnNullUser() {
         assertThatThrownBy(() -> mailboxManagerManagement.deleteMailbox("a", null, "a"))
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    public void deleteMailboxShouldThrowOnNullName() {
+    void deleteMailboxShouldThrowOnNullName() {
         assertThatThrownBy(() -> mailboxManagerManagement.deleteMailbox("a", "a", null))
             .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    public void deleteMailboxShouldThrowOnEmptyNamespace() {
+    void deleteMailboxShouldThrowOnEmptyNamespace() {
         assertThatThrownBy(() -> mailboxManagerManagement.deleteMailbox("", "a", "a"))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void deleteMailboxShouldThrowOnEmptyUser() {
+    void deleteMailboxShouldThrowOnEmptyUser() {
         assertThatThrownBy(() -> mailboxManagerManagement.deleteMailbox("a", "", "a"))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void deleteMailboxShouldThrowOnEmptyName() {
+    void deleteMailboxShouldThrowOnEmptyName() {
         assertThatThrownBy(() -> mailboxManagerManagement.deleteMailbox("a", "a", ""))
             .isInstanceOf(IllegalArgumentException.class);
     }
