@@ -20,12 +20,11 @@
 package org.apache.james.adapter.mailbox;
 
 import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.task.TaskId;
 
 public interface ReIndexerManagementMBean  {
 
-    TaskId reIndex(String namespace, String user, String name) throws MailboxException;
+    void reIndex(String namespace, String user, String name) throws MailboxException;
 
-    TaskId reIndex() throws MailboxException;
+    void reIndex() throws MailboxException;
 
 }

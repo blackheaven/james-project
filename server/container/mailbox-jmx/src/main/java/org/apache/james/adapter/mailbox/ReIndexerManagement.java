@@ -44,7 +44,7 @@ public class ReIndexerManagement implements ReIndexerManagementMBean {
     }
 
     @Override
-    public TaskId reIndex(String namespace, String user, String name) throws MailboxException {
+    public void reIndex(String namespace, String user, String name) throws MailboxException {
         try (Closeable closeable =
                  MDCBuilder.create()
                      .addContext(MDCBuilder.PROTOCOL, "CLI")
@@ -52,14 +52,13 @@ public class ReIndexerManagement implements ReIndexerManagementMBean {
                      .build()) {
             TaskId taskId = taskManager.submit(reIndexer.reIndex(new MailboxPath(namespace, user, name)));
             taskManager.await(taskId);
-            return taskId;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public TaskId reIndex() throws MailboxException {
+    public void reIndex() throws MailboxException {
         try (Closeable closeable =
                  MDCBuilder.create()
                      .addContext(MDCBuilder.PROTOCOL, "CLI")
@@ -67,7 +66,6 @@ public class ReIndexerManagement implements ReIndexerManagementMBean {
                      .build()) {
             TaskId taskId = taskManager.submit(reIndexer.reIndex());
             taskManager.await(taskId);
-            return taskId;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
