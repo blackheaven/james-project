@@ -49,8 +49,8 @@ public class SMTPIsAuthNetwork extends GenericMatcher {
     @Override
     public Collection<MailAddress> match(Mail mail) {
         return AttributeUtils
-                .getValueAndCastFromMail(mail, SMTP_AUTH_NETWORK_NAME, String.class)
-                .filter(relayingAllowed -> Objects.equals(relayingAllowed, "true"))
+                .getValueAndCastFromMail(mail, SMTP_AUTH_NETWORK_NAME, Boolean.class)
+                .filter(relayingAllowed -> Objects.equals(relayingAllowed, true))
                 .map(ignored -> mail.getRecipients())
                 .orElse(ImmutableList.of());
     }
