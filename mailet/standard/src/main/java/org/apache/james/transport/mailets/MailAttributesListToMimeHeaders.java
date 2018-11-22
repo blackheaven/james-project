@@ -19,16 +19,16 @@
 
 package org.apache.james.transport.mailets;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.james.util.OptionalUtils;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
@@ -72,21 +72,22 @@ public class MailAttributesListToMimeHeaders extends GenericMailet {
     }
 
     private void addAttributeToHeader(Mail mail, MimeMessage message, Entry<String, String> entry) {
-        Serializable attribute = mail.getAttribute(entry.getKey());
-        if (attribute instanceof Collection) {
-            @SuppressWarnings("unchecked")
-            Optional<Collection<Serializable>> values = Optional.of((Collection<Serializable>) attribute);
-            addCollectionToHeader(message, entry.getValue(), values);
-        } else {
-            if (attribute != null) {
-                LOGGER.warn("Can not add {} to headers. Expecting class Collection but got {}.", attribute, attribute.getClass());
-            }
-        }
+        AttributeUtils
+            .getAttributeValueFromMail(mail, AttributeName.of(entry.getKey()))
+            .ifPresent(attribute -> {
+                if (attribute instanceof Collection) {
+                    @SuppressWarnings("unchecked")
+                    Collection<AttributeValue<?>> values = (Collection<AttributeValue<?>>) attribute;
+                    addCollectionToHeader(message, entry.getValue(), values);
+                } else {
+                    LOGGER.warn("Can not add {} to headers. Expecting class Collection but got {}.", attribute, attribute.getClass());
+                }
+            });
     }
 
-    private void addCollectionToHeader(MimeMessage message, String headerName, Optional<Collection<Serializable>> values) {
-        OptionalUtils.toStream(values)
-            .flatMap(Collection::stream)
+    private void addCollectionToHeader(MimeMessage message, String headerName, Collection<AttributeValue<?>> values) {
+        values.stream()
+            .map(AttributeValue::getValue)
             .forEach(value -> addValueToHeader(message, headerName, value));
     }
 

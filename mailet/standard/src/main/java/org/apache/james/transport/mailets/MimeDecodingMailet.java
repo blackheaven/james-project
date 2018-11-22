@@ -21,18 +21,29 @@ package org.apache.james.transport.mailets;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
+import org.apache.mailet.AttributeValue;
+import org.apache.mailet.BytesArrayDto;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.fge.lambdas.functions.ThrowingFunction;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
@@ -52,48 +63,69 @@ public class MimeDecodingMailet extends GenericMailet {
 
     public static final String ATTRIBUTE_PARAMETER_NAME = "attribute";
 
-    private String attribute;
+    private AttributeName attribute;
 
     @Override
     public void init() throws MessagingException {
-        attribute = getInitParameter(ATTRIBUTE_PARAMETER_NAME);
-        if (Strings.isNullOrEmpty(attribute)) {
+        String attributeRaw = getInitParameter(ATTRIBUTE_PARAMETER_NAME);
+        if (Strings.isNullOrEmpty(attributeRaw)) {
             throw new MailetException("No value for " + ATTRIBUTE_PARAMETER_NAME
                     + " parameter was provided.");
         }
+        attribute = AttributeName.of(attributeRaw);
     }
 
     @Override
     public void service(Mail mail) throws MessagingException {
-        if (mail.getAttribute(attribute) == null) {
+        if (!mail.getAttribute(attribute).isPresent()) {
             return;
         }
 
-        ImmutableMap.Builder<String, byte[]> extractedMimeContentByName = ImmutableMap.builder();
-        for (Map.Entry<String, byte[]> entry: getAttributeContent(mail).entrySet()) {
-            Optional<byte[]> maybeContent = extractContent(entry.getValue());
-            if (maybeContent.isPresent()) {
-                extractedMimeContentByName.put(entry.getKey(), maybeContent.get());
-            }
-        }
-        mail.setAttribute(attribute, extractedMimeContentByName.build());
+        mail.setAttribute(new Attribute(attribute, AttributeValue.of(getExtractedContent(mail))));
+    }
+
+    private ImmutableMap<String, AttributeValue<?>> getExtractedContent(Mail mail) throws MailetException {
+        return AttributeUtils
+                .getValueAndCastFromMail(mail, attribute, Serializable.class)
+                .map(this::extractAttributeContent)
+                .orElse(ImmutableMap.<String, AttributeValue<?>>of());
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, byte[]> getAttributeContent(Mail mail) throws MailetException {
-        Serializable attributeContent = mail.getAttribute(attribute);
+    private ImmutableMap<String, AttributeValue<?>> extractAttributeContent(Serializable attributeContent) {
         if (! (attributeContent instanceof Map)) {
             LOGGER.debug("Invalid attribute found into attribute {} class Map expected but {} found.",
                     attribute, attributeContent.getClass());
             return ImmutableMap.of();
         }
-        return (Map<String, byte[]>) attributeContent;
+
+        Map<String, AttributeValue<?>> attributeMap = (Map<String, AttributeValue<?>>) attributeContent;
+        ThrowingFunction<Entry<String, AttributeValue<?>>, Optional<Pair<String, AttributeValue<BytesArrayDto>>>> performExtraction =
+                entry -> convertToByteArray(entry.getValue().getValue()).flatMap(Throwing.function(this::extractContent).sneakyThrow())
+                            .map(extractedContent -> Pair.of(entry.getKey(), AttributeValue.of(extractedContent)));
+
+        return attributeMap
+                .entrySet()
+                .stream()
+                .map(performExtraction)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(ImmutableMap.toImmutableMap(Pair::getLeft, Pair::getRight));
     }
 
-    private Optional<byte[]> extractContent(Object rawMime) throws MessagingException {
+    private Optional<byte[]> convertToByteArray(Object value) {
+        if (value instanceof BytesArrayDto) {
+            return Optional.of(((BytesArrayDto) value).getValues());
+        } else if (value instanceof String) {
+            return Optional.of(((String) value).getBytes(StandardCharsets.UTF_8));
+        } 
+        return Optional.empty();
+    }
+
+    private Optional<BytesArrayDto> extractContent(byte[] rawMime) throws MessagingException {
         try {
-            MimeBodyPart mimeBodyPart = new MimeBodyPart(new ByteArrayInputStream((byte[]) rawMime));
-            return Optional.ofNullable(IOUtils.toByteArray(mimeBodyPart.getInputStream()));
+            MimeBodyPart mimeBodyPart = new MimeBodyPart(new ByteArrayInputStream(rawMime));
+            return Optional.ofNullable(IOUtils.toByteArray(mimeBodyPart.getInputStream())).map(BytesArrayDto::new);
         } catch (IOException e) {
             LOGGER.error("Error while extracting content from mime part", e);
             return Optional.empty();

@@ -25,6 +25,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import javax.mail.MessagingException;
 
 import org.apache.james.core.builder.MimeMessageBuilder;
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mailet;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
@@ -39,11 +42,13 @@ class MailAttributesToMimeHeadersTest {
     private static final String HEADER_NAME1 = "JUNIT";
     private static final String HEADER_NAME2 = "JUNIT2";
 
-    private static final String MAIL_ATTRIBUTE_VALUE1 = "test1";
-    private static final String MAIL_ATTRIBUTE_VALUE2 = "test2";
+    private static final String RAW_MAIL_ATTRIBUTE_VALUE1 = "test1";
+    private static final String RAW_MAIL_ATTRIBUTE_VALUE2 = "test2";
+    private static final AttributeValue<String> MAIL_ATTRIBUTE_VALUE1 = AttributeValue.of(RAW_MAIL_ATTRIBUTE_VALUE1);
+    private static final AttributeValue<String> MAIL_ATTRIBUTE_VALUE2 = AttributeValue.of(RAW_MAIL_ATTRIBUTE_VALUE2);
 
-    private static final String MAIL_ATTRIBUTE_NAME1 = "org.apache.james.test";
-    private static final String MAIL_ATTRIBUTE_NAME2 = "org.apache.james.test2";
+    private static final AttributeName MAIL_ATTRIBUTE_NAME1 = AttributeName.of("org.apache.james.test");
+    private static final AttributeName MAIL_ATTRIBUTE_NAME2 = AttributeName.of("org.apache.james.test2");
 
     @BeforeEach
     void setup() {
@@ -84,8 +89,8 @@ class MailAttributesToMimeHeadersTest {
         mailet.init(mailetConfig);
 
         FakeMail mockedMail = MailUtil.createMockMail2Recipients(MailUtil.createMimeMessage());
-        mockedMail.setAttribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1);
-        mockedMail.setAttribute(MAIL_ATTRIBUTE_NAME2, MAIL_ATTRIBUTE_VALUE2);
+        mockedMail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1));
+        mockedMail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME2, MAIL_ATTRIBUTE_VALUE2));
 
         mailet.service(mockedMail);
         assertThat(mockedMail.getMessage().getHeader("another.attribute")).isNull();
@@ -96,16 +101,16 @@ class MailAttributesToMimeHeadersTest {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
             .mailetName("Test")
             .setProperty("simplemapping",
-                MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
+                MAIL_ATTRIBUTE_NAME1.asString() + "; " + HEADER_NAME1)
             .build();
 
         mailet.init(mailetConfig);
 
         FakeMail mockedMail = MailUtil.createMockMail2Recipients(MailUtil.createMimeMessage());
-        mockedMail.setAttribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1);
+        mockedMail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1));
 
         mailet.service(mockedMail);
-        assertThat(mockedMail.getMessage().getHeader(HEADER_NAME1)).containsExactly(MAIL_ATTRIBUTE_VALUE1);
+        assertThat(mockedMail.getMessage().getHeader(HEADER_NAME1)).containsExactly(RAW_MAIL_ATTRIBUTE_VALUE1);
     }
 
     @Test
@@ -113,39 +118,39 @@ class MailAttributesToMimeHeadersTest {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
                 .mailetName("Test")
                 .setProperty("simplemapping", 
-                        MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1 +
-                        "," + MAIL_ATTRIBUTE_NAME2 + "; " + HEADER_NAME2 + 
+                        MAIL_ATTRIBUTE_NAME1.asString() + "; " + HEADER_NAME1 +
+                        "," + MAIL_ATTRIBUTE_NAME2.asString() + "; " + HEADER_NAME2 + 
                         "," + "another.attribute" + "; " + "Another-Header")
                 .build();
         mailet.init(mailetConfig);
         
         FakeMail mockedMail = MailUtil.createMockMail2Recipients(MailUtil.createMimeMessage());
-        mockedMail.setAttribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1);
-        mockedMail.setAttribute(MAIL_ATTRIBUTE_NAME2, MAIL_ATTRIBUTE_VALUE2);
-        mockedMail.setAttribute("unmatched.attribute", "value");
+        mockedMail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1));
+        mockedMail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME2, MAIL_ATTRIBUTE_VALUE2));
+        mockedMail.setAttribute(new Attribute(AttributeName.of("unmatched.attribute"), AttributeValue.of("value")));
 
         mailet.service(mockedMail);
 
-        assertThat(mockedMail.getMessage().getHeader(HEADER_NAME1)).containsExactly(MAIL_ATTRIBUTE_VALUE1);
-        assertThat(mockedMail.getMessage().getHeader(HEADER_NAME2)).containsExactly(MAIL_ATTRIBUTE_VALUE2);
+        assertThat(mockedMail.getMessage().getHeader(HEADER_NAME1)).containsExactly(RAW_MAIL_ATTRIBUTE_VALUE1);
+        assertThat(mockedMail.getMessage().getHeader(HEADER_NAME2)).containsExactly(RAW_MAIL_ATTRIBUTE_VALUE2);
     }
 
     @Test
     void shouldAddAttributeIntoHeadersWhenHeaderAlreadyPresent() throws MessagingException {
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
                 .mailetName("Test")
-                .setProperty("simplemapping", MAIL_ATTRIBUTE_NAME1 + "; " + HEADER_NAME1)
+                .setProperty("simplemapping", MAIL_ATTRIBUTE_NAME1.asString() + "; " + HEADER_NAME1)
                 .build();
         mailet.init(mailetConfig);
 
         FakeMail mockedMail = MailUtil.createMockMail2Recipients(MimeMessageBuilder.mimeMessageBuilder()
             .addHeader(HEADER_NAME1, "first value")
             .build());
-        mockedMail.setAttribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1);
+        mockedMail.setAttribute(new Attribute(MAIL_ATTRIBUTE_NAME1, MAIL_ATTRIBUTE_VALUE1));
         
         mailet.service(mockedMail);
 
-        assertThat(mockedMail.getMessage().getHeader(HEADER_NAME1)).containsExactly("first value", MAIL_ATTRIBUTE_VALUE1);
+        assertThat(mockedMail.getMessage().getHeader(HEADER_NAME1)).containsExactly("first value", RAW_MAIL_ATTRIBUTE_VALUE1);
     }
 
     

@@ -20,13 +20,17 @@
 package org.apache.james.transport.mailets;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
+import org.apache.mailet.Attribute;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
+import org.apache.mailet.BytesArrayDto;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.GenericMailet;
@@ -37,7 +41,6 @@ import com.github.fge.lambdas.Throwing;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.AlreadyClosedException;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -69,7 +72,7 @@ public class AmqpForwardAttribute extends GenericMailet {
     public static final String ROUTING_KEY_DEFAULT_VALUE = "";
 
     private String exchange;
-    private String attribute;
+    private AttributeName attribute;
     private ConnectionFactory connectionFactory;
     @VisibleForTesting String routingKey;
 
@@ -86,11 +89,12 @@ public class AmqpForwardAttribute extends GenericMailet {
                     + " parameter was provided.");
         }
         routingKey = getInitParameter(ROUTING_KEY_PARAMETER_NAME, ROUTING_KEY_DEFAULT_VALUE);
-        attribute = getInitParameter(ATTRIBUTE_PARAMETER_NAME);
-        if (Strings.isNullOrEmpty(attribute)) {
+        String rawAttribute = getInitParameter(ATTRIBUTE_PARAMETER_NAME);
+        if (Strings.isNullOrEmpty(rawAttribute)) {
             throw new MailetException("No value for " + ATTRIBUTE_PARAMETER_NAME
                     + " parameter was provided.");
         }
+        attribute = AttributeName.of(rawAttribute);
         connectionFactory = new ConnectionFactory();
         try {
             connectionFactory.setUri(uri);
@@ -106,32 +110,36 @@ public class AmqpForwardAttribute extends GenericMailet {
 
     @Override
     public void service(Mail mail) throws MailetException {
-        if (mail.getAttribute(attribute) == null) {
-            return;
-        }
-        Stream<byte[]> content = getAttributeContent(mail);
-        try {
-            sendContent(content);
-        } catch (IOException e) {
-            LOGGER.error("IOException while writing to AMQP: {}", e.getMessage(), e);
-        } catch (TimeoutException e) {
-            LOGGER.error("TimeoutException while writing to AMQP: {}", e.getMessage(), e);
-        } catch (AlreadyClosedException e) {
-            LOGGER.error("AlreadyClosedException while writing to AMQP: {}", e.getMessage(), e);
-        }
+        getAttributeContent(mail)
+            .ifPresent(content -> {
+                try {
+                    sendContent(content);
+                } catch (Exception e) {
+                    LOGGER.error("{} while writing to AMQP: {}", e.getClass().getSimpleName(), e.getMessage(), e);
+                }
+            });
+    }
+
+    private Optional<Stream<byte[]>> getAttributeContent(Mail mail) throws MailetException {
+        return mail.getAttribute(attribute)
+            .map(Attribute::getValue)
+            .map(AttributeValue::value)
+            .map(Throwing.function(this::toByteStream).sneakyThrow());
     }
 
     @SuppressWarnings("unchecked")
-    private Stream<byte[]> getAttributeContent(Mail mail) throws MailetException {
-        Serializable attributeContent = mail.getAttribute(attribute);
+    private Stream<byte[]> toByteStream(Object attributeContent) throws MailetException {
         if (attributeContent instanceof Map) {
-            return ((Map<String, byte[]>) attributeContent).values().stream();
+            Map<String, AttributeValue<BytesArrayDto>> attributeMap = (Map<String, AttributeValue<BytesArrayDto>>) attributeContent;
+            return attributeMap.values().stream().map(attributeValue -> attributeValue.getValue().getValues());
         }
         if (attributeContent instanceof List) {
-            return ((List<byte[]>) attributeContent).stream();
+            List<AttributeValue<BytesArrayDto>> attributeList = (List<AttributeValue<BytesArrayDto>>) attributeContent;
+            return attributeList.stream().map(attributeValue -> attributeValue.getValue().getValues());
         }
         if (attributeContent instanceof String) {
-            return Stream.of(((String) attributeContent).getBytes(StandardCharsets.UTF_8));
+            String attributeString = (String) attributeContent;
+            return Stream.of(attributeString.getBytes(StandardCharsets.UTF_8));
         }
         throw new MailetException("Invalid attribute found into attribute "
                 + attribute + "class Map or List or String expected but "
