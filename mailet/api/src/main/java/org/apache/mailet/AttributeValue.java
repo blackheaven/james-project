@@ -106,14 +106,14 @@ public class AttributeValue<T> {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static AttributeValue<Collection<AttributeValue<?>>> of(Collection<AttributeValue<?>> value) {
         Preconditions.checkNotNull(value, "value should not be null");
-        Preconditions.checkArgument(value.stream().allMatch(x -> x instanceof AttributeValue), "values should be instances of Attributes");
+        Preconditions.checkArgument(((Collection) value).stream().allMatch(x -> x instanceof AttributeValue), "values should be instances of Attributes");
         return new AttributeValue<>(value, new Serializer.CollectionSerializer());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static AttributeValue<Map<String, AttributeValue<?>>> of(Map<String, AttributeValue<?>> value) {
         Preconditions.checkNotNull(value, "value should not be null");
-        Preconditions.checkArgument(value.values().stream().allMatch(x -> x instanceof AttributeValue), "values should be instances of Attributes");
+        Preconditions.checkArgument(((Map) value).values().stream().allMatch(x -> x instanceof AttributeValue), "values should be instances of Attributes");
         return new AttributeValue<>(value, new Serializer.MapSerializer());
     }
 

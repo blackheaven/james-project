@@ -19,6 +19,7 @@
 package org.apache.mailet;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -476,13 +477,14 @@ class AttributeValueTest {
     class ListSerialization {
         @Test
         void nullListShouldThrowAnException() {
-            assertThatNullPointerException().
-                isThrownBy(() -> AttributeValue.of((List<AttributeValue<?>>) null));
+            assertThatNullPointerException()
+                .isThrownBy(() -> AttributeValue.of((List<AttributeValue<?>>) null));
         }
 
         @Test
         void stringListShouldThrowAnException() {
-            assertThatThrownBy(() -> AttributeValue.ofAny(ImmutableList.of("not an AttributeValue")));
+            assertThatIllegalArgumentException()
+                .isThrownBy(() -> AttributeValue.ofAny(ImmutableList.of("not an AttributeValue")));
         }
 
         @Test
@@ -546,12 +548,14 @@ class AttributeValueTest {
 
         @Test
         void stringMapShouldThrowAnException() {
-            assertThatThrownBy(() -> AttributeValue.ofAny(ImmutableMap.of("not an", "AttributeValue")));
+            assertThatIllegalArgumentException()
+                .isThrownBy(() -> AttributeValue.ofAny(ImmutableMap.of("not an", "AttributeValue")));
         }
 
         @Test
         void mixtedMapShouldThrowAnException() {
-            assertThatThrownBy(() -> AttributeValue.ofAny(ImmutableMap.of("an", AttributeValue.of("AttributeValue"), "not an", "AttributeValue")));
+            assertThatIllegalArgumentException()
+                .isThrownBy(() -> AttributeValue.ofAny(ImmutableMap.of("an", AttributeValue.of("AttributeValue"), "not an", "AttributeValue")));
         }
 
         @Test
