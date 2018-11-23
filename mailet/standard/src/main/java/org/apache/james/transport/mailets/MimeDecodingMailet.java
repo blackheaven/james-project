@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
@@ -43,7 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
-import com.github.fge.lambdas.functions.ThrowingFunction;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
@@ -100,17 +100,19 @@ public class MimeDecodingMailet extends GenericMailet {
         }
 
         Map<String, AttributeValue<?>> attributeMap = (Map<String, AttributeValue<?>>) attributeContent;
-        ThrowingFunction<Entry<String, AttributeValue<?>>, Optional<Pair<String, AttributeValue<BytesArrayDto>>>> performExtraction =
-                entry -> convertToByteArray(entry.getValue().getValue()).flatMap(Throwing.function(this::extractContent).sneakyThrow())
-                            .map(extractedContent -> Pair.of(entry.getKey(), AttributeValue.of(extractedContent)));
-
         return attributeMap
                 .entrySet()
                 .stream()
-                .map(performExtraction)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .flatMap(this::extractObjectToByteArrayDto)
                 .collect(ImmutableMap.toImmutableMap(Pair::getLeft, Pair::getRight));
+    }
+
+    public Stream<Pair<String, AttributeValue<BytesArrayDto>>> extractObjectToByteArrayDto(Entry<String, AttributeValue<?>> entry) {
+        return convertToByteArray(entry.getValue().getValue())
+                .flatMap(Throwing.function(this::extractContent).sneakyThrow())
+                    .map(extractedContent -> Pair.of(entry.getKey(), AttributeValue.of(extractedContent)))
+                    .map(Stream::of)
+                    .orElse(Stream.of());
     }
 
     private Optional<byte[]> convertToByteArray(Object value) {
