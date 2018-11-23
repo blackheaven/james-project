@@ -482,12 +482,12 @@ class AttributeValueTest {
 
         @Test
         void stringListShouldThrowAnException() {
-            assertThatThrownBy(() -> AttributeValue.ofAny((List<String>) ImmutableList.of("not an AttributeValue")));
+            assertThatThrownBy(() -> AttributeValue.ofAny(ImmutableList.of("not an AttributeValue")));
         }
 
         @Test
         void mixedListShouldThrowAnException() {
-            assertThatThrownBy(() -> AttributeValue.ofAny((List<Object>) ImmutableList.of(AttributeValue.of(true), "not an AttributeValue")));
+            assertThatThrownBy(() -> AttributeValue.ofAny(ImmutableList.of(AttributeValue.of(true), "not an AttributeValue")));
         }
 
         @Test
