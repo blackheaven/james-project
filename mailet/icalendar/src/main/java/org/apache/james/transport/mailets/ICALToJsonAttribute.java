@@ -49,6 +49,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.fge.lambdas.Throwing;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
@@ -100,12 +101,12 @@ public class ICALToJsonAttribute extends GenericMailet {
     private static final String DEFAULT_RAW_SOURCE_CONFIG_ATTRIBUTE_NAME = "attachments";
     private static final String DEFAULT_DESTINATION_CONFIG_ATTRIBUTE_NAME = "icalendarJson";
 
-    public static final AttributeName SOURCE_ATTRIBUTE_NAME = AttributeName.of(SOURCE_CONFIG_ATTRIBUTE_NAME);
-    public static final AttributeName RAW_SOURCE_ATTRIBUTE_NAME = AttributeName.of(RAW_SOURCE_CONFIG_ATTRIBUTE_NAME);
-    public static final AttributeName DESTINATION_ATTRIBUTE_NAME = AttributeName.of(DESTINATION_CONFIG_ATTRIBUTE_NAME);
-    public static final AttributeName DEFAULT_SOURCE_ATTRIBUTE_NAME = AttributeName.of(DEFAULT_SOURCE_CONFIG_ATTRIBUTE_NAME);
-    public static final AttributeName DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME = AttributeName.of(DEFAULT_RAW_SOURCE_CONFIG_ATTRIBUTE_NAME);
-    public static final AttributeName DEFAULT_DESTINATION_ATTRIBUTE_NAME = AttributeName.of(DEFAULT_DESTINATION_CONFIG_ATTRIBUTE_NAME);
+    @VisibleForTesting static final AttributeName SOURCE_ATTRIBUTE_NAME = AttributeName.of(SOURCE_CONFIG_ATTRIBUTE_NAME);
+    @VisibleForTesting static final AttributeName RAW_SOURCE_ATTRIBUTE_NAME = AttributeName.of(RAW_SOURCE_CONFIG_ATTRIBUTE_NAME);
+    @VisibleForTesting static final AttributeName DESTINATION_ATTRIBUTE_NAME = AttributeName.of(DESTINATION_CONFIG_ATTRIBUTE_NAME);
+    @VisibleForTesting static final AttributeName DEFAULT_SOURCE_ATTRIBUTE_NAME = AttributeName.of(DEFAULT_SOURCE_CONFIG_ATTRIBUTE_NAME);
+    @VisibleForTesting static final AttributeName DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME = AttributeName.of(DEFAULT_RAW_SOURCE_CONFIG_ATTRIBUTE_NAME);
+    @VisibleForTesting static final AttributeName DEFAULT_DESTINATION_ATTRIBUTE_NAME = AttributeName.of(DEFAULT_DESTINATION_CONFIG_ATTRIBUTE_NAME);
 
     static {
         ICal4JConfigurator.configure();

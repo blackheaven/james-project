@@ -70,8 +70,8 @@ public class ICALToHeader extends GenericMailet {
     private static final String CONFIG_ATTRIBUTE_PROPERTY = "attribute";
     private static final String CONFIG_ATTRIBUTE_DEFAULT_NAME = "icalendar";
 
-    public static final AttributeName ATTRIBUTE_PROPERTY = AttributeName.of(CONFIG_ATTRIBUTE_PROPERTY);
-    public static final AttributeName ATTRIBUTE_DEFAULT_NAME = AttributeName.of(CONFIG_ATTRIBUTE_DEFAULT_NAME);
+    @VisibleForTesting static final AttributeName ATTRIBUTE_PROPERTY = AttributeName.of(CONFIG_ATTRIBUTE_PROPERTY);
+    @VisibleForTesting static final AttributeName ATTRIBUTE_DEFAULT_NAME = AttributeName.of(CONFIG_ATTRIBUTE_DEFAULT_NAME);
 
     public static final String X_MEETING_UID_HEADER = "X-MEETING-UID";
     public static final String X_MEETING_METHOD_HEADER = "X-MEETING-METHOD";
@@ -115,7 +115,7 @@ public class ICALToHeader extends GenericMailet {
         calendarMap
             .values()
             .stream()
-            .findAny()
+            .findFirst()
             .ifPresent(Throwing.<AttributeValue<Calendar>>consumer(calendar -> writeToHeaders(calendar.getValue(), mail)).sneakyThrow());
     }
 
