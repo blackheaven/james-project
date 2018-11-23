@@ -94,19 +94,12 @@ public class ICALToJsonAttribute extends GenericMailet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ICALToJsonAttribute.class);
 
-    private static final String SOURCE_CONFIG_ATTRIBUTE_NAME = "source";
-    private static final String RAW_SOURCE_CONFIG_ATTRIBUTE_NAME = "rawSource";
-    private static final String DESTINATION_CONFIG_ATTRIBUTE_NAME = "destination";
-    private static final String DEFAULT_SOURCE_CONFIG_ATTRIBUTE_NAME = "icalendar";
-    private static final String DEFAULT_RAW_SOURCE_CONFIG_ATTRIBUTE_NAME = "attachments";
-    private static final String DEFAULT_DESTINATION_CONFIG_ATTRIBUTE_NAME = "icalendarJson";
-
-    @VisibleForTesting static final AttributeName SOURCE_ATTRIBUTE_NAME = AttributeName.of(SOURCE_CONFIG_ATTRIBUTE_NAME);
-    @VisibleForTesting static final AttributeName RAW_SOURCE_ATTRIBUTE_NAME = AttributeName.of(RAW_SOURCE_CONFIG_ATTRIBUTE_NAME);
-    @VisibleForTesting static final AttributeName DESTINATION_ATTRIBUTE_NAME = AttributeName.of(DESTINATION_CONFIG_ATTRIBUTE_NAME);
-    @VisibleForTesting static final AttributeName DEFAULT_SOURCE_ATTRIBUTE_NAME = AttributeName.of(DEFAULT_SOURCE_CONFIG_ATTRIBUTE_NAME);
-    @VisibleForTesting static final AttributeName DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME = AttributeName.of(DEFAULT_RAW_SOURCE_CONFIG_ATTRIBUTE_NAME);
-    @VisibleForTesting static final AttributeName DEFAULT_DESTINATION_ATTRIBUTE_NAME = AttributeName.of(DEFAULT_DESTINATION_CONFIG_ATTRIBUTE_NAME);
+    @VisibleForTesting static final String SOURCE_CONFIG_ATTRIBUTE_NAME = "source";
+    @VisibleForTesting static final String RAW_SOURCE_CONFIG_ATTRIBUTE_NAME = "rawSource";
+    @VisibleForTesting static final String DESTINATION_CONFIG_ATTRIBUTE_NAME = "destination";
+    @VisibleForTesting static final String DEFAULT_SOURCE_CONFIG_ATTRIBUTE_NAME = "icalendar";
+    @VisibleForTesting static final String DEFAULT_RAW_SOURCE_CONFIG_ATTRIBUTE_NAME = "attachments";
+    @VisibleForTesting static final String DEFAULT_DESTINATION_CONFIG_ATTRIBUTE_NAME = "icalendarJson";
 
     static {
         ICal4JConfigurator.configure();
