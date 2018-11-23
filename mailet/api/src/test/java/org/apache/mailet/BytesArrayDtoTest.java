@@ -16,47 +16,15 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-
 package org.apache.mailet;
 
-import java.util.Arrays;
+import org.junit.jupiter.api.Test;
 
-public final class BytesArrayDto {
-    private final byte[] values;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-    public BytesArrayDto(byte[] values) {
-        this.values = values;
+public class BytesArrayDtoTest {
+    @Test
+    void shouldRespectBeanContract() {
+        EqualsVerifier.forClass(BytesArrayDto.class).verify();
     }
-
-    public byte[] getValues() {
-        return values;
-    }
-
-    @Override
-    public final int hashCode() {
-        return Arrays.hashCode(values);
-    }
-
-    @Override
-    public final boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        if (obj == null) {
-            return false;
-        }
-
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-
-        BytesArrayDto other = (BytesArrayDto) obj;
-        if (!Arrays.equals(values, other.values)) {
-            return false;
-        }
-
-        return true;
-    }
-
 }

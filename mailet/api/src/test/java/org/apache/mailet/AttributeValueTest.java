@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -334,7 +335,7 @@ class AttributeValueTest {
     class ByteArraySerialization {
         @Test
         void byteArrayShouldBeSerializedAndBack() {
-            AttributeValue<BytesArrayDto> expected = AttributeValue.of(new BytesArrayDto("value".getBytes()));
+            AttributeValue<BytesArrayDto> expected = AttributeValue.of(new BytesArrayDto("value".getBytes(StandardCharsets.UTF_8)));
 
             JsonNode json = expected.toJson();
             AttributeValue<?> actual = AttributeValue.fromJson(json);
@@ -344,7 +345,7 @@ class AttributeValueTest {
 
         @Test
         void emptyByteArrayShouldBeSerializedAndBack() {
-            AttributeValue<BytesArrayDto> expected = AttributeValue.of(new BytesArrayDto("".getBytes()));
+            AttributeValue<BytesArrayDto> expected = AttributeValue.of(new BytesArrayDto("".getBytes(StandardCharsets.UTF_8)));
 
             JsonNode json = expected.toJson();
             AttributeValue<?> actual = AttributeValue.fromJson(json);
@@ -360,7 +361,7 @@ class AttributeValueTest {
 
         @Test
         void fromJsonStringShouldReturnByteArrayAttributeValueWhenByteArray() throws Exception {
-            AttributeValue<BytesArrayDto> expected = AttributeValue.of(new BytesArrayDto("value".getBytes()));
+            AttributeValue<BytesArrayDto> expected = AttributeValue.of(new BytesArrayDto("value".getBytes(StandardCharsets.UTF_8)));
 
             AttributeValue<?> actual = AttributeValue.fromJsonString("{\"serializer\":\"ByteArraySerializer\",\"value\": \"dmFsdWU=\"}");
 

@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
@@ -271,12 +272,12 @@ public interface Serializer<T> {
     class ByteArraySerializer implements Serializer<BytesArrayDto> {
         @Override
         public JsonNode serialize(BytesArrayDto object) {
-            return STRING_SERIALIZER.serialize(Base64.getEncoder().encodeToString(object.getValues()));
+            return STRING_SERIALIZER.serialize(new String(Base64.getEncoder().encode(object.getValues()), StandardCharsets.UTF_8));
         }
 
         @Override
         public Optional<BytesArrayDto> deserialize(JsonNode json) {
-            return STRING_SERIALIZER.deserialize(json).map(byteArray -> new BytesArrayDto(Base64.getDecoder().decode(byteArray)));
+            return STRING_SERIALIZER.deserialize(json).map(stringValue -> new BytesArrayDto(Base64.getDecoder().decode(stringValue.getBytes(StandardCharsets.UTF_8))));
         }
 
         @Override
