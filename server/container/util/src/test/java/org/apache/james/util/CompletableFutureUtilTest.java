@@ -30,28 +30,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 
 public class CompletableFutureUtilTest {
-    private ExecutorService executorService;
+    private static ExecutorService executorService;
 
-    @Before
-    public void setUp() {
+    @BeforeAll
+    static void setUp() {
         executorService = Executors.newFixedThreadPool(4);
     }
 
-    @After
-    public void tearDown() {
+    @AfterAll
+    static void tearDown() {
         executorService.shutdownNow();
     }
 
     @Test
-    public void combineShouldReturnCombinationOfBothSuppliedFutures() {
+    void combineShouldReturnCombinationOfBothSuppliedFutures() {
         int value1 = 18;
         int value2 = 12;
 
@@ -65,7 +65,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void allOfShouldUnboxEmptyStream() {
+    void allOfShouldUnboxEmptyStream() {
         assertThat(
             CompletableFutureUtil.allOf(Stream.empty())
                 .join()
@@ -74,7 +74,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void chainAllShouldPreserveExecutionOrder() {
+    void chainAllShouldPreserveExecutionOrder() {
         int itemCount = 10;
         ImmutableList<Integer> ints = IntStream.range(0, itemCount)
             .boxed()
@@ -99,7 +99,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void chainAllShouldNotThrowOnEmptyStream() {
+    void chainAllShouldNotThrowOnEmptyStream() {
         Stream<Integer> result = CompletableFutureUtil.chainAll(Stream.<Integer>of(),
             i -> CompletableFuture.supplyAsync(() -> i, executorService))
             .join();
@@ -109,7 +109,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void chainAllShouldPreserveOrder() {
+    void chainAllShouldPreserveOrder() {
         int itemCount = 10;
         ImmutableList<Integer> ints = IntStream.range(0, itemCount)
             .boxed()
@@ -124,7 +124,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void allOfShouldUnboxStream() {
+    void allOfShouldUnboxStream() {
         long value1 = 18L;
         long value2 = 19L;
         long value3 = 20L;
@@ -140,7 +140,24 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void allOfShouldPreserveOrder() {
+=======
+    void allOfShouldSupportNullValue() {
+        assertThatCode(() ->
+            CompletableFutureUtil.allOf(
+                Stream.of(
+                    CompletableFuture.completedFuture(null),
+                    CompletableFuture.completedFuture(null),
+                    CompletableFuture.completedFuture(null)))
+                .join()
+                .collect(Collectors.toList()))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void allOfShouldPreserveOrder() {
+>>>>>>> JAMES-2611 Migrate james-server-util to JUNIT5
         long value1 = 18L;
         long value2 = 19L;
         long value3 = 20L;
@@ -170,7 +187,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void allOfShouldWorkOnVeryLargeStream() {
+    void allOfShouldWorkOnVeryLargeStream() {
         CompletableFutureUtil.allOf(
             IntStream.range(0, 100000)
                 .boxed()
@@ -179,7 +196,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void mapShouldMapOnStreamInsideACompletableFuturOfStream() {
+    void mapShouldMapOnStreamInsideACompletableFuturOfStream() {
         CompletableFuture<Stream<Integer>> futurOfInteger = CompletableFuture.completedFuture(Stream.of(1, 2, 3));
 
         assertThat(
@@ -191,7 +208,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void mapShouldReturnEmptyStreamWhenGivenAnEmptyStream() {
+    void mapShouldReturnEmptyStreamWhenGivenAnEmptyStream() {
         CompletableFuture<Stream<Integer>> futurOfInteger = CompletableFuture.completedFuture(Stream.of());
 
         assertThat(
@@ -203,7 +220,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void composeIfTrueShouldReturnTrueWhenTrue() {
+    void composeIfTrueShouldReturnTrueWhenTrue() {
         assertThat(
             CompletableFutureUtil.composeIfTrue(() -> CompletableFuture.completedFuture(null))
                 .apply(true)
@@ -212,7 +229,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void composeIfTrueShouldReturnFalseWhenFalse() {
+    void composeIfTrueShouldReturnFalseWhenFalse() {
         assertThat(
             CompletableFutureUtil.composeIfTrue(() -> CompletableFuture.completedFuture(null))
                 .apply(false)
@@ -221,7 +238,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void composeIfTrueShouldComposeWhenTrue() {
+    void composeIfTrueShouldComposeWhenTrue() {
         AtomicInteger atomicInteger = new AtomicInteger(0);
         CompletableFutureUtil.composeIfTrue(() -> {
             atomicInteger.incrementAndGet();
@@ -234,7 +251,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void composeIfTrueShouldNotComposeWhenFalse() {
+    void composeIfTrueShouldNotComposeWhenFalse() {
         AtomicInteger atomicInteger = new AtomicInteger(0);
         CompletableFutureUtil.composeIfTrue(() -> {
             atomicInteger.incrementAndGet();
@@ -247,7 +264,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void reduceShouldReturnEmptyWhenNoValue() {
+    void reduceShouldReturnEmptyWhenNoValue() {
         assertThat(
             CompletableFutureUtil.reduce(
                 (i, j) -> i + j,
@@ -257,7 +274,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void reduceShouldWork() {
+    void reduceShouldWork() {
         assertThat(
             CompletableFutureUtil.reduce(
                 (i, j) -> i + j,
@@ -268,7 +285,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void reduceShouldReturnIdentityAccumulatorWhenNoValue() {
+    void reduceShouldReturnIdentityAccumulatorWhenNoValue() {
         long identityAccumulator = 0L;
         assertThat(
             CompletableFutureUtil.reduce(
@@ -280,7 +297,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void reduceShouldWorkWithIdentityAccumulator() {
+    void reduceShouldWorkWithIdentityAccumulator() {
         assertThat(
             CompletableFutureUtil.reduce(
                 (i, j) -> i + j,
@@ -291,7 +308,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void unwrapShouldUnwrapWhenValue() {
+    void unwrapShouldUnwrapWhenValue() {
         assertThat(
             CompletableFutureUtil.unwrap(
                     CompletableFuture.completedFuture(Optional.of(CompletableFuture.completedFuture(1L))))
@@ -300,7 +317,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void unwrapShouldUnwrapWhenEmpty() {
+    void unwrapShouldUnwrapWhenEmpty() {
         assertThat(
             CompletableFutureUtil.unwrap(
                     CompletableFuture.completedFuture(Optional.empty()))
@@ -309,14 +326,14 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void sortShouldReturnEmptyWhenEmptyStream() {
+    void sortShouldReturnEmptyWhenEmptyStream() {
         FluentFutureStream<Long> futureStream = FluentFutureStream.ofFutures();
         assertThat(futureStream.sorted(Long::compareTo).join())
             .isEmpty();
     }
 
     @Test
-    public void sortShouldReturnTheSortedStream() {
+    void sortShouldReturnTheSortedStream() {
         FluentFutureStream<Long> futureStream = FluentFutureStream.ofFutures(
             CompletableFuture.completedFuture(4L),
             CompletableFuture.completedFuture(3L),
@@ -328,7 +345,7 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-    public void exceptionallyFutureShouldReturnACompletedExceptionallyFuture() {
+    void exceptionallyFutureShouldReturnACompletedExceptionallyFuture() {
         CompletableFuture<Object> failedFuture = CompletableFutureUtil.exceptionallyFuture(new Exception("failure"));
         assertThat(failedFuture)
             .isCompletedExceptionally();
