@@ -140,9 +140,6 @@ public class CompletableFutureUtilTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void allOfShouldPreserveOrder() {
-=======
     void allOfShouldSupportNullValue() {
         assertThatCode(() ->
             CompletableFutureUtil.allOf(
@@ -157,7 +154,6 @@ public class CompletableFutureUtilTest {
 
     @Test
     void allOfShouldPreserveOrder() {
->>>>>>> JAMES-2611 Migrate james-server-util to JUNIT5
         long value1 = 18L;
         long value2 = 19L;
         long value3 = 20L;
