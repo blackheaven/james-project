@@ -78,7 +78,7 @@ public class JMAPServlet extends HttpServlet {
                     .collect(Collectors.toList());
 
             resp.setContentType(JSON_CONTENT_TYPE);
-            writeValue(resp, responses);
+            sendResponses(resp, responses);
         } catch (IOException e) {
             LOGGER.warn("Error handling request", e);
             resp.setStatus(SC_BAD_REQUEST);
@@ -90,11 +90,11 @@ public class JMAPServlet extends HttpServlet {
         }
     }
 
-    private void writeValue(HttpServletResponse response, List<Object[]> responses) {
+    private void sendResponses(HttpServletResponse response, List<Object[]> responses) {
         try {
             objectMapper.writeValue(response.getOutputStream(), responses);
         } catch (IOException e) {
-            LOGGER.info("Error handling request", e);
+            LOGGER.info("Error sending response", e);
             response.setStatus(SC_BAD_REQUEST);
         }
     }
