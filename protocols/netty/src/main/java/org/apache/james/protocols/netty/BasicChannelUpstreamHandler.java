@@ -234,7 +234,7 @@ public class BasicChannelUpstreamHandler extends SimpleChannelUpstreamHandler {
                     }
                     transport.writeResponse(Response.DISCONNECT, session);
                 }
-                LOGGER.error("Unable to process request", e.getCause());
+                LOGGER.info("Unable to process request", e.getCause());
                 cleanup(ctx);
             }
         }
