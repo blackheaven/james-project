@@ -51,64 +51,78 @@ class CassandraMailboxRecentDAOTest {
 
     @Test
     void getRecentMessageUidsInMailboxShouldBeEmptyByDefault() {
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
-            .collect(Guavate.toImmutableList())).isEmpty();
+        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID)
+            .collectList()
+            .block())
+            .isEmpty();
     }
 
     @Test
     void addToRecentShouldAddUidWhenEmpty() {
-        testee.addToRecent(CASSANDRA_ID, UID1).join();
+        testee.addToRecent(CASSANDRA_ID, UID1).block();
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
-            .collect(Guavate.toImmutableList())).containsOnly(UID1);
+        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID)
+            .collectList()
+            .block())
+            .containsOnly(UID1);
     }
 
     @Test
     void removeFromRecentShouldRemoveUidWhenOnlyOneUid() {
-        testee.addToRecent(CASSANDRA_ID, UID1).join();
+        testee.addToRecent(CASSANDRA_ID, UID1).block();
 
-        testee.removeFromRecent(CASSANDRA_ID, UID1).join();
+        testee.removeFromRecent(CASSANDRA_ID, UID1).block();
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
-            .collect(Guavate.toImmutableList())).isEmpty();
+        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID)
+            .collectList()
+            .block())
+            .isEmpty();
     }
 
     @Test
     void removeFromRecentShouldNotFailIfNotExisting() {
-        testee.removeFromRecent(CASSANDRA_ID, UID1).join();
+        testee.removeFromRecent(CASSANDRA_ID, UID1).block();
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
-            .collect(Guavate.toImmutableList())).isEmpty();
+        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID)
+            .collectList()
+            .block())
+            .isEmpty();
     }
 
     @Test
     void addToRecentShouldAddUidWhenNotEmpty() {
-        testee.addToRecent(CASSANDRA_ID, UID1).join();
+        testee.addToRecent(CASSANDRA_ID, UID1).block();
 
-        testee.addToRecent(CASSANDRA_ID, UID2).join();
+        testee.addToRecent(CASSANDRA_ID, UID2).block();
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
-            .collect(Guavate.toImmutableList())).containsOnly(UID1, UID2);
+        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID)
+            .collectList()
+            .block())
+            .containsOnly(UID1, UID2);
     }
 
     @Test
     void removeFromRecentShouldOnlyRemoveUidWhenNotEmpty() {
-        testee.addToRecent(CASSANDRA_ID, UID1).join();
-        testee.addToRecent(CASSANDRA_ID, UID2).join();
+        testee.addToRecent(CASSANDRA_ID, UID1).block();
+        testee.addToRecent(CASSANDRA_ID, UID2).block();
 
-        testee.removeFromRecent(CASSANDRA_ID, UID2).join();
+        testee.removeFromRecent(CASSANDRA_ID, UID2).block();
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
-            .collect(Guavate.toImmutableList())).containsOnly(UID1);
+        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID)
+            .collectList()
+            .block())
+            .containsOnly(UID1);
     }
 
     @Test
     void addToRecentShouldBeIdempotent() {
-        testee.addToRecent(CASSANDRA_ID, UID1).join();
-        testee.addToRecent(CASSANDRA_ID, UID1).join();
+        testee.addToRecent(CASSANDRA_ID, UID1).block();
+        testee.addToRecent(CASSANDRA_ID, UID1).block();
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
-            .collect(Guavate.toImmutableList())).containsOnly(UID1);
+        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID)
+            .collectList()
+            .block())
+            .containsOnly(UID1);
     }
 
     @Test
@@ -117,9 +131,11 @@ class CassandraMailboxRecentDAOTest {
         int size = pageSize + 1000;
         IntStream.range(0, size)
             .parallel()
-            .forEach(i -> testee.addToRecent(CASSANDRA_ID, MessageUid.of(i + 1)).join());
+            .forEach(i -> testee.addToRecent(CASSANDRA_ID, MessageUid.of(i + 1)).block());
 
-        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID).join()
-            .collect(Guavate.toImmutableList())).hasSize(size);
+        assertThat(testee.getRecentMessageUidsInMailbox(CASSANDRA_ID)
+            .collectList()
+            .block())
+            .hasSize(size);
     }
 }
