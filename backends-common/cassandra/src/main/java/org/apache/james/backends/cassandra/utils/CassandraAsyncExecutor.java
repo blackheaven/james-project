@@ -56,7 +56,9 @@ public class CassandraAsyncExecutor {
     }
 
     public CompletableFuture<Optional<Row>> executeSingleRow(Statement statement) {
-        return executeSingleRowReactor(statement).toFuture();
+        return executeSingleRowReactor(statement)
+                .map(Optional::of)
+                .toFuture();
     }
 
     public CompletableFuture<Boolean> executeReturnExists(Statement statement) {
@@ -81,13 +83,14 @@ public class CassandraAsyncExecutor {
                 .then();
     }
 
-    public Mono<Optional<Row>> executeSingleRowReactor(Statement statement) {
+    public Mono<Row> executeSingleRowReactor(Statement statement) {
         return executeReactor(statement)
-                .map(resultSet -> Optional.ofNullable(resultSet.one()));
+                .map(resultSet -> Optional.ofNullable(resultSet.one()))
+                .flatMap(Mono::justOrEmpty);
     }
 
     public Mono<Boolean> executeReturnExistsReactor(Statement statement) {
         return executeSingleRowReactor(statement)
-                .map(Optional::isPresent);
+                .hasElement();
     }
 }
