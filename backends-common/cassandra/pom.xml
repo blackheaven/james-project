@@ -84,7 +84,6 @@
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
         </dependency>
-    </dependencies>
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
@@ -142,6 +141,7 @@
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
         </dependency>
+    </dependencies>
 
     <build>
         <plugins>
