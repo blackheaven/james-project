@@ -21,6 +21,7 @@ package org.apache.james.jmap;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -90,10 +91,10 @@ public class JMAPServlet extends HttpServlet {
         }
     }
 
-    private void sendResponses(HttpServletResponse response, List<Object[]> responses) {
+    private void sendResponses(HttpServletResponse response, List<Object[]> responses) throws IOException {
         try {
             objectMapper.writeValue(response.getOutputStream(), responses);
-        } catch (IOException e) {
+        } catch (ClosedChannelException e) {
             LOGGER.info("Error sending response", e);
             response.setStatus(SC_BAD_REQUEST);
         }
