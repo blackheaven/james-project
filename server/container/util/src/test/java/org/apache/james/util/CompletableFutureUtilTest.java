@@ -46,7 +46,7 @@ public class CompletableFutureUtilTest {
 
     @BeforeAll
     static void setUp() {
-        ThreadFactory threadFactory = NamedThreadFactory.withClassName(getClass());
+        ThreadFactory threadFactory = NamedThreadFactory.withClassName(CompletableFutureUtilTest.class);
         executorService = Executors.newFixedThreadPool(4, threadFactory);
     }
 
