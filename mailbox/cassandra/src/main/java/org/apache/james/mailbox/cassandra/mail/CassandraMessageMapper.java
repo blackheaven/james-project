@@ -445,6 +445,7 @@ public class CassandraMessageMapper implements MessageMapper {
                         .then(Mono.fromCallable(() -> true));
                 } else {
                     return Mono.just(false);
-                }});
+                }
+            });
     }
 }

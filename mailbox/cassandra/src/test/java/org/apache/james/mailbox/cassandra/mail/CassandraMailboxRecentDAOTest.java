@@ -32,8 +32,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import com.github.steveash.guavate.Guavate;
-
 class CassandraMailboxRecentDAOTest {
     private static final MessageUid UID1 = MessageUid.of(36L);
     private static final MessageUid UID2 = MessageUid.of(37L);
