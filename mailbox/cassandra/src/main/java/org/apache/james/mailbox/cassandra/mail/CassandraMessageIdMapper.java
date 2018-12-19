@@ -268,7 +268,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     private Mono<Pair<MailboxId, UpdatedFlags>> updateCounts(Pair<MailboxId, UpdatedFlags> pair) {
         CassandraId cassandraId = (CassandraId) pair.getLeft();
         return indexTableHandler.updateIndexOnFlagsUpdate(cassandraId, pair.getRight())
-            .then(Mono.fromCallable(() -> pair));
+            .then(Mono.just(pair));
     }
 
     private Optional<Pair<Flags, ComposedMessageIdWithMetaData>> tryFlagsUpdate(Flags newState, MessageManager.FlagsUpdateMode updateMode, MailboxId mailboxId, MessageId messageId) {

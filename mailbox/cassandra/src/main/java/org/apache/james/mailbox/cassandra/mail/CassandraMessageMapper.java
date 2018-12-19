@@ -156,8 +156,7 @@ public class CassandraMessageMapper implements MessageMapper {
         return Flux.merge(
                 Mono.fromCompletionStage(imapUidDAO.delete(messageId, mailboxId)),
                 Mono.fromCompletionStage(messageIdDAO.delete(mailboxId, uid)))
-            .concatWith(indexTableHandler.updateIndexOnDelete(composedMessageIdWithMetaData, mailboxId))
-            .then();
+            .thenEmpty(indexTableHandler.updateIndexOnDelete(composedMessageIdWithMetaData, mailboxId));
     }
 
     @Override
@@ -215,7 +214,7 @@ public class CassandraMessageMapper implements MessageMapper {
     }
 
     private Flux<SimpleMailboxMessage> expungeUidChunk(CassandraId mailboxId, Collection<MessageUid> uidChunk) {
-        return Flux.fromStream(uidChunk.stream())
+        return Flux.fromIterable(uidChunk)
             .flatMap(uid -> retrieveComposedId(mailboxId, uid))
             .doOnNext(this::deleteUsingMailboxId)
             .flatMap(idWithMetadata ->
@@ -442,7 +441,7 @@ public class CassandraMessageMapper implements MessageMapper {
             .flatMap(success -> {
                 if (success) {
                     return Mono.fromCompletionStage(messageIdDAO.updateMetadata(newMetadata))
-                        .then(Mono.fromCallable(() -> true));
+                        .then(Mono.just(true));
                 } else {
                     return Mono.just(false);
                 }
