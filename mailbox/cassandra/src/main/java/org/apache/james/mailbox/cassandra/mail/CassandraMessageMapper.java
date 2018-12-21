@@ -164,7 +164,8 @@ public class CassandraMessageMapper implements MessageMapper {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
         return retrieveMessages(retrieveMessageIds(mailboxId, messageRange), ftype, Limit.from(max))
             .map(SimpleMailboxMessage -> (MailboxMessage) SimpleMailboxMessage)
-            .sort(Comparator.comparing(MailboxMessage::getUid))
+            .collectSortedList(Comparator.comparing(MailboxMessage::getUid))
+            .flatMapMany(Flux::fromIterable)
             .toIterable()
             .iterator();
     }
