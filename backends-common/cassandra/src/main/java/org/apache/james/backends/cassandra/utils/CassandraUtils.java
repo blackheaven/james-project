@@ -42,7 +42,7 @@ public class CassandraUtils {
     }
 
     public Flux<Row> convertToFlux(ResultSet resultSet) {
-        return Flux.fromStream(convertToStream(resultSet));
+        return Flux.fromIterable(resultSet);
     }
 
     public Stream<Row> convertToStream(ResultSet resultSet) {
