@@ -162,7 +162,7 @@ public class CassandraMessageMapper implements MessageMapper {
     public Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange messageRange, FetchType ftype, int max) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
         return retrieveMessages(retrieveMessageIds(mailboxId, messageRange), ftype, Limit.from(max))
-            .map(SimpleMailboxMessage -> (MailboxMessage) SimpleMailboxMessage)
+            .map(simpleMailboxMessage -> (MailboxMessage) simpleMailboxMessage)
             .collectSortedList(Comparator.comparing(MailboxMessage::getUid))
             .flatMapMany(Flux::fromIterable)
             .toIterable()
@@ -258,13 +258,9 @@ public class CassandraMessageMapper implements MessageMapper {
     }
 
     private MailboxMessage addUidAndModseq(MailboxMessage message, CassandraId mailboxId) throws MailboxException {
-        Mono<MessageUid> uidFuture = uidProvider.nextUid(mailboxId).cache();
-        Mono<Long> modseqFuture = modSeqProvider.nextModSeq(mailboxId).cache();
-        Flux.merge(uidFuture, modseqFuture).then().block();
-
-        message.setUid(uidFuture.blockOptional()
+        message.setUid(uidProvider.nextUid(mailboxId).blockOptional()
             .orElseThrow(() -> new MailboxException("Can not find a UID to save " + message.getMessageId() + " in " + mailboxId)));
-        message.setModSeq(modseqFuture.blockOptional()
+        message.setModSeq(modSeqProvider.nextModSeq(mailboxId).blockOptional()
             .orElseThrow(() -> new MailboxException("Can not find a MODSEQ to save " + message.getMessageId() + " in " + mailboxId)));
 
         return message;
