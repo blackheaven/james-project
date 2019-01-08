@@ -18,22 +18,10 @@
  ****************************************************************/
 package org.apache.james.util;
 
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 import reactor.core.publisher.Mono;
 
 public class ReactorUtils {
     public static <T> Mono<T> executeAndEmpty(Runnable runnable) {
         return Mono.fromRunnable(runnable).then(Mono.empty());
-    }
-
-    public static <T> Function<Boolean, Mono<Boolean>> composeIfTrue(Supplier<Mono<T>> composeOperation) {
-        return b -> {
-            if (b) {
-                return composeOperation.get().then(Mono.just(b));
-            }
-            return Mono.just(b);
-        };
     }
 }

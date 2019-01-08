@@ -22,9 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Mono;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import reactor.core.publisher.Mono;
 
 class ReactorUtilsTest {
 
@@ -68,53 +67,6 @@ class ReactorUtilsTest {
             public Integer getCounter() {
                 return counter;
             }
-        }
-    }
-
-    @Nested
-    class ComposeIfTrue {
-        @Test
-        void composeIfTrueShouldReturnTrueWhenTrue() {
-            assertThat(
-                    ReactorUtils.composeIfTrue(() -> Mono.just(42))
-                            .apply(true)
-                            .block())
-                    .isTrue();
-        }
-
-        @Test
-        void composeIfTrueShouldReturnFalseWhenFalse() {
-            assertThat(
-                    ReactorUtils.composeIfTrue(() -> Mono.just(42))
-                            .apply(false)
-                            .block())
-                    .isFalse();
-        }
-
-        @Test
-        void composeIfTrueShouldComposeWhenTrue() {
-            AtomicInteger atomicInteger = new AtomicInteger(0);
-            ReactorUtils.composeIfTrue(() -> {
-                atomicInteger.incrementAndGet();
-                return Mono.just(42);
-            })
-                    .apply(true)
-                    .block();
-
-            assertThat(atomicInteger.get()).isEqualTo(1);
-        }
-
-        @Test
-        void composeIfTrueShouldNotComposeWhenFalse() {
-            AtomicInteger atomicInteger = new AtomicInteger(0);
-            ReactorUtils.composeIfTrue(() -> {
-                atomicInteger.incrementAndGet();
-                return Mono.just(42);
-            })
-                    .apply(false)
-                    .block();
-
-            assertThat(atomicInteger.get()).isEqualTo(0);
         }
     }
 }
