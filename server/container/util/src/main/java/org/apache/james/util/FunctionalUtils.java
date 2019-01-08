@@ -21,9 +21,10 @@ package org.apache.james.util;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 public class FunctionalUtils {
-    public static <T> Function<T, T> toFunction(Consumer<T> consumer) {
+    public static <T> UnaryOperator<T> toFunction(Consumer<T> consumer) {
         return argument -> {
             consumer.accept(argument);
             return argument;
