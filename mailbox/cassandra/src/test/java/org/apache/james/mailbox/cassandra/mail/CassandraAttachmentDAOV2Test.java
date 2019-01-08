@@ -52,7 +52,7 @@ class CassandraAttachmentDAOV2Test {
 
     @Test
     void getAttachmentShouldReturnEmptyWhenAbsent() {
-        Optional<DAOAttachment> attachment = testee.getAttachment(ATTACHMENT_ID).join();
+        Optional<DAOAttachment> attachment = testee.getAttachment(ATTACHMENT_ID).blockOptional();
 
         assertThat(attachment).isEmpty();
     }
@@ -68,7 +68,7 @@ class CassandraAttachmentDAOV2Test {
         DAOAttachment daoAttachment = CassandraAttachmentDAOV2.from(attachment, blobId);
         testee.storeAttachment(daoAttachment).join();
 
-        Optional<DAOAttachment> actual = testee.getAttachment(ATTACHMENT_ID).join();
+        Optional<DAOAttachment> actual = testee.getAttachment(ATTACHMENT_ID).blockOptional();
 
         assertThat(actual).contains(daoAttachment);
     }

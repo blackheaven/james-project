@@ -28,7 +28,6 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import javax.inject.Inject;
@@ -53,6 +52,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import reactor.core.publisher.Mono;
 
 public class CassandraACLMapper {
     public static final int INITIAL_VALUE = 0;
@@ -112,9 +112,9 @@ public class CassandraACLMapper {
                 .where(eq(CassandraMailboxTable.ID, bindMarker(CassandraACLTable.ID))));
     }
 
-    public CompletableFuture<MailboxACL> getACL(CassandraId cassandraId) {
+    public Mono<MailboxACL> getACL(CassandraId cassandraId) {
         return getStoredACLRow(cassandraId)
-            .thenApply(resultSet -> getAcl(cassandraId, resultSet));
+            .map(resultSet -> getAcl(cassandraId, resultSet));
     }
 
     private MailboxACL getAcl(CassandraId cassandraId, ResultSet resultSet) {
@@ -163,8 +163,8 @@ public class CassandraACLMapper {
         }
     }
 
-    private CompletableFuture<ResultSet> getStoredACLRow(CassandraId cassandraId) {
-        return executor.execute(
+    private Mono<ResultSet> getStoredACLRow(CassandraId cassandraId) {
+        return executor.executeReactor(
             readStatement.bind()
                 .setUUID(CassandraACLTable.ID, cassandraId.asUuid()));
     }
@@ -177,9 +177,9 @@ public class CassandraACLMapper {
                     .setString(CassandraACLTable.ACL,  MailboxACLJsonConverter.toJson(aclWithVersion.mailboxACL))
                     .setLong(CassandraACLTable.VERSION, aclWithVersion.version + 1)
                     .setLong(OLD_VERSION, aclWithVersion.version))
-                .thenApply(Optional::of)
-                .thenApply(optional -> optional.filter(b -> b).map(any -> aclWithVersion.mailboxACL))
-                .join();
+                .map(Optional::of)
+                .map(optional -> optional.filter(b -> b).map(any -> aclWithVersion.mailboxACL))
+                .block();
         } catch (JsonProcessingException exception) {
             throw new RuntimeException(exception);
         }
@@ -191,16 +191,16 @@ public class CassandraACLMapper {
                 conditionalInsertStatement.bind()
                     .setUUID(CassandraACLTable.ID, cassandraId.asUuid())
                     .setString(CassandraACLTable.ACL, MailboxACLJsonConverter.toJson(acl)))
-                .thenApply(Optional::of)
-                .thenApply(optional -> optional.filter(b -> b).map(any -> acl))
-                .join();
+                .map(Optional::of)
+                .map(optional -> optional.filter(b -> b).map(any -> acl))
+                .block();
         } catch (JsonProcessingException exception) {
             throw new RuntimeException(exception);
         }
     }
 
     private Optional<ACLWithVersion> getAclWithVersion(CassandraId cassandraId) {
-        ResultSet resultSet = getStoredACLRow(cassandraId).join();
+        ResultSet resultSet = getStoredACLRow(cassandraId).block();
         if (resultSet.isExhausted()) {
             return Optional.empty();
         }

@@ -27,10 +27,8 @@ import static org.apache.james.mailbox.cassandra.table.CassandraUserMailboxRight
 import static org.apache.james.mailbox.cassandra.table.CassandraUserMailboxRightsTable.TABLE_NAME;
 import static org.apache.james.mailbox.cassandra.table.CassandraUserMailboxRightsTable.USER_NAME;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -51,6 +49,7 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.github.fge.lambdas.Throwing;
+import reactor.core.publisher.Flux;
 
 public class CassandraUserMailboxRightsDAO {
 
@@ -134,14 +133,12 @@ public class CassandraUserMailboxRightsDAO {
                 rowOptional.map(Throwing.function(row -> Rfc4314Rights.fromSerializedRfc4314Rights(row.getString(RIGHTS)))));
     }
 
-    public CompletableFuture<Map<CassandraId, Rfc4314Rights>> listRightsForUser(String userName) {
-        return cassandraAsyncExecutor.execute(
+    public Flux<Pair<CassandraId, Rfc4314Rights>> listRightsForUser(String userName) {
+        return cassandraAsyncExecutor.executeReactor(
             selectUser.bind()
                 .setString(USER_NAME, userName))
-            .thenApply(cassandraUtils::convertToStream)
-            .thenApply(row ->
-                row.map(Throwing.function(this::toPair))
-                    .collect(Collectors.toMap(Pair::getLeft, Pair::getRight)));
+            .flatMapMany(cassandraUtils::convertToFlux)
+            .map(Throwing.function(this::toPair));
     }
 
     private Pair<CassandraId, Rfc4314Rights> toPair(Row row) throws UnsupportedRightException {

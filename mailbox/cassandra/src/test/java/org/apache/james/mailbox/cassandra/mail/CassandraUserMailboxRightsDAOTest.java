@@ -81,7 +81,7 @@ class CassandraUserMailboxRightsDAOTest {
 
     @Test
     void listRightsForUserShouldReturnEmptyWhenEmptyData() {
-        assertThat(testee.listRightsForUser(USER_NAME).join())
+        assertThat(testee.listRightsForUser(USER_NAME).collectList().block())
             .isEmpty();
     }
 

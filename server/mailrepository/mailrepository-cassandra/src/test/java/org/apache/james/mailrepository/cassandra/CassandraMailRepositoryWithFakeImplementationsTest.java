@@ -56,11 +56,12 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableList;
+import reactor.core.publisher.Mono;
 
 @ExtendWith(CassandraMailRepositoryWithFakeImplementationsTest.MailRepositoryCassandraClusterExtension.class)
 class CassandraMailRepositoryWithFakeImplementationsTest {
-    static final MailRepositoryUrl URL = MailRepositoryUrl.from("proto://url");
-    static final HashBlobId.Factory BLOB_ID_FACTORY = new HashBlobId.Factory();
+    private static final MailRepositoryUrl URL = MailRepositoryUrl.from("proto://url");
+    private static final HashBlobId.Factory BLOB_ID_FACTORY = new HashBlobId.Factory();
 
     static class MailRepositoryCassandraClusterExtension extends CassandraClusterExtension {
         public MailRepositoryCassandraClusterExtension() {
@@ -122,7 +123,7 @@ class CassandraMailRepositoryWithFakeImplementationsTest {
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("java.lang.RuntimeException: Expected failure while saving");
 
-            assertThat(keysDAO.list(URL).join()).isEmpty();
+            assertThat(keysDAO.list(URL).collectList().block()).isEmpty();
         }
     }
 
@@ -155,9 +156,9 @@ class CassandraMailRepositoryWithFakeImplementationsTest {
             }
 
             @Override
-            public CompletableFuture<Void> remove(MailRepositoryUrl url, MailKey key) {
-                return CompletableFuture.supplyAsync(() -> {
-                    throw new RuntimeException("Expected failure while remeving mail parts");
+            public Mono<Void> remove(MailRepositoryUrl url, MailKey key) {
+                return Mono.fromCallable(() -> {
+                    throw new RuntimeException("Expected failure while removing mail parts");
                 });
 
             }
@@ -186,7 +187,7 @@ class CassandraMailRepositoryWithFakeImplementationsTest {
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("java.lang.RuntimeException: Expected failure while storing mail parts");
 
-            assertThat(keysDAO.list(URL).join()).isEmpty();
+            assertThat(keysDAO.list(URL).collectList().block()).isEmpty();
         }
 
         @Test
@@ -234,8 +235,8 @@ class CassandraMailRepositoryWithFakeImplementationsTest {
             }
 
             @Override
-            public CompletableFuture<Boolean> store(MailRepositoryUrl url, MailKey key) {
-                return CompletableFuture.supplyAsync(() -> {
+            public Mono<Boolean> store(MailRepositoryUrl url, MailKey key) {
+                return Mono.fromCallable(() -> {
                     throw new RuntimeException("Expected failure while storing keys");
                 });
             }

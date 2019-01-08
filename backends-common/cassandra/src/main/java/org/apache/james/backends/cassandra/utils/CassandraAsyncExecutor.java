@@ -46,11 +46,6 @@ public class CassandraAsyncExecutor {
         return executeReactor(statement).toFuture();
     }
 
-
-    public CompletableFuture<Boolean> executeReturnApplied(Statement statement) {
-        return executeReturnAppliedReactor(statement).toFuture();
-    }
-
     public CompletableFuture<Void> executeVoid(Statement statement) {
         return executeVoidReactor(statement).toFuture();
     }
@@ -67,7 +62,7 @@ public class CassandraAsyncExecutor {
     }
 
 
-    public Mono<Boolean> executeReturnAppliedReactor(Statement statement) {
+    public Mono<Boolean> executeReturnApplied(Statement statement) {
         return executeReactor(statement)
                 .map(ResultSet::one)
                 .map(row -> row.getBool(CassandraConstants.LIGHTWEIGHT_TRANSACTION_APPLIED));

@@ -107,9 +107,9 @@ class AttachmentV2MigrationTest {
 
         migration.run();
 
-        assertThat(attachmentDAOV2.getAttachment(ATTACHMENT_ID).join())
+        assertThat(attachmentDAOV2.getAttachment(ATTACHMENT_ID).blockOptional())
             .contains(CassandraAttachmentDAOV2.from(attachment1, BLOB_ID_FACTORY.forPayload(attachment1.getBytes())));
-        assertThat(attachmentDAOV2.getAttachment(ATTACHMENT_ID_2).join())
+        assertThat(attachmentDAOV2.getAttachment(ATTACHMENT_ID_2).blockOptional())
             .contains(CassandraAttachmentDAOV2.from(attachment2, BLOB_ID_FACTORY.forPayload(attachment2.getBytes())));
         assertThat(blobsDAO.readBytes(BLOB_ID_FACTORY.forPayload(attachment1.getBytes())).join())
             .isEqualTo(attachment1.getBytes());
@@ -124,9 +124,9 @@ class AttachmentV2MigrationTest {
 
         migration.run();
 
-        assertThat(attachmentDAO.getAttachment(ATTACHMENT_ID).join())
+        assertThat(attachmentDAO.getAttachment(ATTACHMENT_ID).blockOptional())
             .isEmpty();
-        assertThat(attachmentDAO.getAttachment(ATTACHMENT_ID_2).join())
+        assertThat(attachmentDAO.getAttachment(ATTACHMENT_ID_2).blockOptional())
             .isEmpty();
     }
 

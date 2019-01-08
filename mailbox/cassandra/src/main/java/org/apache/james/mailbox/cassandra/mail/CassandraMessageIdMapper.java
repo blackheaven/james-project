@@ -49,7 +49,7 @@ import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.ModSeqProvider;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
-import org.apache.james.util.FluentFutureStream;
+import org.apache.james.util.ReactorUtils;
 import org.apache.james.util.streams.JamesCollectors;
 import org.apache.james.util.streams.Limit;
 import org.slf4j.Logger;
@@ -57,6 +57,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.Multimap;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class CassandraMessageIdMapper implements MessageIdMapper {
@@ -99,47 +100,37 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     }
 
     private Stream<SimpleMailboxMessage> findAsStream(Collection<MessageId> messageIds, FetchType fetchType) {
-        return FluentFutureStream.of(
-                messageIds.stream()
-                    .map(messageId -> imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.empty())),
-                FluentFutureStream::unboxStream)
-            .collect(Guavate.toImmutableList())
-            .thenCompose(composedMessageIds -> messageDAO.retrieveMessages(composedMessageIds, fetchType, Limit.unlimited()))
-            .thenApply(stream -> stream
+        return Flux.fromStream(messageIds.stream())
+                .flatMap(messageId -> imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.empty()))
+                .collectList()
+                .flatMapMany(composedMessageIds -> messageDAO.retrieveMessages(composedMessageIds, fetchType, Limit.unlimited()))
                 .filter(CassandraMessageDAO.MessageResult::isFound)
-                .map(CassandraMessageDAO.MessageResult::message))
-            .thenCompose(stream -> attachmentLoader.addAttachmentToMessages(stream, fetchType))
-            .thenCompose(this::filterMessagesWithExistingMailbox)
-            .join()
-            .sorted(Comparator.comparing(MailboxMessage::getUid));
+                .map(CassandraMessageDAO.MessageResult::message)
+                .flatMap(messageRepresentation -> attachmentLoader.addAttachmentToMessage(messageRepresentation, fetchType))
+                .flatMap(this::keepMessageIfMailboxExists)
+                .collectSortedList(Comparator.comparing(MailboxMessage::getUid))
+                .block()
+                .stream();
     }
 
-    private CompletableFuture<Stream<SimpleMailboxMessage>> filterMessagesWithExistingMailbox(Stream<SimpleMailboxMessage> stream) {
-        return FluentFutureStream.of(stream.map(this::keepMessageIfMailboxExists), FluentFutureStream::unboxOptional)
-            .completableFuture();
-    }
-
-    private CompletableFuture<Optional<SimpleMailboxMessage>> keepMessageIfMailboxExists(SimpleMailboxMessage message) {
+    private Mono<SimpleMailboxMessage> keepMessageIfMailboxExists(SimpleMailboxMessage message) {
         CassandraId cassandraId = (CassandraId) message.getMailboxId();
         return mailboxDAO.retrieveMailbox(cassandraId)
-            .thenApply(optional -> {
-                if (!optional.isPresent()) {
+            .map(any -> message)
+            .switchIfEmpty(ReactorUtils.executeAndEmpty(() -> {
                     LOGGER.info("Mailbox {} have been deleted but message {} is still attached to it.",
                         cassandraId,
                         message.getMailboxId());
-                    return Optional.empty();
-                }
-
-                return Optional.of(message);
-            });
+                }));
     }
 
     @Override
     public List<MailboxId> findMailboxes(MessageId messageId) {
-        return imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.empty()).join()
+        return imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.empty())
             .map(ComposedMessageIdWithMetaData::getComposedMessageId)
             .map(ComposedMessageId::getMailboxId)
-            .collect(Guavate.toImmutableList());
+            .collectList()
+            .block();
     }
 
     @Override
@@ -182,15 +173,14 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
 
     @Override
     public void delete(MessageId messageId, Collection<MailboxId> mailboxIds) {
-        deleteAsFuture(messageId, mailboxIds).join();
+        deleteAsMono(messageId, mailboxIds).block();
     }
 
-    public CompletableFuture<Void> deleteAsFuture(MessageId messageId, Collection<MailboxId> mailboxIds) {
+    public Mono<Void> deleteAsMono(MessageId messageId, Collection<MailboxId> mailboxIds) {
         CassandraMessageId cassandraMessageId = (CassandraMessageId) messageId;
-        return mailboxIds.stream()
-            .map(mailboxId -> retrieveAndDeleteIndices(cassandraMessageId, Optional.of((CassandraId) mailboxId)))
-            .reduce((f1, f2) -> CompletableFuture.allOf(f1, f2))
-            .orElse(CompletableFuture.completedFuture(null));
+        return Flux.fromStream(mailboxIds.stream())
+            .flatMap(mailboxId -> retrieveAndDeleteIndices(cassandraMessageId, Optional.of((CassandraId) mailboxId)))
+            .then();
     }
 
     @Override
@@ -200,33 +190,32 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
             .stream()
             .collect(JamesCollectors.chunker(cassandraConfiguration.getExpungeChunkSize()))
             .forEach(chunk ->
-                FluentFutureStream.of(chunk.stream()
-                    .map(entry -> deleteAsFuture(entry.getKey(), entry.getValue())))
-                    .join());
+                Flux.fromStream(chunk.stream())
+                    .map(entry -> deleteAsMono(entry.getKey(), entry.getValue()))
+                    .then()
+                    .block());
     }
 
-    private CompletableFuture<Void> retrieveAndDeleteIndices(CassandraMessageId messageId, Optional<CassandraId> mailboxId) {
+    private Mono<Void> retrieveAndDeleteIndices(CassandraMessageId messageId, Optional<CassandraId> mailboxId) {
         return imapUidDAO.retrieve(messageId, mailboxId)
-            .thenCompose(composedMessageIds -> composedMessageIds
-                .map(this::deleteIds)
-                .reduce((f1, f2) -> CompletableFuture.allOf(f1, f2))
-                .orElse(CompletableFuture.completedFuture(null)));
+            .flatMap(this::deleteIds)
+            .then();
     }
 
     @Override
     public void delete(MessageId messageId) {
         CassandraMessageId cassandraMessageId = (CassandraMessageId) messageId;
         retrieveAndDeleteIndices(cassandraMessageId, Optional.empty())
-            .join();
+            .block();
     }
 
-    private CompletableFuture<Void> deleteIds(ComposedMessageIdWithMetaData metaData) {
+    private Mono<Void> deleteIds(ComposedMessageIdWithMetaData metaData) {
         CassandraMessageId messageId = (CassandraMessageId) metaData.getComposedMessageId().getMessageId();
         CassandraId mailboxId = (CassandraId) metaData.getComposedMessageId().getMailboxId();
-        return CompletableFuture.allOf(
-            imapUidDAO.delete(messageId, mailboxId),
-            messageIdDAO.delete(mailboxId, metaData.getComposedMessageId().getUid()))
-            .thenCompose(voidValue -> indexTableHandler.updateIndexOnDelete(metaData, mailboxId).toFuture());
+        return Flux.merge(
+                imapUidDAO.delete(messageId, mailboxId),
+                messageIdDAO.delete(mailboxId, metaData.getComposedMessageId().getUid()))
+            .then(indexTableHandler.updateIndexOnDelete(metaData, mailboxId));
     }
 
     @Override
@@ -235,9 +224,8 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
             .distinct()
             .map(mailboxId -> (CassandraId) mailboxId)
             .filter(mailboxId -> imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.of(mailboxId))
-                .join()
-                .findAny()
-                .isPresent())
+                .hasElements()
+                .block())
             .flatMap(mailboxId -> flagsUpdateWithRetry(newState, updateMode, mailboxId, messageId))
             .map(this::updateCounts)
             .map(Mono::block)
@@ -283,7 +271,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     private Optional<Pair<Flags, ComposedMessageIdWithMetaData>> updateFlags(MailboxId mailboxId, MessageId messageId, Flags newState, MessageManager.FlagsUpdateMode updateMode) throws MailboxException {
         CassandraId cassandraId = (CassandraId) mailboxId;
         ComposedMessageIdWithMetaData oldComposedId = imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.of(cassandraId))
-            .join()
+            .toStream()
             .findFirst()
             .orElseThrow(MailboxDeleteDuringUpdateException::new);
         Flags newFlags = new FlagsUpdateCalculator(newState, updateMode).buildNewFlags(oldComposedId.getFlags());
@@ -304,13 +292,13 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
 
     private Optional<Pair<Flags, ComposedMessageIdWithMetaData>> updateFlags(ComposedMessageIdWithMetaData oldComposedId, ComposedMessageIdWithMetaData newComposedId) {
         return imapUidDAO.updateMetadata(newComposedId, oldComposedId.getModSeq())
-            .thenCompose(updateSuccess -> Optional.of(updateSuccess)
+            .flatMap(updateSuccess -> Optional.of(updateSuccess)
                 .filter(b -> b)
-                .map((Boolean any) -> messageIdDAO.updateMetadata(newComposedId).thenApply(v -> updateSuccess))
-                .orElse(CompletableFuture.completedFuture(updateSuccess)))
-            .thenApply(success -> Optional.of(success)
+                .map((Boolean any) -> messageIdDAO.updateMetadata(newComposedId).then(Mono.just(updateSuccess)))
+                .orElse(Mono.just(updateSuccess)))
+            .map(success -> Optional.of(success)
                 .filter(b -> b)
                 .map(any -> Pair.of(oldComposedId.getFlags(), newComposedId)))
-            .join();
+            .block();
     }
 }
