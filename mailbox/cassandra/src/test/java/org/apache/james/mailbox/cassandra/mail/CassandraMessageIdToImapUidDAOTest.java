@@ -44,9 +44,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.datastax.driver.core.utils.UUIDs;
 
 class CassandraMessageIdToImapUidDAOTest {
+    public static final CassandraModule MODULE = CassandraModule.aggregateModules(
+            CassandraSchemaVersionModule.MODULE,
+            CassandraMessageModule.MODULE);
+
     @RegisterExtension
-    static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(CassandraModule.aggregateModules(
-        CassandraMessageModule.MODULE, CassandraSchemaVersionModule.MODULE));
+    static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(MODULE);
 
     private CassandraMessageId.Factory messageIdFactory;
 
@@ -340,7 +343,8 @@ class CassandraMessageIdToImapUidDAOTest {
                 .flags(new Flags(Flag.SEEN))
                 .modSeq(2)
                 .build();
-        testee.updateMetadata(expectedComposedMessageId, 1).block();
+        assertThat(testee.updateMetadata(expectedComposedMessageId, 1).block())
+            .isTrue();
 
         List<ComposedMessageIdWithMetaData> messages = testee.retrieve(messageId, Optional.of(mailboxId)).collectList().block();
         assertThat(messages).containsOnly(expectedComposedMessageId);

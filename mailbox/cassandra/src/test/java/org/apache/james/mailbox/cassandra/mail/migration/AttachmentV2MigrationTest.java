@@ -45,6 +45,7 @@ import org.apache.james.mailbox.model.AttachmentId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
 import reactor.core.publisher.Mono;
 
 class AttachmentV2MigrationTest {

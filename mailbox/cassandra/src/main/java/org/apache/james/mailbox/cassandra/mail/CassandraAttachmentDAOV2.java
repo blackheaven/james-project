@@ -32,7 +32,6 @@ import static org.apache.james.mailbox.cassandra.table.CassandraAttachmentV2Tabl
 import static org.apache.james.mailbox.cassandra.table.CassandraAttachmentV2Table.TYPE;
 
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 

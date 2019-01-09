@@ -29,6 +29,7 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Flux;
 
 public class AttachmentMessageIdCreation implements Migration {
