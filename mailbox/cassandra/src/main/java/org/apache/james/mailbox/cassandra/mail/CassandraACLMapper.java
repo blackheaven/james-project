@@ -33,8 +33,6 @@ import javax.inject.Inject;
 
 import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
-import org.apache.james.backends.cassandra.utils.FunctionRunnerWithRetry;
-import org.apache.james.backends.cassandra.utils.LightweightTransactionException;
 import org.apache.james.mailbox.acl.ACLDiff;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.cassandra.table.CassandraACLTable;
@@ -65,7 +63,7 @@ public class CassandraACLMapper {
     }
 
     private final CassandraAsyncExecutor executor;
-    private final int maxRetry;
+    private final int maxAclRetry;
     private final CodeInjector codeInjector;
     private final CassandraUserMailboxRightsDAO userMailboxRightsDAO;
     private final PreparedStatement conditionalInsertStatement;
@@ -79,7 +77,7 @@ public class CassandraACLMapper {
 
     public CassandraACLMapper(Session session, CassandraUserMailboxRightsDAO userMailboxRightsDAO, CassandraConfiguration cassandraConfiguration, CodeInjector codeInjector) {
         this.executor = new CassandraAsyncExecutor(session);
-        this.maxRetry = cassandraConfiguration.getAclMaxRetry();
+        this.maxAclRetry = cassandraConfiguration.getAclMaxRetry();
         this.codeInjector = codeInjector;
         this.conditionalInsertStatement = prepareConditionalInsert(session);
         this.conditionalUpdateStatement = prepareConditionalUpdate(session);
@@ -146,22 +144,18 @@ public class CassandraACLMapper {
     }
 
     private ACLDiff updateAcl(CassandraId cassandraId, Function<ACLWithVersion, ACLWithVersion> aclTransformation, MailboxACL replacement) throws MailboxException {
-        try {
-            return new FunctionRunnerWithRetry(maxRetry)
-                .executeAndRetrieveObject(
-                    () -> {
-                        codeInjector.inject();
-                        return getAclWithVersion(cassandraId)
-                            .flatMap(aclWithVersion ->
-                                updateStoredACL(cassandraId, aclTransformation.apply(aclWithVersion))
-                                    .map(newACL -> ACLDiff.computeDiff(aclWithVersion.mailboxACL, newACL)))
-                            .switchIfEmpty(insertACL(cassandraId, replacement)
-                                .map(newACL -> ACLDiff.computeDiff(MailboxACL.EMPTY, newACL)))
-                                .blockOptional();
-                    });
-        } catch (LightweightTransactionException e) {
-            throw new MailboxException("Exception during lightweight transaction", e);
-        }
+        return Mono.fromRunnable(() -> codeInjector.inject())
+            .then(getAclWithVersion(cassandraId)
+                .flatMap(aclWithVersion ->
+                        updateStoredACL(cassandraId, aclTransformation.apply(aclWithVersion))
+                                .map(newACL -> ACLDiff.computeDiff(aclWithVersion.mailboxACL, newACL)))
+                .switchIfEmpty(insertACL(cassandraId, replacement)
+                        .map(newACL -> ACLDiff.computeDiff(MailboxACL.EMPTY, newACL))))
+                .single()
+                .retry(maxAclRetry)
+                .onErrorResume(e -> Mono.empty())
+                .blockOptional()
+                .orElseThrow(() -> new MailboxException("Unable to update ACL"));
     }
 
     private Mono<ResultSet> getStoredACLRow(CassandraId cassandraId) {

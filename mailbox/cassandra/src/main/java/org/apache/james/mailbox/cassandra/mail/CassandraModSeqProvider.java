@@ -34,6 +34,7 @@ import java.util.function.Supplier;
 
 import javax.inject.Inject;
 
+import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
@@ -49,6 +50,7 @@ import reactor.core.publisher.Mono;
 public class CassandraModSeqProvider implements ModSeqProvider {
 
     public static final String MOD_SEQ_CONDITION = "modSeqCondition";
+    private final long maxModSeqRetries;
 
     public static class ExceptionRelay extends RuntimeException {
         private final MailboxException underlying;
@@ -82,8 +84,9 @@ public class CassandraModSeqProvider implements ModSeqProvider {
     private final PreparedStatement insert;
 
     @Inject
-    public CassandraModSeqProvider(Session session) {
+    public CassandraModSeqProvider(Session session, CassandraConfiguration cassandraConfiguration) {
         this.cassandraAsyncExecutor = new CassandraAsyncExecutor(session);
+        this.maxModSeqRetries = cassandraConfiguration.getModSeqMaxRetry();
         this.insert = prepareInsert(session);
         this.update = prepareUpdate(session);
         this.select = prepareSelect(session);
@@ -183,7 +186,10 @@ public class CassandraModSeqProvider implements ModSeqProvider {
 
     private Mono<ModSeq> handleRetries(CassandraId mailboxId) {
         return findHighestModSeq(mailboxId)
-                .flatMap(newModSeq -> tryUpdateModSeq(mailboxId, newModSeq));
+            .flatMap(newModSeq -> tryUpdateModSeq(mailboxId, newModSeq))
+            .single()
+            .retry(maxModSeqRetries)
+            .onErrorResume(e -> Mono.empty());
     }
 
     private static class ModSeq {

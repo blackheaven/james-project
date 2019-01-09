@@ -33,6 +33,7 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
@@ -50,13 +51,15 @@ public class CassandraUidProvider implements UidProvider {
     private static final String CONDITION = "Condition";
 
     private final CassandraAsyncExecutor executor;
+    private final long maxUidRetries;
     private final PreparedStatement insertStatement;
     private final PreparedStatement updateStatement;
     private final PreparedStatement selectStatement;
 
     @Inject
-    public CassandraUidProvider(Session session) {
+    public CassandraUidProvider(Session session, CassandraConfiguration cassandraConfiguration) {
         this.executor = new CassandraAsyncExecutor(session);
+        this.maxUidRetries = cassandraConfiguration.getUidMaxRetry();
         this.selectStatement = prepareSelect(session);
         this.updateStatement = prepareUpdate(session);
         this.insertStatement = prepareInsert(session);
@@ -101,7 +104,10 @@ public class CassandraUidProvider implements UidProvider {
 
         return updateUid
             .switchIfEmpty(tryInsert(cassandraId))
-            .switchIfEmpty(updateUid);
+            .switchIfEmpty(updateUid)
+            .single()
+            .retry(maxUidRetries)
+            .onErrorResume(e -> Mono.empty());
     }
 
     @Override

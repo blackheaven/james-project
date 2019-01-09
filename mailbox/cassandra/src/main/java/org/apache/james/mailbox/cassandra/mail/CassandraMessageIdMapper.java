@@ -24,14 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.mail.Flags;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
-import org.apache.james.backends.cassandra.utils.FunctionRunnerWithRetry;
-import org.apache.james.backends.cassandra.utils.LightweightTransactionException;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
@@ -49,6 +48,7 @@ import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.ModSeqProvider;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
+import org.apache.james.util.FunctionalUtils;
 import org.apache.james.util.ReactorUtils;
 import org.apache.james.util.streams.JamesCollectors;
 import org.apache.james.util.streams.Limit;
@@ -234,8 +234,12 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
 
     private Stream<Pair<MailboxId, UpdatedFlags>> flagsUpdateWithRetry(Flags newState, MessageManager.FlagsUpdateMode updateMode, MailboxId mailboxId, MessageId messageId) {
         try {
-            Pair<Flags, ComposedMessageIdWithMetaData> pair = new FunctionRunnerWithRetry(cassandraConfiguration.getFlagsUpdateMessageIdMaxRetry())
-                .executeAndRetrieveObject(() -> tryFlagsUpdate(newState, updateMode, mailboxId, messageId));
+            Pair<Flags, ComposedMessageIdWithMetaData> pair = tryFlagsUpdate(newState, updateMode, mailboxId, messageId)
+                .single()
+                .retry(cassandraConfiguration.getFlagsUpdateMessageIdMaxRetry())
+                .onErrorResume(e -> Mono.empty())
+                .block();
+
             ComposedMessageIdWithMetaData composedMessageIdWithMetaData = pair.getRight();
             Flags oldFlags = pair.getLeft();
             return Stream.of(Pair.of(composedMessageIdWithMetaData.getComposedMessageId().getMailboxId(),
@@ -245,8 +249,6 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
                         .oldFlags(oldFlags)
                         .newFlags(composedMessageIdWithMetaData.getFlags())
                         .build()));
-        } catch (LightweightTransactionException e) {
-            throw new RuntimeException(e);
         } catch (MailboxDeleteDuringUpdateException e) {
             LOGGER.info("Mailbox {} was deleted during flag update", mailboxId);
             return Stream.of();
@@ -259,25 +261,27 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
             .then(Mono.just(pair));
     }
 
-    private Optional<Pair<Flags, ComposedMessageIdWithMetaData>> tryFlagsUpdate(Flags newState, MessageManager.FlagsUpdateMode updateMode, MailboxId mailboxId, MessageId messageId) {
+    private Mono<Pair<Flags, ComposedMessageIdWithMetaData>> tryFlagsUpdate(Flags newState, MessageManager.FlagsUpdateMode updateMode, MailboxId mailboxId, MessageId messageId) {
         try {
             return updateFlags(mailboxId, messageId, newState, updateMode);
         } catch (MailboxException e) {
             LOGGER.error("Error while updating flags on mailbox: {}", mailboxId);
-            return Optional.empty();
+            return Mono.empty();
         }
     }
 
-    private Optional<Pair<Flags, ComposedMessageIdWithMetaData>> updateFlags(MailboxId mailboxId, MessageId messageId, Flags newState, MessageManager.FlagsUpdateMode updateMode) throws MailboxException {
+    private Mono<Pair<Flags, ComposedMessageIdWithMetaData>> updateFlags(MailboxId mailboxId, MessageId messageId, Flags newState, MessageManager.FlagsUpdateMode updateMode) throws MailboxException {
         CassandraId cassandraId = (CassandraId) mailboxId;
         ComposedMessageIdWithMetaData oldComposedId = imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.of(cassandraId))
             .toStream()
             .findFirst()
             .orElseThrow(MailboxDeleteDuringUpdateException::new);
+
         Flags newFlags = new FlagsUpdateCalculator(newState, updateMode).buildNewFlags(oldComposedId.getFlags());
         if (identicalFlags(oldComposedId, newFlags)) {
-            return Optional.of(Pair.of(oldComposedId.getFlags(), oldComposedId));
+            return Mono.just(Pair.of(oldComposedId.getFlags(), oldComposedId));
         }
+
         ComposedMessageIdWithMetaData newComposedId = new ComposedMessageIdWithMetaData(
             oldComposedId.getComposedMessageId(),
             newFlags,
@@ -290,15 +294,13 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
         return oldComposedId.getFlags().equals(newFlags);
     }
 
-    private Optional<Pair<Flags, ComposedMessageIdWithMetaData>> updateFlags(ComposedMessageIdWithMetaData oldComposedId, ComposedMessageIdWithMetaData newComposedId) {
+    private Mono<Pair<Flags, ComposedMessageIdWithMetaData>> updateFlags(ComposedMessageIdWithMetaData oldComposedId, ComposedMessageIdWithMetaData newComposedId) {
         return imapUidDAO.updateMetadata(newComposedId, oldComposedId.getModSeq())
             .flatMap(updateSuccess -> Optional.of(updateSuccess)
                 .filter(b -> b)
                 .map((Boolean any) -> messageIdDAO.updateMetadata(newComposedId).then(Mono.just(updateSuccess)))
                 .orElse(Mono.just(updateSuccess)))
-            .map(success -> Optional.of(success)
-                .filter(b -> b)
-                .map(any -> Pair.of(oldComposedId.getFlags(), newComposedId)))
-            .block();
+            .filter(FunctionalUtils.toPredicate(Function.identity()))
+            .map(any -> Pair.of(oldComposedId.getFlags(), newComposedId));
     }
 }

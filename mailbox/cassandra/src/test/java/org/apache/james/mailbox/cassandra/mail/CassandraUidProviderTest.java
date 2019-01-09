@@ -25,6 +25,7 @@ import java.util.stream.LongStream;
 
 import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
+import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.ids.CassandraId;
 import org.apache.james.mailbox.cassandra.modules.CassandraUidModule;
@@ -47,7 +48,7 @@ class CassandraUidProviderTest {
 
     @BeforeEach
     void setUp(CassandraCluster cassandra) {
-        uidProvider = new CassandraUidProvider(cassandra.getConf());
+        uidProvider = new CassandraUidProvider(cassandra.getConf(), CassandraConfiguration.DEFAULT_CONFIGURATION);
         MailboxPath path = new MailboxPath("gsoc", "ieugen", "Trash");
         mailbox = new SimpleMailbox(path, 1234);
         mailbox.setMailboxId(CASSANDRA_ID);
