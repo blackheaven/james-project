@@ -27,7 +27,6 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.function.Function;
 
 import javax.inject.Inject;
@@ -44,6 +43,7 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.UnsupportedRightException;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.store.json.MailboxACLJsonConverter;
+import org.apache.james.util.FunctionalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,11 +152,12 @@ public class CassandraACLMapper {
                     () -> {
                         codeInjector.inject();
                         return getAclWithVersion(cassandraId)
-                            .map(aclWithVersion ->
+                            .flatMap(aclWithVersion ->
                                 updateStoredACL(cassandraId, aclTransformation.apply(aclWithVersion))
                                     .map(newACL -> ACLDiff.computeDiff(aclWithVersion.mailboxACL, newACL)))
-                            .orElseGet(() -> insertACL(cassandraId, replacement)
-                                .map(newACL -> ACLDiff.computeDiff(MailboxACL.EMPTY, newACL)));
+                            .switchIfEmpty(insertACL(cassandraId, replacement)
+                                .map(newACL -> ACLDiff.computeDiff(MailboxACL.EMPTY, newACL)))
+                                .blockOptional();
                     });
         } catch (LightweightTransactionException e) {
             throw new MailboxException("Exception during lightweight transaction", e);
@@ -169,7 +170,7 @@ public class CassandraACLMapper {
                 .setUUID(CassandraACLTable.ID, cassandraId.asUuid()));
     }
 
-    private Optional<MailboxACL> updateStoredACL(CassandraId cassandraId, ACLWithVersion aclWithVersion) {
+    private Mono<MailboxACL> updateStoredACL(CassandraId cassandraId, ACLWithVersion aclWithVersion) {
         try {
             return executor.executeReturnApplied(
                 conditionalUpdateStatement.bind()
@@ -177,38 +178,38 @@ public class CassandraACLMapper {
                     .setString(CassandraACLTable.ACL,  MailboxACLJsonConverter.toJson(aclWithVersion.mailboxACL))
                     .setLong(CassandraACLTable.VERSION, aclWithVersion.version + 1)
                     .setLong(OLD_VERSION, aclWithVersion.version))
-                .map(Optional::of)
-                .map(optional -> optional.filter(b -> b).map(any -> aclWithVersion.mailboxACL))
-                .block();
+                .filter(FunctionalUtils.toPredicate(Function.identity()))
+                .map(any -> aclWithVersion.mailboxACL);
         } catch (JsonProcessingException exception) {
             throw new RuntimeException(exception);
         }
     }
 
-    private Optional<MailboxACL> insertACL(CassandraId cassandraId, MailboxACL acl) {
+    private Mono<MailboxACL> insertACL(CassandraId cassandraId, MailboxACL acl) {
         try {
             return executor.executeReturnApplied(
                 conditionalInsertStatement.bind()
                     .setUUID(CassandraACLTable.ID, cassandraId.asUuid())
                     .setString(CassandraACLTable.ACL, MailboxACLJsonConverter.toJson(acl)))
-                .map(Optional::of)
-                .map(optional -> optional.filter(b -> b).map(any -> acl))
-                .block();
+                .filter(FunctionalUtils.toPredicate(Function.identity()))
+                .map(any -> acl);
         } catch (JsonProcessingException exception) {
             throw new RuntimeException(exception);
         }
     }
 
-    private Optional<ACLWithVersion> getAclWithVersion(CassandraId cassandraId) {
-        ResultSet resultSet = getStoredACLRow(cassandraId).block();
-        if (resultSet.isExhausted()) {
-            return Optional.empty();
-        }
-        Row row = resultSet.one();
-        return Optional.of(
-            new ACLWithVersion(
-                row.getLong(CassandraACLTable.VERSION),
-                deserializeACL(cassandraId, row.getString(CassandraACLTable.ACL))));
+    private Mono<ACLWithVersion> getAclWithVersion(CassandraId cassandraId) {
+        return getStoredACLRow(cassandraId)
+                .flatMap(resultSet -> {
+                    if (resultSet.isExhausted()) {
+                        return Mono.empty();
+                    }
+                    Row row = resultSet.one();
+                    return Mono.just(
+                            new ACLWithVersion(
+                                    row.getLong(CassandraACLTable.VERSION),
+                                    deserializeACL(cassandraId, row.getString(CassandraACLTable.ACL))));
+                });
     }
 
     private MailboxACL deserializeACL(CassandraId cassandraId, String serializedACL) {

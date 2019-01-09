@@ -158,8 +158,8 @@ public class CassandraAttachmentDAOV2 {
             .map(row -> CassandraAttachmentDAOV2.fromRow(row, blobIdFactory));
     }
 
-    public CompletableFuture<Void> storeAttachment(DAOAttachment attachment) {
-        return cassandraAsyncExecutor.executeVoid(
+    public Mono<Void> storeAttachment(DAOAttachment attachment) {
+        return cassandraAsyncExecutor.executeVoidReactor(
             insertStatement.bind()
                 .setUUID(ID_AS_UUID, attachment.getAttachmentId().asUUID())
                 .setString(ID, attachment.getAttachmentId().getId())

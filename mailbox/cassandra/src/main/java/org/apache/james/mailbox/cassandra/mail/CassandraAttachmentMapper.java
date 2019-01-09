@@ -107,26 +107,26 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
     private Mono<Attachment> getAttachmentInternal(AttachmentId id) {
         return attachmentDAOV2.getAttachment(id)
             .flatMap(this::retrievePayload)
-            .flatMap(v2Value -> fallbackToV1(id, v2Value));
+            .switchIfEmpty(fallbackToV1(id));
     }
 
-    private Mono<Attachment> fallbackToV1(AttachmentId attachmentId, Attachment v2Value) {
+    private Mono<Attachment> fallbackToV1(AttachmentId attachmentId) {
         return attachmentDAO.getAttachment(attachmentId);
     }
 
     @Override
     public void storeAttachmentForOwner(Attachment attachment, Username owner) throws MailboxException {
         ownerDAO.addOwner(attachment.getAttachmentId(), owner)
-            .thenCompose(any -> blobStore.save(attachment.getBytes()))
-            .thenApply(blobId -> CassandraAttachmentDAOV2.from(attachment, blobId))
-            .thenCompose(attachmentDAOV2::storeAttachment)
-            .join();
+            .then(Mono.fromFuture(blobStore.save(attachment.getBytes())))
+            .map(blobId -> CassandraAttachmentDAOV2.from(attachment, blobId))
+            .flatMap(attachmentDAOV2::storeAttachment)
+            .block();
     }
 
     @Override
     public void storeAttachmentsForMessage(Collection<Attachment> attachments, MessageId ownerMessageId) throws MailboxException {
         Flux.fromIterable(attachments)
-            .map(attachment -> storeAttachmentAsync(attachment, ownerMessageId))
+            .flatMap(attachment -> storeAttachmentAsync(attachment, ownerMessageId))
             .then()
             .block();
     }
@@ -142,15 +142,15 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
         return ownerDAO.retrieveOwners(attachmentId).join().collect(Guavate.toImmutableList());
     }
 
-    public CompletableFuture<Void> storeAttachmentAsync(Attachment attachment, MessageId ownerMessageId) {
-        return blobStore.save(attachment.getBytes())
-            .thenApply(blobId -> CassandraAttachmentDAOV2.from(attachment, blobId))
-            .thenCompose(daoAttachment -> storeAttachmentWithIndex(daoAttachment, ownerMessageId));
+    public Mono<Void> storeAttachmentAsync(Attachment attachment, MessageId ownerMessageId) {
+        return Mono.fromFuture(blobStore.save(attachment.getBytes())
+            .thenApply(blobId -> CassandraAttachmentDAOV2.from(attachment, blobId)))
+            .flatMap(daoAttachment -> storeAttachmentWithIndex(daoAttachment, ownerMessageId));
     }
 
-    private CompletableFuture<Void> storeAttachmentWithIndex(DAOAttachment daoAttachment, MessageId ownerMessageId) {
+    private Mono<Void> storeAttachmentWithIndex(DAOAttachment daoAttachment, MessageId ownerMessageId) {
         return attachmentDAOV2.storeAttachment(daoAttachment)
-                .thenCompose(any -> attachmentMessageIdDAO.storeAttachmentForMessageId(daoAttachment.getAttachmentId(), ownerMessageId));
+                .then(attachmentMessageIdDAO.storeAttachmentForMessageId(daoAttachment.getAttachmentId(), ownerMessageId));
     }
 
     private void logNotFound(AttachmentId attachmentId) {

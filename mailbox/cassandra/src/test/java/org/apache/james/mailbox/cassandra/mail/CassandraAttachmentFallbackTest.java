@@ -100,7 +100,7 @@ class CassandraAttachmentFallbackTest {
             .build();
 
         BlobId blobId = blobsDAO.save(attachment.getBytes()).join();
-        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(attachment, blobId)).join();
+        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(attachment, blobId)).block();
         attachmentDAO.storeAttachment(otherAttachment).join();
 
         assertThat(attachmentMapper.getAttachment(ATTACHMENT_ID_1))
@@ -135,7 +135,7 @@ class CassandraAttachmentFallbackTest {
             .build();
 
         BlobId blobId = blobsDAO.save(attachment.getBytes()).join();
-        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(attachment, blobId)).join();
+        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(attachment, blobId)).block();
         attachmentDAO.storeAttachment(otherAttachment).join();
 
         assertThat(attachmentMapper.getAttachments(ImmutableList.of(ATTACHMENT_ID_1)))
@@ -170,7 +170,7 @@ class CassandraAttachmentFallbackTest {
             .build();
 
         BlobId blobId = blobsDAO.save(attachment.getBytes()).join();
-        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(attachment, blobId)).join();
+        attachmentDAOV2.storeAttachment(CassandraAttachmentDAOV2.from(attachment, blobId)).block();
         attachmentDAO.storeAttachment(otherAttachment).join();
 
         assertThat(attachmentMapper.getAttachments(ImmutableList.of(ATTACHMENT_ID_1, ATTACHMENT_ID_2)))
