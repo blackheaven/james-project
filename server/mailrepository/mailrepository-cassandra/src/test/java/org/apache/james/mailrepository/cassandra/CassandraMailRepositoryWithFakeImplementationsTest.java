@@ -33,6 +33,7 @@ import org.apache.james.backends.cassandra.CassandraCluster;
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
+import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionModule;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.api.Store;
@@ -67,7 +68,8 @@ class CassandraMailRepositoryWithFakeImplementationsTest {
         public MailRepositoryCassandraClusterExtension() {
             super(CassandraModule.aggregateModules(
                     CassandraMailRepositoryModule.MODULE,
-                    CassandraBlobModule.MODULE));
+                    CassandraBlobModule.MODULE,
+                    CassandraSchemaVersionModule.MODULE));
         }
 
         @Override
@@ -256,7 +258,7 @@ class CassandraMailRepositoryWithFakeImplementationsTest {
 
             assertThatThrownBy(() -> cassandraMailRepository.store(mail))
                     .isInstanceOf(RuntimeException.class)
-                    .hasMessage("java.lang.RuntimeException: Expected failure while storing keys");
+                    .hasMessage("Expected failure while storing keys");
 
             assertThat(countDAO.getCount(URL).join()).isEqualTo(0);
         }
@@ -275,7 +277,7 @@ class CassandraMailRepositoryWithFakeImplementationsTest {
 
             assertThatThrownBy(() -> cassandraMailRepository.store(mail))
                     .isInstanceOf(RuntimeException.class)
-                    .hasMessage("java.lang.RuntimeException: Expected failure while storing keys");
+                    .hasMessage("Expected failure while storing keys");
 
             ResultSet resultSet = cassandra.getConf().execute(select()
                     .from(BlobTable.TABLE_NAME));
@@ -296,7 +298,7 @@ class CassandraMailRepositoryWithFakeImplementationsTest {
 
             assertThatThrownBy(() -> cassandraMailRepository.store(mail))
                     .isInstanceOf(RuntimeException.class)
-                    .hasMessage("java.lang.RuntimeException: Expected failure while storing keys");
+                    .hasMessage("Expected failure while storing keys");
 
             ResultSet resultSet = cassandra.getConf().execute(select()
                     .from(MailRepositoryTable.CONTENT_TABLE_NAME));

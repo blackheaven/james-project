@@ -175,7 +175,7 @@ public class CassandraSieveRepository implements SieveRepository {
     @Override
     public void deleteScript(User user, ScriptName name) throws ScriptNotFoundException, IsActiveException {
         ensureIsNotActive(user, name);
-        if (!cassandraSieveDAO.deleteScriptInCassandra(user, name).blockOptional().isPresent()) {
+        if (!cassandraSieveDAO.deleteScriptInCassandra(user, name).switchIfEmpty(Mono.just(false)).block()) {
             throw new ScriptNotFoundException();
         }
     }
@@ -189,18 +189,17 @@ public class CassandraSieveRepository implements SieveRepository {
 
     @Override
     public void renameScript(User user, ScriptName oldName, ScriptName newName) throws ScriptNotFoundException, DuplicateException {
-        Mono<Boolean> scriptExistsFuture = cassandraSieveDAO.getScript(user, newName)
-            .hasElement();
-        Mono<Script> oldScriptFuture = cassandraSieveDAO.getScript(user, oldName);
+        Mono<Script> oldScript = cassandraSieveDAO.getScript(user, oldName).cache();
+        Mono<Boolean> newScriptExists = cassandraSieveDAO.getScript(user, newName).hasElement();
 
-        oldScriptFuture.block();
-        if (scriptExistsFuture.block()) {
+        oldScript.block();
+        if (newScriptExists.block()) {
             throw new DuplicateException();
         }
 
         performScriptRename(user,
             newName,
-            oldScriptFuture.blockOptional().orElseThrow(ScriptNotFoundException::new));
+            oldScript.blockOptional().orElseThrow(ScriptNotFoundException::new));
     }
 
     private void performScriptRename(User user, ScriptName newName, Script oldScript) {
