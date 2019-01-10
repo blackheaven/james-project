@@ -83,7 +83,7 @@ class CassandraAttachmentOwnerDAOTest {
             .boxed()
             .collect(JamesCollectors.chunker(128))
             .forEach(chunk -> Flux.fromIterable(chunk)
-                    .map(i -> testee.addOwner(ATTACHMENT_ID, Username.fromRawValue("owner" + i)))
+                    .flatMap(i -> testee.addOwner(ATTACHMENT_ID, Username.fromRawValue("owner" + i)))
                     .then()
                     .block());
 

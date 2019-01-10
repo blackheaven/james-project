@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.mailbox.model.Attachment;
+import org.apache.james.mailbox.model.AttachmentId;
 import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
@@ -52,13 +53,10 @@ public class AttachmentLoader {
 
     @VisibleForTesting
     Mono<List<MessageAttachment>> getAttachments(List<MessageAttachmentRepresentation> attachmentRepresentations) {
-        return attachmentMapper.getAttachmentsAsFlux(attachmentRepresentations
-                    .stream()
-                    .map(MessageAttachmentRepresentation::getAttachmentId))
-                .map(attachment -> attachmentRepresentations
-                    .stream()
-                    .map(attachmentRepresentation -> constructMessageAttachment(attachment, attachmentRepresentation)))
-                .flatMap(Flux::fromStream)
+        return Flux.fromIterable(attachmentRepresentations)
+                .flatMap(attachmentRepresentation ->
+                        attachmentMapper.getAttachmentsAsMono(attachmentRepresentation.getAttachmentId())
+                            .map(attachment -> constructMessageAttachment(attachment, attachmentRepresentation)))
                 .collectList();
     }
 

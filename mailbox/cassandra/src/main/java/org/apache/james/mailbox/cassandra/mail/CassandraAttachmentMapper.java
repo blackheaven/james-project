@@ -21,8 +21,6 @@ package org.apache.james.mailbox.cassandra.mail;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -41,7 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -87,21 +84,15 @@ public class CassandraAttachmentMapper implements AttachmentMapper {
 
     @Override
     public List<Attachment> getAttachments(Collection<AttachmentId> attachmentIds) {
-        return getAttachmentsAsFuture(attachmentIds).join();
+        return Flux.fromIterable(attachmentIds)
+            .flatMap(this::getAttachmentsAsMono)
+            .collectList()
+            .block();
     }
 
-    public CompletableFuture<ImmutableList<Attachment>> getAttachmentsAsFuture(Collection<AttachmentId> attachmentIds) {
-        Preconditions.checkArgument(attachmentIds != null);
-        return getAttachmentsAsFlux(attachmentIds.stream())
-            .collect(ImmutableList.toImmutableList())
-            .toFuture();
-    }
-
-    public Flux<Attachment> getAttachmentsAsFlux(Stream<AttachmentId> attachmentIds) {
-        Preconditions.checkArgument(attachmentIds != null);
-        return Flux.fromStream(attachmentIds)
-                .flatMap(attachmentId -> getAttachmentInternal(attachmentId)
-                        .switchIfEmpty(ReactorUtils.executeAndEmpty(() -> logNotFound((attachmentId)))));
+    public Mono<Attachment> getAttachmentsAsMono(AttachmentId attachmentId) {
+        return getAttachmentInternal(attachmentId)
+            .switchIfEmpty(ReactorUtils.executeAndEmpty(() -> logNotFound((attachmentId))));
     }
 
     private Mono<Attachment> getAttachmentInternal(AttachmentId id) {

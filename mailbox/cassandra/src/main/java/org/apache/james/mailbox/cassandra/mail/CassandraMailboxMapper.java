@@ -204,10 +204,9 @@ public class CassandraMailboxMapper implements MailboxMapper {
         return Flux.merge(
                 mailboxPathDAO.listUserMailboxes(mailbox.getNamespace(), mailbox.getUser()),
                 mailboxPathV2DAO.listUserMailboxes(mailbox.getNamespace(), mailbox.getUser()))
-            .map(idAndPath -> idAndPath.getMailboxPath().getName().startsWith(mailbox.getName() + String.valueOf(delimiter)))
-            .filter(FunctionalUtils.toPredicate(Function.identity()))
-            .defaultIfEmpty(false)
-            .blockFirst();
+            .filter(idAndPath -> idAndPath.getMailboxPath().getName().startsWith(mailbox.getName() + String.valueOf(delimiter)))
+            .hasElements()
+            .block();
     }
 
     @Override
