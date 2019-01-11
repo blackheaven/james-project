@@ -191,7 +191,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
             .collect(JamesCollectors.chunker(cassandraConfiguration.getExpungeChunkSize()))
             .forEach(chunk ->
                 Flux.fromStream(chunk.stream())
-                    .map(entry -> deleteAsMono(entry.getKey(), entry.getValue()))
+                    .flatMap(entry -> deleteAsMono(entry.getKey(), entry.getValue()))
                     .then()
                     .block());
     }
