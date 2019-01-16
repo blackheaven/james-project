@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.regex.Pattern;
 
 import javax.activation.DataHandler;
 import javax.mail.Address;
@@ -36,16 +37,40 @@ import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimePart;
 import javax.mail.search.SearchTerm;
 
 import org.apache.james.lifecycle.api.Disposable;
 import org.apache.james.lifecycle.api.LifecycleUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This object wraps a "possibly shared" MimeMessage tracking copies and
  * automatically cloning it (if shared) when a write operation is invoked.
  */
 public class MimeMessageCopyOnWriteProxy extends MimeMessage implements Disposable {
+    public static class ContentTypeCleaner {
+        private static final Logger LOGGER = LoggerFactory.getLogger(ContentTypeCleaner.class);
+        private static final Pattern REGEX = Pattern.compile("^[\\w\\-]+/[\\w\\-]+");
+
+        public static String cleanContentType(MimePart mimePart, String contentType) {
+            if (contentType == null) {
+                return null;
+            }
+
+            if (REGEX.matcher(contentType).find()) {
+                return contentType;
+            }
+
+            LOGGER.warn("Can not parse Content-Type: " + contentType);
+            return null;
+        }
+    }
+
+    static {
+        System.setProperty("mail.mime.contenttypehandler", ContentTypeCleaner.class.getName());
+    }
 
     /**
      * Used internally to track the reference count It is important that this is

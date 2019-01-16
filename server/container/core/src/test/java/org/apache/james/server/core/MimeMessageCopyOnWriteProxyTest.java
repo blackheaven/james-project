@@ -31,7 +31,10 @@ import org.apache.james.core.MailAddress;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.lifecycle.api.LifecycleUtil;
 import org.apache.mailet.Mail;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import com.google.common.collect.ImmutableList;
 
 public class MimeMessageCopyOnWriteProxyTest extends MimeMessageFromStreamTest {
 
@@ -245,6 +248,18 @@ public class MimeMessageCopyOnWriteProxyTest extends MimeMessageFromStreamTest {
         LifecycleUtil.dispose(mm);
     }
 
+    @Test
+    public void testMessageWithWrongContentTypeShouldNotThrow() throws Exception {
+        ImmutableList<MailAddress> recipients = ImmutableList.of(new MailAddress("recipient@test.com"));
+        MimeMessageCopyOnWriteProxy messageFromSources = (MimeMessageCopyOnWriteProxy) getMessageFromSources(
+                content + sep + body);
+        MailImpl mail = new MailImpl("test", new MailAddress("test@test.com"), recipients, messageFromSources);
+        mail.getMessage().addHeader("Content-Type", "file;name=\"malformed.pdf\"");
+        mail.getMessage().saveChanges();
+        LifecycleUtil.dispose(mail);
+        LifecycleUtil.dispose(messageFromSources);
+    }
+
     private static String getReferences(MimeMessage m) {
         StringBuilder ref = new StringBuilder("/");
         while (m instanceof MimeMessageCopyOnWriteProxy) {
@@ -268,6 +283,30 @@ public class MimeMessageCopyOnWriteProxyTest extends MimeMessageFromStreamTest {
 
     private static boolean isSameMimeMessage(MimeMessage first, MimeMessage second) {
         return getWrappedMessage(first) == getWrappedMessage(second);
+    }
 
+    @Nested
+    class ContentTypeCleanerTest {
+        @Test
+        void nullContentTypeShouldReturnNull() {
+            assertThat(MimeMessageCopyOnWriteProxy.ContentTypeCleaner
+                    .cleanContentType(null, null))
+                    .isNull();
+        }
+
+        @Test
+        void invalidContentTypeShouldReturnNull() {
+            assertThat(MimeMessageCopyOnWriteProxy.ContentTypeCleaner
+                    .cleanContentType(null, "I'mNotValid"))
+                    .isNull();
+        }
+
+        @Test
+        void validContentTypeShouldReturnTheRawInput() {
+            String contentType = "application/pdf";
+            assertThat(MimeMessageCopyOnWriteProxy.ContentTypeCleaner
+                    .cleanContentType(null, contentType))
+                    .isEqualTo(contentType);
+        }
     }
 }
