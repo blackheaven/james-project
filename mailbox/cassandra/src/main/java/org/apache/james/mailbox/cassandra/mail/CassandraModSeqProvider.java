@@ -29,13 +29,11 @@ import static org.apache.james.mailbox.cassandra.table.CassandraMessageModseqTab
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageModseqTable.NEXT_MODSEQ;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageModseqTable.TABLE_NAME;
 
-import java.util.UUID;
 import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
 
-import com.google.common.base.MoreObjects;
 import org.apache.james.backends.cassandra.init.configuration.CassandraConfiguration;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.mailbox.MailboxSession;
@@ -47,6 +45,7 @@ import org.apache.james.mailbox.store.mail.model.Mailbox;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
+import com.google.common.base.MoreObjects;
 import reactor.core.publisher.Mono;
 
 public class CassandraModSeqProvider implements ModSeqProvider {

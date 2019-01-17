@@ -33,7 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class AttachmentLoaderTest {
