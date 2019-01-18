@@ -236,7 +236,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
 
     private Mono<Pair<MailboxId, UpdatedFlags>> flagsUpdateWithRetry(Flags newState, MessageManager.FlagsUpdateMode updateMode, MailboxId mailboxId, MessageId messageId) {
         try {
-            return tryFlagsUpdate(newState, updateMode, mailboxId, messageId)
+            return Mono.defer(() -> tryFlagsUpdate(newState, updateMode, mailboxId, messageId))
                 .single()
                 .retry(cassandraConfiguration.getFlagsUpdateMessageIdMaxRetry())
                 .map(pair -> buildUpdatedFlags(pair.getRight(), pair.getLeft()));
@@ -274,8 +274,8 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     private Mono<Pair<Flags, ComposedMessageIdWithMetaData>> updateFlags(MailboxId mailboxId, MessageId messageId, Flags newState, MessageManager.FlagsUpdateMode updateMode) throws MailboxException {
         CassandraId cassandraId = (CassandraId) mailboxId;
         ComposedMessageIdWithMetaData oldComposedId = imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.of(cassandraId))
-            .toStream()
-            .findFirst()
+            .next()
+            .blockOptional()
             .orElseThrow(MailboxDeleteDuringUpdateException::new);
 
         Flags newFlags = new FlagsUpdateCalculator(newState, updateMode).buildNewFlags(oldComposedId.getFlags());
@@ -298,7 +298,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     private Mono<Pair<Flags, ComposedMessageIdWithMetaData>> updateFlags(ComposedMessageIdWithMetaData oldComposedId, ComposedMessageIdWithMetaData newComposedId) {
         return imapUidDAO.updateMetadata(newComposedId, oldComposedId.getModSeq())
             .filter(FunctionalUtils.toPredicate(Function.identity()))
-            .flatMap(any -> messageIdDAO.updateMetadata(newComposedId))
-            .thenReturn(Pair.of(oldComposedId.getFlags(), newComposedId));
+            .flatMap(any -> messageIdDAO.updateMetadata(newComposedId)
+                .thenReturn(Pair.of(oldComposedId.getFlags(), newComposedId)));
     }
 }
