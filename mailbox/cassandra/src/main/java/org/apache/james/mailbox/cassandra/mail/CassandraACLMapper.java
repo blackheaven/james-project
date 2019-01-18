@@ -46,7 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -112,14 +111,12 @@ public class CassandraACLMapper {
 
     public Mono<MailboxACL> getACL(CassandraId cassandraId) {
         return getStoredACLRow(cassandraId)
-            .map(resultSet -> getAcl(cassandraId, resultSet));
+            .map(row -> getAcl(cassandraId, row))
+            .switchIfEmpty(Mono.just(MailboxACL.EMPTY));
     }
 
-    private MailboxACL getAcl(CassandraId cassandraId, ResultSet resultSet) {
-        if (resultSet.isExhausted()) {
-            return MailboxACL.EMPTY;
-        }
-        String serializedACL = resultSet.one().getString(CassandraACLTable.ACL);
+    private MailboxACL getAcl(CassandraId cassandraId, Row row) {
+        String serializedACL = row.getString(CassandraACLTable.ACL);
         return deserializeACL(cassandraId, serializedACL);
     }
 
@@ -142,7 +139,7 @@ public class CassandraACLMapper {
 
     private Mono<ACLDiff> updateAcl(CassandraId cassandraId, Function<ACLWithVersion, ACLWithVersion> aclTransformation, MailboxACL replacement) throws MailboxException {
         return Mono.fromRunnable(() -> codeInjector.inject())
-            .then(getAclWithVersion(cassandraId))
+            .then(Mono.defer(() -> getAclWithVersion(cassandraId)))
             .flatMap(aclWithVersion ->
                     updateStoredACL(cassandraId, aclTransformation.apply(aclWithVersion))
                             .map(newACL -> ACLDiff.computeDiff(aclWithVersion.mailboxACL, newACL)))
@@ -152,8 +149,8 @@ public class CassandraACLMapper {
             .retry(maxAclRetry);
     }
 
-    private Mono<ResultSet> getStoredACLRow(CassandraId cassandraId) {
-        return executor.executeReactor(
+    private Mono<Row> getStoredACLRow(CassandraId cassandraId) {
+        return executor.executeSingleRowReactor(
             readStatement.bind()
                 .setUUID(CassandraACLTable.ID, cassandraId.asUuid()));
     }
@@ -188,16 +185,8 @@ public class CassandraACLMapper {
 
     private Mono<ACLWithVersion> getAclWithVersion(CassandraId cassandraId) {
         return getStoredACLRow(cassandraId)
-                .flatMap(resultSet -> {
-                    if (resultSet.isExhausted()) {
-                        return Mono.empty();
-                    }
-                    Row row = resultSet.one();
-                    return Mono.just(
-                            new ACLWithVersion(
-                                    row.getLong(CassandraACLTable.VERSION),
-                                    deserializeACL(cassandraId, row.getString(CassandraACLTable.ACL))));
-                });
+            .map(acl -> new ACLWithVersion(acl.getLong(CassandraACLTable.VERSION),
+                                deserializeACL(cassandraId, acl.getString(CassandraACLTable.ACL))));
     }
 
     private MailboxACL deserializeACL(CassandraId cassandraId, String serializedACL) {
