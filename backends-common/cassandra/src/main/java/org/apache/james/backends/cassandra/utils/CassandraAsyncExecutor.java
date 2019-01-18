@@ -77,7 +77,7 @@ public class CassandraAsyncExecutor {
                 .flatMap(Mono::justOrEmpty);
     }
 
-    private Mono<Optional<Row>> executeSingleRowOptionalReactor(Statement statement) {
+    public Mono<Optional<Row>> executeSingleRowOptionalReactor(Statement statement) {
         return executeReactor(statement)
             .map(resultSet -> Optional.ofNullable(resultSet.one()));
     }
