@@ -29,6 +29,8 @@ import static org.apache.james.mailbox.cassandra.table.CassandraMessageModseqTab
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageModseqTable.NEXT_MODSEQ;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageModseqTable.TABLE_NAME;
 
+import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
 
@@ -137,14 +139,18 @@ public class CassandraModSeqProvider implements ModSeqProvider {
 
     @Override
     public long highestModSeq(MailboxSession mailboxSession, MailboxId mailboxId) throws MailboxException {
-        return unbox(() -> findHighestModSeq((CassandraId) mailboxId).blockOptional().orElse(FIRST_MODSEQ).getValue());
+        return unbox(() -> findHighestModSeq((CassandraId) mailboxId).block().orElse(FIRST_MODSEQ).getValue());
     }
 
-    private Mono<ModSeq> findHighestModSeq(CassandraId mailboxId) {
-        return cassandraAsyncExecutor.executeSingleRowReactor(
+    private Mono<Optional<ModSeq>> findHighestModSeq(CassandraId mailboxId) {
+        return cassandraAsyncExecutor.executeSingleRowOptionalReactor(
             select.bind()
                 .setUUID(MAILBOX_ID, mailboxId.asUuid()))
-            .map(row -> new ModSeq(row.getLong(NEXT_MODSEQ)));
+            .map(maybeRow -> maybeRow.map(row -> {
+                ModSeq modSeq = new ModSeq(row.getLong(NEXT_MODSEQ));
+                LoggerFactory.getLogger(CassandraModSeqProvider.class).warn("modseq read {}", modSeq);
+                return modSeq;
+            }));
     }
 
     private Mono<ModSeq> tryInsertModSeq(CassandraId mailboxId, ModSeq modSeq) {
@@ -175,18 +181,23 @@ public class CassandraModSeqProvider implements ModSeqProvider {
 
     public Mono<Long> nextModSeq(CassandraId mailboxId) {
         return findHighestModSeq(mailboxId)
-            .flatMap(modSeq ->  tryUpdateModSeq(mailboxId, modSeq))
-            .switchIfEmpty(tryInsertModSeq(mailboxId, FIRST_MODSEQ))
+            .flatMap(maybeHighestModSeq -> maybeHighestModSeq
+                        .map(highestModSeq -> tryUpdateModSeq(mailboxId, highestModSeq))
+                        .orElseGet(() -> tryInsertModSeq(mailboxId, FIRST_MODSEQ)))
             .switchIfEmpty(handleRetries(mailboxId))
             .map(ModSeq::getValue);
     }
 
     private Mono<ModSeq> handleRetries(CassandraId mailboxId) {
-        Mono<ModSeq> perform = findHighestModSeq(mailboxId)
-                .flatMap(newModSeq -> tryUpdateModSeq(mailboxId, newModSeq));
-        return perform
-                .single()
-                .retry(maxModSeqRetries);
+        return tryFindThenUpdateOnce(mailboxId)
+            .single()
+            .retryBackoff(maxModSeqRetries, Duration.ofMillis(2));
+    }
+
+    private Mono<ModSeq> tryFindThenUpdateOnce(CassandraId mailboxId) {
+        return Mono.defer(() -> findHighestModSeq(mailboxId)
+            .flatMap(Mono::justOrEmpty)
+            .flatMap(highestModSeq -> tryUpdateModSeq(mailboxId, highestModSeq)));
     }
 
     private static class ModSeq {
