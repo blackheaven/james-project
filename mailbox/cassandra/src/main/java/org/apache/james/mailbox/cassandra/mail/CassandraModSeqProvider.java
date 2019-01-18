@@ -32,6 +32,7 @@ import static org.apache.james.mailbox.cassandra.table.CassandraMessageModseqTab
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
@@ -44,6 +45,7 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.store.mail.ModSeqProvider;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
+import org.apache.james.util.FunctionalUtils;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
@@ -173,10 +175,9 @@ public class CassandraModSeqProvider implements ModSeqProvider {
     }
 
     private Mono<ModSeq> successToModSeq(ModSeq modSeq, Boolean success) {
-        if (success) {
-            return Mono.just(modSeq);
-        }
-        return Mono.empty();
+        return Mono.just(success)
+            .filter(FunctionalUtils.toPredicate(Function.identity()))
+            .map(any -> modSeq);
     }
 
     public Mono<Long> nextModSeq(CassandraId mailboxId) {
