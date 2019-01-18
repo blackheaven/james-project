@@ -186,11 +186,10 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
 
     @Override
     public void delete(Multimap<MessageId, MailboxId> ids) {
-        Flux<Mono<Void>> deletions = Flux.fromIterable(ids.asMap()
+        Flux.fromIterable(ids.asMap()
             .entrySet())
-            .map(entry -> deleteAsMono(entry.getKey(), entry.getValue()));
-
-        Flux.merge(deletions, cassandraConfiguration.getExpungeChunkSize())
+            .limitRate(cassandraConfiguration.getExpungeChunkSize())
+            .flatMap(entry -> deleteAsMono(entry.getKey(), entry.getValue()))
             .then()
             .block();
     }
