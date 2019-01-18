@@ -148,11 +148,7 @@ public class CassandraModSeqProvider implements ModSeqProvider {
         return cassandraAsyncExecutor.executeSingleRowOptionalReactor(
             select.bind()
                 .setUUID(MAILBOX_ID, mailboxId.asUuid()))
-            .map(maybeRow -> maybeRow.map(row -> {
-                ModSeq modSeq = new ModSeq(row.getLong(NEXT_MODSEQ));
-                LoggerFactory.getLogger(CassandraModSeqProvider.class).warn("modseq read {}", modSeq);
-                return modSeq;
-            }));
+            .map(maybeRow -> maybeRow.map(row -> new ModSeq(row.getLong(NEXT_MODSEQ))));
     }
 
     private Mono<ModSeq> tryInsertModSeq(CassandraId mailboxId, ModSeq modSeq) {
