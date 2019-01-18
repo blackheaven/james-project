@@ -93,7 +93,7 @@ public class MailboxMergingTaskRunner {
             MailboxACL finalAcl = newAcl.union(oldAcl);
 
             cassandraACLMapper.setACL(newMailboxId, finalAcl);
-            rightsDAO.update(oldMailboxId, ACLDiff.computeDiff(oldAcl, MailboxACL.EMPTY)).join();
+            rightsDAO.update(oldMailboxId, ACLDiff.computeDiff(oldAcl, MailboxACL.EMPTY)).block();
         } catch (MailboxException e) {
             throw new RuntimeException(e);
         }

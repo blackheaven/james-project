@@ -428,7 +428,7 @@ public class CassandraMessageMapper implements MessageMapper {
         return imapUidDAO.updateMetadata(newMetadata, oldMetadata.getModSeq())
             .flatMap(success -> {
                 if (success) {
-                    return messageIdDAO.updateMetadata(newMetadata).then(Mono.just(true));
+                    return messageIdDAO.updateMetadata(newMetadata).thenReturn(true);
                 } else {
                     return Mono.just(false);
                 }

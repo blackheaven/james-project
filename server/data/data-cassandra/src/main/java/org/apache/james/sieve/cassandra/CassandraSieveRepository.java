@@ -145,7 +145,7 @@ public class CassandraSieveRepository implements SieveRepository {
             unactivateOldScript(user)
                 .then(updateScriptActivation(user, name, true))
                 .filter(FunctionalUtils.toPredicate(Function.identity()))
-                .flatMap(any -> cassandraActiveScriptDAO.activate(user, name).then(Mono.just(any)));
+                .flatMap(any -> cassandraActiveScriptDAO.activate(user, name).thenReturn(any));
 
         if (!activateNewScript.blockOptional().isPresent()) {
             throw new ScriptNotFoundException();
@@ -161,7 +161,7 @@ public class CassandraSieveRepository implements SieveRepository {
         if (!scriptName.equals(SieveRepository.NO_SCRIPT_NAME)) {
             return cassandraSieveDAO.updateScriptActivation(user, scriptName, active);
         }
-        return cassandraActiveScriptDAO.unactivate(user).then(Mono.just(true));
+        return cassandraActiveScriptDAO.unactivate(user).thenReturn(true);
     }
 
     @Override

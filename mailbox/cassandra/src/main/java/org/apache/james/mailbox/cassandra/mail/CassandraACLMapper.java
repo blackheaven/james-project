@@ -125,37 +125,31 @@ public class CassandraACLMapper {
 
     public ACLDiff updateACL(CassandraId cassandraId, MailboxACL.ACLCommand command) throws MailboxException {
         MailboxACL replacement = MailboxACL.EMPTY.apply(command);
-
-        ACLDiff aclDiff = updateAcl(cassandraId, aclWithVersion -> aclWithVersion.apply(command), replacement);
-
-        return userMailboxRightsDAO.update(cassandraId, aclDiff)
-            .thenApply(any -> aclDiff)
-            .join();
+        return updateAcl(cassandraId, aclWithVersion -> aclWithVersion.apply(command), replacement)
+            .flatMap(aclDiff -> userMailboxRightsDAO.update(cassandraId, aclDiff)
+            .thenReturn(aclDiff))
+            .blockOptional()
+            .orElseThrow(() -> new MailboxException("Unable to update ACL"));
     }
 
     public ACLDiff setACL(CassandraId cassandraId, MailboxACL mailboxACL) throws MailboxException {
-        ACLDiff aclDiff = updateAcl(cassandraId,
-            acl -> new ACLWithVersion(acl.version, mailboxACL),
-            mailboxACL);
-
-        return userMailboxRightsDAO.update(cassandraId, aclDiff)
-            .thenApply(any -> aclDiff)
-            .join();
+        return updateAcl(cassandraId, acl -> new ACLWithVersion(acl.version, mailboxACL), mailboxACL)
+            .flatMap(aclDiff -> userMailboxRightsDAO.update(cassandraId, aclDiff)
+            .thenReturn(aclDiff))
+            .blockOptional()
+            .orElseThrow(() -> new MailboxException("Unable to update ACL"));
     }
 
-    private ACLDiff updateAcl(CassandraId cassandraId, Function<ACLWithVersion, ACLWithVersion> aclTransformation, MailboxACL replacement) throws MailboxException {
+    private Mono<ACLDiff> updateAcl(CassandraId cassandraId, Function<ACLWithVersion, ACLWithVersion> aclTransformation, MailboxACL replacement) throws MailboxException {
         return Mono.fromRunnable(() -> codeInjector.inject())
-            .then(getAclWithVersion(cassandraId)
-                .flatMap(aclWithVersion ->
-                        updateStoredACL(cassandraId, aclTransformation.apply(aclWithVersion))
-                                .map(newACL -> ACLDiff.computeDiff(aclWithVersion.mailboxACL, newACL)))
-                .switchIfEmpty(insertACL(cassandraId, replacement)
-                        .map(newACL -> ACLDiff.computeDiff(MailboxACL.EMPTY, newACL))))
-                .single()
-                .retry(maxAclRetry)
-                .onErrorResume(e -> Mono.empty())
-                .blockOptional()
-                .orElseThrow(() -> new MailboxException("Unable to update ACL"));
+            .then(getAclWithVersion(cassandraId))
+            .flatMap(aclWithVersion ->
+                    updateStoredACL(cassandraId, aclTransformation.apply(aclWithVersion))
+                            .map(newACL -> ACLDiff.computeDiff(aclWithVersion.mailboxACL, newACL)))
+            .switchIfEmpty(insertACL(cassandraId, replacement)
+                    .map(newACL -> ACLDiff.computeDiff(MailboxACL.EMPTY, newACL)))
+            .single()
+            .retry(maxAclRetry);
     }
 
     private Mono<ResultSet> getStoredACLRow(CassandraId cassandraId) {
@@ -165,28 +159,28 @@ public class CassandraACLMapper {
     }
 
     private Mono<MailboxACL> updateStoredACL(CassandraId cassandraId, ACLWithVersion aclWithVersion) {
-        try {
-            return executor.executeReturnApplied(
-                conditionalUpdateStatement.bind()
-                    .setUUID(CassandraACLTable.ID, cassandraId.asUuid())
-                    .setString(CassandraACLTable.ACL,  MailboxACLJsonConverter.toJson(aclWithVersion.mailboxACL))
-                    .setLong(CassandraACLTable.VERSION, aclWithVersion.version + 1)
-                    .setLong(OLD_VERSION, aclWithVersion.version))
-                .filter(FunctionalUtils.toPredicate(Function.identity()))
-                .map(any -> aclWithVersion.mailboxACL);
-        } catch (JsonProcessingException exception) {
-            throw new RuntimeException(exception);
-        }
+        return executor.executeReturnApplied(
+            conditionalUpdateStatement.bind()
+                .setUUID(CassandraACLTable.ID, cassandraId.asUuid())
+                .setString(CassandraACLTable.ACL, convertAclToJson(aclWithVersion.mailboxACL))
+                .setLong(CassandraACLTable.VERSION, aclWithVersion.version + 1)
+                .setLong(OLD_VERSION, aclWithVersion.version))
+            .filter(FunctionalUtils.toPredicate(Function.identity()))
+            .map(any -> aclWithVersion.mailboxACL);
     }
 
     private Mono<MailboxACL> insertACL(CassandraId cassandraId, MailboxACL acl) {
-        try {
-            return executor.executeReturnApplied(
-                conditionalInsertStatement.bind()
+        return Mono.defer(() -> executor.executeReturnApplied(
+            conditionalInsertStatement.bind()
                     .setUUID(CassandraACLTable.ID, cassandraId.asUuid())
-                    .setString(CassandraACLTable.ACL, MailboxACLJsonConverter.toJson(acl)))
-                .filter(FunctionalUtils.toPredicate(Function.identity()))
-                .map(any -> acl);
+                    .setString(CassandraACLTable.ACL, convertAclToJson(acl))))
+            .filter(FunctionalUtils.toPredicate(Function.identity()))
+            .map(any -> acl);
+    }
+
+    private String convertAclToJson(MailboxACL acl) {
+        try {
+            return MailboxACLJsonConverter.toJson(acl);
         } catch (JsonProcessingException exception) {
             throw new RuntimeException(exception);
         }

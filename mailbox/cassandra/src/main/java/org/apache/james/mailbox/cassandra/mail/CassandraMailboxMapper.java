@@ -102,7 +102,7 @@ public class CassandraMailboxMapper implements MailboxMapper {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
         return mailboxPathV2DAO.save(mailbox.generateAssociatedPath(), mailboxId)
             .flatMap(success -> deleteIfSuccess(mailbox, success))
-            .then(Mono.just(mailbox));
+            .thenReturn(mailbox);
     }
 
     private Mono<Void> deleteIfSuccess(SimpleMailbox mailbox, boolean success) {

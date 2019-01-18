@@ -92,6 +92,7 @@ class CassandraModSeqProviderTest {
             .threadCount(10)
             .operationCount(nbEntries)
             .runSuccessfullyWithin(Duration.ofMinutes(1));
+
         assertThat(modSeqs).hasSize(100);
     }
 }
