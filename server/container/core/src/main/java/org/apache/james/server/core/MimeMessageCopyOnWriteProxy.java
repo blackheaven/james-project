@@ -46,6 +46,7 @@ import org.apache.james.lifecycle.api.LifecycleUtil;
  * automatically cloning it (if shared) when a write operation is invoked.
  */
 public class MimeMessageCopyOnWriteProxy extends MimeMessage implements Disposable {
+
     /**
      * Used internally to track the reference count It is important that this is
      * static otherwise it will keep a reference to the parent object.
