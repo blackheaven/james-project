@@ -318,21 +318,15 @@ public class CassandraMessageMapper implements MessageMapper {
     private Mono<FlagsUpdateStageResult> runUpdateStage(CassandraId mailboxId, Flux<ComposedMessageIdWithMetaData> toBeUpdated, FlagsUpdateCalculator flagsUpdateCalculator) {
         Mono<Long> newModSeq = computeNewModSeq(mailboxId);
         return toBeUpdated
-            .buffer(cassandraConfiguration.getFlagsUpdateChunkSize())
-            .flatMap(uidChunk -> newModSeq.flatMap(modSeq -> performUpdatesForChunk(mailboxId, flagsUpdateCalculator, modSeq, uidChunk)))
-            .reduce(FlagsUpdateStageResult.none(), FlagsUpdateStageResult::merge);
+            .limitRate(cassandraConfiguration.getFlagsUpdateChunkSize())
+            .flatMapSequential(metadata -> newModSeq.flatMap(modSeq -> tryFlagsUpdate(flagsUpdateCalculator, modSeq, metadata)))
+            .reduce(FlagsUpdateStageResult.none(), FlagsUpdateStageResult::merge)
+            .flatMap(result -> updateIndexesForUpdatesResult(mailboxId, result));
     }
 
     private Mono<Long> computeNewModSeq(CassandraId mailboxId) {
         return Mono.fromCompletionStage(modSeqProvider.nextModSeq(mailboxId))
             .map(value -> value.orElseThrow(() -> new RuntimeException("ModSeq generation failed for mailbox " + mailboxId.asUuid())));
-    }
-
-    private Mono<FlagsUpdateStageResult> performUpdatesForChunk(CassandraId mailboxId, FlagsUpdateCalculator flagsUpdateCalculator, Long newModSeq, Collection<ComposedMessageIdWithMetaData> uidChunk) {
-        return Flux.fromIterable(uidChunk)
-            .flatMap(oldMetadata -> tryFlagsUpdate(flagsUpdateCalculator, newModSeq, oldMetadata))
-            .reduce(FlagsUpdateStageResult.none(), FlagsUpdateStageResult::merge)
-            .flatMap(result -> updateIndexesForUpdatesResult(mailboxId, result));
     }
 
     private Mono<FlagsUpdateStageResult> updateIndexesForUpdatesResult(CassandraId mailboxId, FlagsUpdateStageResult result) {
@@ -343,8 +337,7 @@ public class CassandraMessageMapper implements MessageMapper {
                     LOGGER.error("Could not update flag indexes for mailboxId {} UID {}. This will lead to inconsistencies across Cassandra tables", mailboxId, failedIndex.getUid());
                     return Mono.empty();
                 }))
-            .collectList()
-            .map(any -> result);
+            .then(Mono.just(result));
     }
 
     @Override
