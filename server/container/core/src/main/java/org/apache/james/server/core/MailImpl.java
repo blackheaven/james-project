@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,6 +49,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.ParseException;
 
+import com.github.steveash.guavate.Guavate;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.MaybeSender;
@@ -442,12 +444,12 @@ public class MailImpl implements Disposable, Mail {
             if (mail instanceof MailImpl) {
                 setAttributesRaw((Map<String, Object>) cloneSerializableObject(((MailImpl) mail).getAttributesRaw()));
             } else {
-                HashMap<String, Object> attribs = new HashMap<>();
-                for (Iterator<String> i = mail.getAttributeNames(); i.hasNext(); ) {
-                    String hashKey = i.next();
-                    attribs.put(hashKey, cloneSerializableObject(mail.getAttribute(hashKey)));
-                }
-                setAttributesRaw(attribs);
+                ImmutableMap<String, Object> attributesMap = mail.attributes()
+                    .collect(Guavate.toImmutableMap(
+                            attribute -> attribute.getName().asString(),
+                            Throwing.function(attribute -> cloneSerializableObject(attribute.getValue().getValue()))));
+
+                setAttributesRaw(attributesMap);
             }
         } catch (IOException | ClassNotFoundException e) {
             LOGGER.error("Error while deserializing attributes", e);

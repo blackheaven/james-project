@@ -76,10 +76,10 @@ public class WithStorageDirectiveTest {
 
         AttributeName recipient1 = AttributeName.of("DeliveryPath_recipient1@localhost");
         AttributeName recipient2 = AttributeName.of("DeliveryPath_recipient2@localhost");
-        softly.assertThat(mail.attributeNames())
-            .containsOnly(recipient2, recipient1);
-        softly.assertThat(mail.getAttribute(recipient1)).contains(new Attribute(recipient1, AttributeValue.of(targetFolderName)));
-        softly.assertThat(mail.getAttribute(recipient2)).contains(new Attribute(recipient2, AttributeValue.of(targetFolderName)));
+        softly.assertThat(mail.attributes())
+            .containsOnly(
+                new Attribute(recipient1, AttributeValue.of(targetFolderName)),
+                new Attribute(recipient2, AttributeValue.of(targetFolderName)));
     }
 
     @Test
@@ -95,7 +95,7 @@ public class WithStorageDirectiveTest {
 
         testee.service(mail);
 
-        assertThat(mail.attributeNames())
+        assertThat(mail.attributes())
             .isEmpty();
     }
 
