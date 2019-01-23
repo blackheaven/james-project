@@ -172,8 +172,10 @@ public class MailDto {
             return Optional.empty();
         }
 
-        return Optional.of(Iterators.toStream(mail.getAttributeNames())
-            .collect(Guavate.toImmutableMap(Function.identity(), attributeName -> mail.getAttribute(attributeName).toString())));
+        return Optional.of(mail.attributes()
+            .collect(Guavate.toImmutableMap(
+                attribute -> attribute.getName().asString(),
+                attribute -> attribute.getValue().value().toString())));
     }
 
     private final String name;

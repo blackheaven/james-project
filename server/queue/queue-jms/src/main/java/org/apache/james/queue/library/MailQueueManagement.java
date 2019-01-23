@@ -36,6 +36,7 @@ import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenType;
 import javax.management.openmbean.SimpleType;
 
+import com.github.steveash.guavate.Guavate;
 import org.apache.james.core.MailAddress;
 import org.apache.james.queue.api.MailQueue.MailQueueException;
 import org.apache.james.queue.api.MailQueueManagementMBean;
@@ -148,17 +149,11 @@ public class MailQueueManagement extends StandardMBean implements MailQueueManag
             map.put(names[6], m.getRemoteAddr());
             map.put(names[7], m.getRemoteHost());
             map.put(names[8], m.getErrorMessage());
-            Map<String, String> attrs = new HashMap<>();
-            Iterator<String> attrNames = m.getAttributeNames();
-            while (attrNames.hasNext()) {
-                String attrName = attrNames.next();
-                String attrValueString = null;
-                Serializable attrValue = m.getAttribute(attrName);
-                if (attrValue != null) {
-                    attrValueString = attrValue.toString();
-                }
-                attrs.put(attrName, attrValueString);
-            }
+            Map<String, String> attrs = m.attributes()
+                .collect(Guavate.toImmutableMap(
+                    attribute -> attribute.getName().asString(),
+                    attribute -> attribute.getValue().value().toString()));
+
             map.put(names[9], attrs.toString());
             map.put(names[10], nextDelivery);
             CompositeDataSupport c = new CompositeDataSupport(new CompositeType(Mail.class.getName(), "Queue Mail", names, descs, types), map);
