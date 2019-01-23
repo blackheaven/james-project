@@ -17,17 +17,32 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.modules;
+package org.apache.james.server.core;
 
-import org.apache.james.server.core.ContentTypeCleaner;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.inject.AbstractModule;
+import org.junit.jupiter.api.Test;
 
-public class MimeMessageModule extends AbstractModule {
-
-    @Override
-    protected void configure() {
-        ContentTypeCleaner.initialize();
+public class ContentTypeCleanerTest {
+    @Test
+    void nullContentTypeShouldReturnNull() {
+        assertThat(ContentTypeCleaner
+                .cleanContentType(null, null))
+                .isNull();
     }
 
+    @Test
+    void invalidContentTypeShouldReturnNull() {
+        assertThat(ContentTypeCleaner
+                .cleanContentType(null, "I'mNotValid"))
+                .isNull();
+    }
+
+    @Test
+    void validContentTypeShouldReturnTheRawInput() {
+        String contentType = "application/pdf";
+        assertThat(ContentTypeCleaner
+                .cleanContentType(null, contentType))
+                .isEqualTo(contentType);
+    }
 }

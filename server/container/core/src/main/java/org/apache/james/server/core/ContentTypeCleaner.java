@@ -16,36 +16,33 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.modules;
+package org.apache.james.server.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.regex.Pattern;
 
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import javax.mail.internet.MimePart;
 
-class MimeMessageModuleTest {
-    @Nested
-    class ContentTypeCleanerTest {
-        @Test
-        void nullContentTypeShouldReturnNull() {
-            assertThat(MimeMessageModule.ContentTypeCleaner
-                    .cleanContentType(null, null))
-                    .isNull();
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class ContentTypeCleaner {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContentTypeCleaner.class);
+    private static final Pattern REGEX = Pattern.compile("^[\\w\\-]+/[\\w\\-]+");
+
+    public static void initialize() {
+        System.setProperty("mail.mime.contenttypehandler", ContentTypeCleaner.class.getName());
+    }
+
+    public static String cleanContentType(MimePart mimePart, String contentType) {
+        if (contentType == null) {
+            return null;
         }
 
-        @Test
-        void invalidContentTypeShouldReturnNull() {
-            assertThat(MimeMessageModule.ContentTypeCleaner
-                    .cleanContentType(null, "I'mNotValid"))
-                    .isNull();
+        if (REGEX.matcher(contentType).find()) {
+            return contentType;
         }
 
-        @Test
-        void validContentTypeShouldReturnTheRawInput() {
-            String contentType = "application/pdf";
-            assertThat(MimeMessageModule.ContentTypeCleaner
-                    .cleanContentType(null, contentType))
-                    .isEqualTo(contentType);
-        }
+        LOGGER.warn("Can not parse Content-Type: " + contentType);
+        return null;
     }
 }

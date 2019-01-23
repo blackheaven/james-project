@@ -44,7 +44,7 @@ public class MimeMessageCopyOnWriteProxyTest extends MimeMessageFromStreamTest {
 
     @BeforeAll
     static void setUp() {
-        new MimeMessageModule().configure();
+        ContentTypeCleaner.initialize();
     }
 
     @Override
