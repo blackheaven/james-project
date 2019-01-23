@@ -17,7 +17,7 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.server.core;
+package org.apache.james.modules;
 
 import java.util.regex.Pattern;
 import javax.mail.internet.MimePart;

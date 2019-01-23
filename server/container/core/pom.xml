@@ -128,10 +128,6 @@
             <artifactId>JUnitParams</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
