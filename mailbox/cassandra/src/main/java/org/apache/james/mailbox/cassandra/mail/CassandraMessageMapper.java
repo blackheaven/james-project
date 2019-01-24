@@ -19,7 +19,6 @@
 
 package org.apache.james.mailbox.cassandra.mail;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -156,7 +155,7 @@ public class CassandraMessageMapper implements MessageMapper {
         return Flux.merge(
                 Mono.fromCompletionStage(imapUidDAO.delete(messageId, mailboxId)),
                 Mono.fromCompletionStage(messageIdDAO.delete(mailboxId, uid)))
-            .thenEmpty(indexTableHandler.updateIndexOnDelete(composedMessageIdWithMetaData, mailboxId));
+            .then(indexTableHandler.updateIndexOnDelete(composedMessageIdWithMetaData, mailboxId));
     }
 
     @Override
@@ -208,19 +207,18 @@ public class CassandraMessageMapper implements MessageMapper {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
 
         return deletedMessageDAO.retrieveDeletedMessage(mailboxId, messageRange)
-            .buffer(cassandraConfiguration.getExpungeChunkSize())
-            .flatMap(uidChunk -> expungeUidChunk(mailboxId, uidChunk))
+            .limitRate(cassandraConfiguration.getExpungeChunkSize())
+            .flatMap(messageUid -> expungeOne(mailboxId, messageUid))
             .collect(Guavate.<SimpleMailboxMessage, MessageUid, MessageMetaData>toImmutableMap(MailboxMessage::getUid, MailboxMessage::metaData))
             .block();
     }
 
-    private Flux<SimpleMailboxMessage> expungeUidChunk(CassandraId mailboxId, Collection<MessageUid> uidChunk) {
-        return Flux.fromIterable(uidChunk)
-            .flatMap(uid -> retrieveComposedId(mailboxId, uid))
-            .doOnNext(this::deleteUsingMailboxId)
+    private Flux<SimpleMailboxMessage> expungeOne(CassandraId mailboxId, MessageUid messageUid) {
+        return retrieveComposedId(mailboxId, messageUid)
+            .flatMap(idWithMetadata -> deleteUsingMailboxId(idWithMetadata).thenReturn(idWithMetadata))
             .flatMap(idWithMetadata ->
                 Mono.fromCompletionStage(messageDAO.retrieveMessages(ImmutableList.of(idWithMetadata), FetchType.Metadata, Limit.unlimited())))
-            .flatMap(Flux::fromStream)
+            .flatMapMany(Flux::fromStream)
             .filter(CassandraMessageDAO.MessageResult::isFound)
             .map(CassandraMessageDAO.MessageResult::message)
             .map(pair -> pair.getKey().toMailboxMessage(ImmutableList.of()));
