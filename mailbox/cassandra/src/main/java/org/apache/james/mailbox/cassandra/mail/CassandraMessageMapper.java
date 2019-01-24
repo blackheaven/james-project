@@ -213,9 +213,8 @@ public class CassandraMessageMapper implements MessageMapper {
     private Flux<SimpleMailboxMessage> expungeOne(CassandraId mailboxId, MessageUid messageUid) {
         return retrieveComposedId(mailboxId, messageUid)
             .flatMap(idWithMetadata -> deleteUsingMailboxId(idWithMetadata).thenReturn(idWithMetadata))
-            .flatMap(idWithMetadata ->
+            .flatMapMany(idWithMetadata ->
                 messageDAO.retrieveMessages(ImmutableList.of(idWithMetadata), FetchType.Metadata, Limit.unlimited()))
-            .flatMapMany(Flux::fromStream)
             .filter(CassandraMessageDAO.MessageResult::isFound)
             .map(CassandraMessageDAO.MessageResult::message)
             .map(pair -> pair.getKey().toMailboxMessage(ImmutableList.of()));
