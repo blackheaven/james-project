@@ -18,7 +18,6 @@
  ****************************************************************/
 package org.apache.james.queue.library;
 
-import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,7 +35,6 @@ import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenType;
 import javax.management.openmbean.SimpleType;
 
-import com.github.steveash.guavate.Guavate;
 import org.apache.james.core.MailAddress;
 import org.apache.james.queue.api.MailQueue.MailQueueException;
 import org.apache.james.queue.api.MailQueueManagementMBean;
@@ -45,6 +43,8 @@ import org.apache.james.queue.api.ManageableMailQueue.MailQueueItemView;
 import org.apache.james.queue.api.ManageableMailQueue.MailQueueIterator;
 import org.apache.james.queue.api.ManageableMailQueue.Type;
 import org.apache.mailet.Mail;
+
+import com.github.steveash.guavate.Guavate;
 
 /**
  * JMX MBean implementation which expose management functions by wrapping a
