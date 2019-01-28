@@ -25,6 +25,8 @@ import static org.apache.james.mailets.configuration.Constants.PASSWORD;
 import static org.apache.james.mailets.configuration.Constants.awaitAtMostOneMinute;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.startsWith;
 
 import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.core.builder.MimeMessageBuilder;
@@ -109,13 +111,14 @@ public class SmtpContentTypeTest {
 
         messageSender.connect(LOCALHOST_IP, jamesServer.getProbe(SmtpGuiceProbe.class).getSmtpPort())
             .authenticate(FROM, PASSWORD)
-            .sendMessage(mailWithContentType("test/plain;"));
+            .sendMessage(mailWithContentType("text/plain;"));
 
         awaitAtMostOneMinute
             .untilAsserted(() -> fakeSmtp.assertEmailReceived(response -> response
                 .body("", hasSize(1))
                 .body("[0].from", equalTo(FROM))
-                .body("[0].subject", equalTo(SUBJECT))));
+                .body("[0].subject", equalTo(SUBJECT))
+                .body("[0].headers.content-type", startsWith("text/plain;"))));
     }
 
     @Test
@@ -132,7 +135,8 @@ public class SmtpContentTypeTest {
             .untilAsserted(() -> fakeSmtp.assertEmailReceived(response -> response
                 .body("", hasSize(1))
                 .body("[0].from", equalTo(FROM))
-                .body("[0].subject", equalTo(SUBJECT))));
+                .body("[0].subject", equalTo(SUBJECT))
+                .body("[0].headers.content-type", not(startsWith("wrong|Content-Type;")))));
     }
 
     private Mail mailWithContentType(String contentType) throws MessagingException {

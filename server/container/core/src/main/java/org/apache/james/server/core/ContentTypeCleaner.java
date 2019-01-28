@@ -25,16 +25,19 @@ import javax.mail.internet.MimePart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
+
 public class ContentTypeCleaner {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContentTypeCleaner.class);
     private static final Pattern REGEX = Pattern.compile("^[\\w\\-]+/[\\w\\-]+");
+    private static final String HANDLER_CLASS_PROPERTY = "mail.mime.contenttypehandler";
 
     public static void initialize() {
-        System.setProperty("mail.mime.contenttypehandler", ContentTypeCleaner.class.getName());
+        System.setProperty(HANDLER_CLASS_PROPERTY, ContentTypeCleaner.class.getName());
     }
 
     public static String cleanContentType(MimePart mimePart, String contentType) {
-        if (contentType == null) {
+        if (Strings.isNullOrEmpty(contentType)) {
             return null;
         }
 

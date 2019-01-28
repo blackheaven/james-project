@@ -32,6 +32,13 @@ public class ContentTypeCleanerTest {
     }
 
     @Test
+    void emptyContentTypeShouldReturnNull() {
+        assertThat(ContentTypeCleaner
+                .cleanContentType(null, ""))
+                .isNull();
+    }
+
+    @Test
     void invalidContentTypeShouldReturnNull() {
         assertThat(ContentTypeCleaner
                 .cleanContentType(null, "I'mNotValid"))
