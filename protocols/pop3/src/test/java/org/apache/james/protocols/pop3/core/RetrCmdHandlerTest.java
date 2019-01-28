@@ -37,7 +37,6 @@ class RetrCmdHandlerTest {
     @ParameterizedTest
     @ValueSource(ints = {8, 16, 32, 64, 128, 256})
     void onCommandShouldNotThrowOnMessageHexNumberOverflow(int pad) {
-        System.out.println();
         POP3Session session = mock(POP3Session.class);
         when(session.getHandlerState()).thenReturn(POP3Session.TRANSACTION);
 
@@ -51,7 +50,6 @@ class RetrCmdHandlerTest {
 
     @Test
     void onCommandShouldNotThrowOnMessageDecNumberOverflow() {
-        System.out.println();
         POP3Session session = mock(POP3Session.class);
         when(session.getHandlerState()).thenReturn(POP3Session.TRANSACTION);
 
