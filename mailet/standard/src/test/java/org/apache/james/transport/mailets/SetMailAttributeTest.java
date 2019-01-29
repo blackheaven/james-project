@@ -64,8 +64,8 @@ class SetMailAttributeTest {
         
         mailet.service(mail);
 
-        assertThat(mail.getAttribute(name1)).isEqualTo(attribute1);
-        assertThat(mail.getAttribute(name2)).isEqualTo(attribute2);
+        assertThat(mail.getAttribute(name1)).contains(attribute1);
+        assertThat(mail.getAttribute(name2)).contains(attribute2);
     }
     
     @Test
