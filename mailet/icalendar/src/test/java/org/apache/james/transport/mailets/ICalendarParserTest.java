@@ -154,7 +154,8 @@ public class ICalendarParserTest {
         mailet.service(mail);
 
         assertThat(mail.getAttribute(DESTINATION_CUSTOM_ATTRIBUTE_NAME))
-            .isEmpty();
+            .isPresent()
+            .hasValueSatisfying(attribute -> assertThat((Map) attribute.getValue().value()).isEmpty());
     }
 
     @Test
@@ -172,7 +173,7 @@ public class ICalendarParserTest {
 
         mailet.service(mail);
 
-        assertThat(mail.getAttribute(DESTINATION_CUSTOM_ATTRIBUTE_NAME)).isNull();
+        assertThat(mail.getAttribute(DESTINATION_CUSTOM_ATTRIBUTE_NAME)).isEmpty();
     }
 
     @Test
