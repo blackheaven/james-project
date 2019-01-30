@@ -269,7 +269,7 @@ public class CassandraMailRepositoryMailDAO implements CassandraMailRepositoryMa
             byte[] data = new byte[byteBuffer.remaining()];
             byteBuffer.get(data);
             ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(data));
-            return AttributeValue.ofSerializable((Serializable) objectInputStream.readObject());
+            return AttributeValue.ofAny(objectInputStream.readObject());
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
