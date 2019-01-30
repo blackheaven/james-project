@@ -342,7 +342,7 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
 
         props.putAll(mail.attributes()
             .collect(Guavate.toImmutableMap(
-                attribute -> attribute.getName().toString(),
+                attribute -> attribute.getName().asString(),
                 attribute -> SerializationUtil.serialize((Serializable) attribute.getValue().value()))));
 
         ImmutableList<String> attributeNames = mail.attributeNames()

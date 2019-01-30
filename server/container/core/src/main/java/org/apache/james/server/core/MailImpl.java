@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -790,11 +789,6 @@ public class MailImpl implements Disposable, Mail {
     }
 
     @Override
-    public Serializable removeAttribute(String key) {
-        return toSerializable(attributes.remove(AttributeName.of(key)));
-    }
-
-    @Override
     public Optional<Attribute> removeAttribute(AttributeName attributeName) {
         Attribute previous = attributes.remove(attributeName);
         return Optional.ofNullable(previous);
@@ -803,14 +797,6 @@ public class MailImpl implements Disposable, Mail {
     @Override
     public void removeAllAttributes() {
         attributes.clear();
-    }
-
-    @Override
-    public Iterator<String> getAttributeNames() {
-        return attributes.keySet()
-            .stream()
-            .map(AttributeName::asString)
-            .iterator();
     }
 
     @Override

@@ -197,58 +197,5 @@ public abstract class ContractMailTest {
 
             assertThat(mail.getAttribute(KEY)).isEqualTo(NEW_VALUE);
         }
-
-        @Test
-        void getAttributeShouldNotReturnedNotStoreRemovedItems() {
-            Mail mail = newMail();
-
-            mail.removeAttribute(KEY);
-
-            assertThat(mail.getAttribute(KEY)).isNull();
-        }
-
-        @Test
-        void getAttributeShouldNotReturnDeletedElements() {
-            Mail mail = newMail();
-            mail.setAttribute(KEY, VALUE);
-
-            mail.removeAttribute(KEY);
-
-            assertThat(mail.getAttribute(KEY)).isNull();
-        }
-
-        @Test
-        void removeAttributeShouldReturnNullWhenNoPreviousValue() {
-            Mail mail = newMail();
-
-            Serializable previous = mail.removeAttribute(KEY);
-
-            assertThat(previous).isNull();
-        }
-
-        @Test
-        void removeAttributeShouldReturnPreviousValue() {
-            Mail mail = newMail();
-            mail.setAttribute(KEY, VALUE);
-
-            Serializable previous = mail.removeAttribute(KEY);
-
-            assertThat(previous).isEqualTo(VALUE);
-        }
-
-        @Test
-        void getAttributeNamesShouldReturnEmptyByDefault() {
-            Mail mail = newMail();
-
-            assertThat(mail.getAttributeNames()).isEmpty();
-        }
-
-        @Test
-        void getAttributeNamesShouldReturnAttributeNames() {
-            Mail mail = newMail();
-            mail.setAttribute(KEY, VALUE);
-
-            assertThat(mail.getAttributeNames()).containsOnly(KEY);
-        }
     }
 }

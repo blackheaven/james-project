@@ -566,11 +566,12 @@ public class JDBCMailRepository extends AbstractMailRepository {
                             if (mc instanceof MailImpl) {
                                 oos.writeObject(((MailImpl) mc).getAttributesRaw());
                             } else {
-                                HashMap<String, Serializable> temp = new HashMap<>();
-                                for (Iterator<String> i = mc.getAttributeNames(); i.hasNext();) {
-                                    String hashKey = i.next();
-                                    temp.put(hashKey, mc.getAttribute(hashKey));
-                                }
+                                Map<String, Serializable> temp = mc.attributes()
+                                        .collect(Guavate.toImmutableMap(
+                                                attribute -> attribute.getName().asString(),
+                                                attribute -> (Serializable) attribute.getValue().value()
+                                        ));
+
                                 oos.writeObject(temp);
                             }
                             oos.flush();

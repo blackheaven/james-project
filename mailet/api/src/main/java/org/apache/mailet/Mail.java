@@ -23,7 +23,6 @@ package org.apache.mailet;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -71,7 +70,7 @@ import com.google.common.collect.ImmutableMap;
  * Serializable, the attribute value must be Serializable as well.
  * <p>
  * The list of attributes which are currently associated with a Mail
- * instance can be retrieved using the {@link #getAttributeNames}
+ * instance can be retrieved using the {@link #attributeNames}
  * method, and given its name, the value of an attribute can be
  * retrieved using the {@link #getAttribute} method. It is also
  * possible to remove {@link #removeAttribute one} attribute or
@@ -243,20 +242,6 @@ public interface Mail extends Serializable, Cloneable {
     Optional<Attribute> getAttribute(AttributeName name);
 
     /**
-     * Returns an Iterator over the names of all attributes which are set
-     * in this Mail instance.
-     * <p>
-     * The {@link #getAttribute} method can be called to
-     * retrieve an attribute's value given its name.
-     *
-     * @return an Iterator (of Strings) over all attribute names
-     * @since Mailet API v2.1
-     * @deprecated see {@link #attributeNames()}
-     */
-    @Deprecated
-    Iterator<String> getAttributeNames();
-
-    /**
      * Returns a Stream over the names of all attributes which are set
      * in this Mail instance.
      * <p>
@@ -274,19 +259,6 @@ public interface Mail extends Serializable, Cloneable {
      * @since Mailet API v2.1
      */
     boolean hasAttributes();
-    
-    /**
-     * Removes the attribute with the given name from this Mail instance.
-     * 
-     * @param name the name of the attribute to be removed
-     * @return the value of the removed attribute, or null
-     *      if there was no such attribute (or if the attribute existed
-     *      and its value was null)
-     * @since Mailet API v2.1
-     * @deprecated see {@link #removeAttribute(AttributeName)
-     */
-    @Deprecated
-    Serializable removeAttribute(String name);
 
     /**
      * Removes the attribute with the given attribute name from this Mail instance.
