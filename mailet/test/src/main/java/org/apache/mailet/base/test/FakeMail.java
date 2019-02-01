@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -444,6 +445,14 @@ public class FakeMail implements Mail {
     }
 
     @Override
+    public Iterator<String> getAttributeNames() {
+        return attributes.keySet()
+            .stream()
+            .map(AttributeName::asString)
+            .iterator();
+    }
+
+    @Override
     public Stream<AttributeName> attributeNames() {
         return attributes.keySet().stream();
     }
@@ -451,6 +460,11 @@ public class FakeMail implements Mail {
     @Override
     public boolean hasAttributes() {
         return !attributes.isEmpty();
+    }
+
+    @Override
+    public Serializable removeAttribute(String name) {
+        return toSerializable(attributes.remove(AttributeName.of(name)));
     }
 
     @Override
