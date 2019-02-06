@@ -65,7 +65,7 @@ class PaggingTest {
         int size = 2 * fetchSize + 50;
 
         Flux.range(0, size)
-            .map(i -> executor
+            .flatMap(i -> executor
                         .executeVoidReactor(insertInto(TABLE_NAME)
                             .value(ID, UUID)
                             .value(CLUSTERING, i)))
