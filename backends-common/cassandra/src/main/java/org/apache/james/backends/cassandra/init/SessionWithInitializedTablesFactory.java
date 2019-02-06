@@ -51,7 +51,8 @@ public class SessionWithInitializedTablesFactory implements Provider<Session> {
         try {
             if (allOperationsAreFullyPerformed(session)) {
                 new CassandraSchemaVersionDAO(session)
-                        .updateVersion(CassandraSchemaVersionManager.MAX_VERSION);
+                    .updateVersion(CassandraSchemaVersionManager.MAX_VERSION)
+                    .block();
             }
             return session;
         } catch (Exception e) {

@@ -65,7 +65,7 @@ public class CassandraMigrationServiceTest {
     @Before
     public void setUp() throws Exception {
         schemaVersionDAO = mock(CassandraSchemaVersionDAO.class);
-        when(schemaVersionDAO.updateVersion(any())).thenReturn(Mono.just(null));
+        when(schemaVersionDAO.updateVersion(any())).thenReturn(Mono.empty());
 
         successfulMigration = mock(Migration.class);
         when(successfulMigration.run()).thenReturn(Migration.Result.COMPLETED);
