@@ -20,11 +20,12 @@ package org.apache.james.spamassassin;
 
 import java.util.List;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeValue;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 public class SpamAssassinResult {
     /** The mail attribute under which the status get stored */
