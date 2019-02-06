@@ -254,10 +254,12 @@ public interface MailQueueContract {
 
         MailQueue.MailQueueItem mailQueueItem = getMailQueue().deQueue();
         assertThat(mailQueueItem.getMail().getAttribute(attribute.getName()))
-            .hasValueSatisfying(item ->
+            .hasValueSatisfying(item -> {
                 assertThat(item)
-                    .isInstanceOf(SerializableAttribute.class)
-                    .isEqualTo(attribute));
+                        .isEqualTo(attribute);
+                assertThat(item.getValue().value())
+                        .isInstanceOf(SerializableAttribute.class);
+            });
     }
 
     @Test
