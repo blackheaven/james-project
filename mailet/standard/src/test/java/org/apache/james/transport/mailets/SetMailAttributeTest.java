@@ -46,7 +46,7 @@ class SetMailAttributeTest {
 
     @Test
     void shouldAddConfiguredAttributes() throws MessagingException {
-        AttributeName name1 = AttributeName.of( "org.apache.james.junit1");
+        AttributeName name1 = AttributeName.of("org.apache.james.junit1");
         AttributeName name2 = AttributeName.of("org.apache.james.junit2");
         AttributeValue<String> value1 = AttributeValue.of("true");
         AttributeValue<String> value2 = AttributeValue.of("happy");
@@ -85,18 +85,21 @@ class SetMailAttributeTest {
     
     @Test
     void shouldOverwriteAttributeWhenAttributeAlreadyPresent() throws MessagingException {
+        AttributeName name = AttributeName.of("org.apache.james.junit1");
+        Attribute mailAttribute = new Attribute(name, AttributeValue.of("foo"));
+        Attribute replacedAttribute = new Attribute(name, AttributeValue.of("bar"));
         FakeMailetConfig mailetConfig = FakeMailetConfig.builder()
                 .mailetName("Test")
-                .setProperty("org.apache.james.junit1", "bar")
+                .setProperty(name.asString(), (String) replacedAttribute.getValue().value())
                 .build();
         
         mailet.init(mailetConfig);
         
         Mail mail = MailUtil.createMockMail2Recipients(MimeMessageUtil.defaultMimeMessage());
-        mail.setAttribute("org.apache.james.junit1", "foo");
+        mail.setAttribute(mailAttribute);
         
         mailet.service(mail);
 
-        assertThat(mail.getAttribute("org.apache.james.junit1")).isEqualTo("bar");
+        assertThat(mail.getAttribute(name)).contains(replacedAttribute);
     }
 }

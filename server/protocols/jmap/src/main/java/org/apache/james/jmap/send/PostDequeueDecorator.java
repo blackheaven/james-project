@@ -18,7 +18,6 @@
  ****************************************************************/
 package org.apache.james.jmap.send;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
