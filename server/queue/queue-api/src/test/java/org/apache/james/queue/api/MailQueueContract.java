@@ -154,7 +154,7 @@ public interface MailQueueContract {
 
         MailQueue.MailQueueItem mailQueueItem = getMailQueue().deQueue();
         assertThat(mailQueueItem.getMail().getAttribute(attribute.getName()))
-            .isEqualTo(attribute);
+            .contains(attribute);
     }
 
     @Test
