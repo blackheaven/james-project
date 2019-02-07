@@ -66,6 +66,7 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.util.StreamUtils;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeValue;
 import org.apache.mailet.base.RFC2822Headers;
 import org.apache.mailet.base.test.FakeMail;
 import org.junit.jupiter.api.Nested;
@@ -719,7 +720,7 @@ class JMAPFilteringTest {
             testSystem.getJmapFiltering().service(mail);
 
             assertThat(mail.getAttribute(RECIPIENT_1_USERNAME_ATTRIBUTE_NAME))
-                .isEqualTo("RECIPIENT_1_MAILBOX_3");
+                .contains(new Attribute(RECIPIENT_1_USERNAME_ATTRIBUTE_NAME, AttributeValue.of("RECIPIENT_1_MAILBOX_3")));
         }
 
         @Test
@@ -745,7 +746,7 @@ class JMAPFilteringTest {
             testSystem.getJmapFiltering().service(mail);
 
             assertThat(mail.getAttribute(RECIPIENT_1_USERNAME_ATTRIBUTE_NAME))
-                .isEqualTo("RECIPIENT_1_MAILBOX_1");
+                .contains(new Attribute(RECIPIENT_1_USERNAME_ATTRIBUTE_NAME, AttributeValue.of("RECIPIENT_1_MAILBOX_1")));
         }
 
         @Test
@@ -773,7 +774,7 @@ class JMAPFilteringTest {
             testSystem.getJmapFiltering().service(mail);
 
             assertThat(mail.getAttribute(RECIPIENT_1_USERNAME_ATTRIBUTE_NAME))
-                .contains(RECIPIENT_1_MAILBOX_1_ATTRIBUTE);
+                .contains(new Attribute(RECIPIENT_1_USERNAME_ATTRIBUTE_NAME, AttributeValue.of("RECIPIENT_1_MAILBOX_1")));
         }
 
         @Test
