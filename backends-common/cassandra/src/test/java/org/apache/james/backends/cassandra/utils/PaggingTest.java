@@ -66,9 +66,9 @@ class PaggingTest {
 
         Flux.range(0, size)
             .flatMap(i -> executor
-                        .executeVoidReactor(insertInto(TABLE_NAME)
-                            .value(ID, UUID)
-                            .value(CLUSTERING, i)))
+                .executeVoidReactor(insertInto(TABLE_NAME)
+                    .value(ID, UUID)
+                    .value(CLUSTERING, i)))
             .blockLast();
 
         assertThat(
