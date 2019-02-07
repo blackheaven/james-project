@@ -127,7 +127,7 @@ class MailAttributesToMimeHeadersTest {
         FakeMail mockedMail = MailUtil.createMockMail2Recipients(MailUtil.createMimeMessage());
         mockedMail.setAttribute(MAIL_ATTRIBUTE1);
         mockedMail.setAttribute(MAIL_ATTRIBUTE2);
-        mockedMail.setAttribute("unmatched.attribute", "value");
+        mockedMail.setAttribute(Attribute.convertToAttribute("unmatched.attribute", "value"));
 
         mailet.service(mockedMail);
 
