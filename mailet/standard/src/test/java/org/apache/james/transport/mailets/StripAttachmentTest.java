@@ -45,6 +45,7 @@ import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.junit.TemporaryFolderExtension;
 import org.apache.james.junit.TemporaryFolderExtension.TemporaryFolder;
 import org.apache.james.transport.mailets.StripAttachment.OutputFileName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.Mailet;
 import org.apache.mailet.MailetException;
@@ -55,6 +56,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(TemporaryFolderExtension.class)
 class StripAttachmentTest {
+
+    private static Class<Collection<String>> COLLECTION_STRING_CLASS = (Class<Collection<String>>) (Object) Collection.class;
+    private static Class<Map<String, byte[]>> MAP_STRING_CLASS = (Class<Map<String, byte[]>>) (Object) Map.class;
 
     private static final String EXPECTED_ATTACHMENT_CONTENT = "#¤ãàé";
     private static final Optional<String> ABSENT_MIME_TYPE = Optional.empty();
@@ -118,7 +122,7 @@ class StripAttachmentTest {
         mailet.service(mail);
 
         @SuppressWarnings("unchecked")
-        Collection<String> savedAttachments = (Collection<String>) mail.getAttribute(StripAttachment.SAVED_ATTACHMENTS_ATTRIBUTE_KEY);
+        Collection<String> savedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS, COLLECTION_STRING_CLASS);
         assertThat(savedAttachments).isNotNull();
         assertThat(savedAttachments).hasSize(1);
 
@@ -152,7 +156,7 @@ class StripAttachmentTest {
         mailet.service(mail);
 
         @SuppressWarnings("unchecked")
-        List<String> removedAttachments = (List<String>) mail.getAttribute(StripAttachment.REMOVED_ATTACHMENTS_ATTRIBUTE_KEY);
+        List<String> removedAttachments = (List<String>) mail.getAttribute(StripAttachment.REMOVED_ATTACHMENTS);
         assertThat(removedAttachments).containsOnly(expectedFileName);
     }
 
@@ -189,7 +193,7 @@ class StripAttachmentTest {
         mailet.service(mail);
 
         @SuppressWarnings("unchecked")
-        Collection<String> savedAttachments = (Collection<String>) mail.getAttribute(StripAttachment.SAVED_ATTACHMENTS_ATTRIBUTE_KEY);
+        Collection<String> savedAttachments = (Collection<String>) mail.getAttribute(StripAttachment.SAVED_ATTACHMENTS);
         assertThat(savedAttachments).isNotNull();
         assertThat(savedAttachments).hasSize(2);
 
@@ -223,7 +227,7 @@ class StripAttachmentTest {
         mailet.service(mail);
 
         @SuppressWarnings("unchecked")
-        Collection<String> savedAttachments = (Collection<String>) mail.getAttribute(StripAttachment.SAVED_ATTACHMENTS_ATTRIBUTE_KEY);
+        Collection<String> savedAttachments = (Collection<String>) mail.getAttribute(StripAttachment.SAVED_ATTACHMENTS);
         assertThat(savedAttachments).isNotNull();
         assertThat(savedAttachments).hasSize(1);
 
@@ -584,7 +588,7 @@ class StripAttachmentTest {
         //Then
         assertThat(actual).isTrue();
         @SuppressWarnings("unchecked")
-        List<String> values = (List<String>)mail.getAttribute(StripAttachment.SAVED_ATTACHMENTS_ATTRIBUTE_KEY);
+        List<String> values = (List<String>)mail.getAttribute(StripAttachment.SAVED_ATTACHMENTS);
         assertThat(values).hasSize(2);
     }
 
@@ -727,7 +731,7 @@ class StripAttachmentTest {
         //Then
         assertThat(actual).isTrue();
         @SuppressWarnings("unchecked")
-        List<String> values = (List<String>)mail.getAttribute(StripAttachment.SAVED_ATTACHMENTS_ATTRIBUTE_KEY);
+        List<String> values = (List<String>)mail.getAttribute(StripAttachment.SAVED_ATTACHMENTS);
         assertThat(values).hasSize(1);
     }
 
