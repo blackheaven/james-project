@@ -22,8 +22,6 @@ package org.apache.james.jmap.api.access;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.concurrent.CompletionException;
-
 import org.apache.james.jmap.api.access.exceptions.InvalidAccessToken;
 import org.junit.Test;
 
@@ -49,24 +47,21 @@ public abstract class AccessTokenRepositoryTest {
 
     @Test
     public void absentTokensMustBeInvalid() throws Exception {
-        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).block()).isInstanceOf(CompletionException.class);
-        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).block()).hasCauseInstanceOf(InvalidAccessToken.class);
+        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).block()).isExactlyInstanceOf(InvalidAccessToken.class);
     }
 
     @Test
     public void removedTokensMustBeInvalid() throws Exception {
         accessTokenRepository.addToken(USERNAME, TOKEN).block();
         accessTokenRepository.removeToken(TOKEN).block();
-        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).block()).isInstanceOf(CompletionException.class);
-        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).block()).hasCauseInstanceOf(InvalidAccessToken.class);
+        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).block()).isExactlyInstanceOf(InvalidAccessToken.class);
     }
 
     @Test
     public void outDatedTokenMustBeInvalid() throws Exception {
         accessTokenRepository.addToken(USERNAME, TOKEN).block();
         Thread.sleep(2 * TTL_IN_MS);
-        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).block()).isInstanceOf(CompletionException.class);
-        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).block()).hasCauseInstanceOf(InvalidAccessToken.class);
+        assertThatThrownBy(() -> accessTokenRepository.getUsernameFromToken(TOKEN).block()).isExactlyInstanceOf(InvalidAccessToken.class);
     }
 
     @Test
