@@ -118,7 +118,7 @@ class GuiceLifecycleHeathCheckTest {
 
         @Test
         void stoppingJamesServerShouldBeUnhealthy(GuiceJamesServer server) {
-            Mono<Void> stopCompletedFuture = null;
+            Mono<Void> stopCompletedFuture = Mono.fromRunnable(() -> { });
             try {
                 configureRequestSpecification(server);
 
