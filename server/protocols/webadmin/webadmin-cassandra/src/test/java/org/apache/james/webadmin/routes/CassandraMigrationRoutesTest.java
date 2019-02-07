@@ -77,7 +77,7 @@ public class CassandraMigrationRoutesTest {
             .put(LATEST_VERSION, successfulMigration)
             .build();
         schemaVersionDAO = mock(CassandraSchemaVersionDAO.class);
-        when(schemaVersionDAO.updateVersion(any())).thenReturn(Mono.just(null));
+        when(schemaVersionDAO.updateVersion(any())).thenReturn(Mono.empty());
 
         taskManager = new MemoryTaskManager();
         JsonTransformer jsonTransformer = new JsonTransformer();

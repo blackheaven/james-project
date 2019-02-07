@@ -123,8 +123,8 @@ public class CassandraUsersRepository extends AbstractUsersRepository {
                     .setString(NAME, name.toLowerCase(Locale.US)))
             .map(row -> new DefaultUser(row.getString(REALNAME), row.getString(PASSWORD), row.getString(ALGORITHM)))
             .filter(user -> user.hasUsername(name))
-            .switchIfEmpty(null)
-            .block();
+            .blockOptional()
+            .orElse(null);
     }
 
     @Override

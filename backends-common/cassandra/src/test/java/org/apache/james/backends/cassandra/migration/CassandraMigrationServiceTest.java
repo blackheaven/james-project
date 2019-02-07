@@ -221,7 +221,7 @@ public class CassandraMigrationServiceTest {
         @Override
         public Mono<Void> updateVersion(SchemaVersion newVersion) {
             currentVersion = newVersion;
-            return Mono.just(null);
+            return Mono.empty();
         }
     }
 }
