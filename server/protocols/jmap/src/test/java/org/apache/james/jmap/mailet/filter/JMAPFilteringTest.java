@@ -618,7 +618,7 @@ class JMAPFilteringTest {
         testSystem.getJmapFiltering().service(mail);
 
         assertThat(mail.getAttribute(RECIPIENT_1_USERNAME_ATTRIBUTE_NAME))
-            .isNull();
+            .isEmpty();
     }
 
     @ParameterizedTest(name = "EXACTLY-EQUALS should match for field {1}: {0}")
@@ -680,7 +680,7 @@ class JMAPFilteringTest {
         testSystem.getJmapFiltering().service(mail);
 
         assertThat(mail.getAttribute(RECIPIENT_1_USERNAME_ATTRIBUTE_NAME))
-            .isNull();
+            .isEmpty();
     }
 
     @Nested
