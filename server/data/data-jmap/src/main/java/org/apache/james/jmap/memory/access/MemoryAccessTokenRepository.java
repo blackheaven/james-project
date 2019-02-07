@@ -20,7 +20,6 @@
 package org.apache.james.jmap.memory.access;
 
 import java.util.Optional;
-import java.util.concurrent.CompletionException;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -68,7 +67,7 @@ public class MemoryAccessTokenRepository implements AccessTokenRepository {
         synchronized (tokensExpirationDates) {
             return Mono.just(
                 Optional.ofNullable(tokensExpirationDates.get(accessToken))
-                    .<CompletionException>orElseThrow(() -> new CompletionException(new InvalidAccessToken(accessToken))));
+                    .orElseThrow(() -> new InvalidAccessToken(accessToken)));
         }
     }
 
