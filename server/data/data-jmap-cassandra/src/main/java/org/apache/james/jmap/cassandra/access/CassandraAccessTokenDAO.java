@@ -72,19 +72,19 @@ public class CassandraAccessTokenDAO {
     }
 
     public Mono<Void> addToken(String username, AccessToken accessToken) {
-        return cassandraAsyncExecutor.executeVoidReactor(insertStatement.bind()
+        return cassandraAsyncExecutor.executeVoid(insertStatement.bind()
             .setUUID(CassandraAccessTokenTable.TOKEN, accessToken.asUUID())
             .setString(CassandraAccessTokenTable.USERNAME, username)
             .setInt(TTL, durationInSeconds));
     }
 
     public Mono<Void> removeToken(AccessToken accessToken) {
-        return cassandraAsyncExecutor.executeVoidReactor(removeStatement.bind()
+        return cassandraAsyncExecutor.executeVoid(removeStatement.bind()
             .setUUID(CassandraAccessTokenTable.TOKEN, accessToken.asUUID()));
     }
 
     public Mono<Optional<String>> getUsernameFromToken(AccessToken accessToken) {
-        return cassandraAsyncExecutor.executeSingleRowOptionalReactor(selectStatement.bind()
+        return cassandraAsyncExecutor.executeSingleRowOptional(selectStatement.bind()
                 .setUUID(CassandraAccessTokenTable.TOKEN, accessToken.asUUID()))
             .map(optional -> optional.map(row -> row.getString(CassandraAccessTokenTable.USERNAME)));
     }

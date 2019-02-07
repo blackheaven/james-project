@@ -84,7 +84,7 @@ public class CassandraDomainList extends AbstractDomainList {
 
     @Override
     protected List<Domain> getDomainListInternal() throws DomainListException {
-        return executor.executeReactor(readAllStatement.bind())
+        return executor.execute(readAllStatement.bind())
             .flatMapMany(Flux::fromIterable)
             .map(row -> Domain.of(row.getString(DOMAIN)))
             .collectList()
@@ -93,7 +93,7 @@ public class CassandraDomainList extends AbstractDomainList {
 
     @Override
     protected boolean containsDomainInternal(Domain domain) throws DomainListException {
-        return executor.executeSingleRowOptionalReactor(readStatement.bind()
+        return executor.executeSingleRowOptional(readStatement.bind()
                 .setString(DOMAIN, domain.asString()))
             .block()
             .isPresent();

@@ -120,7 +120,7 @@ public class EnqueuedMailsDAO {
         Mail mail = enqueuedItem.getMail();
         MimeMessagePartsId mimeMessagePartsId = enqueuedItem.getPartsId();
 
-        return executor.executeVoidReactor(insert.bind()
+        return executor.executeVoid(insert.bind()
             .setString(QUEUE_NAME, enqueuedItem.getMailQueueName().asString())
             .setTimestamp(TIME_RANGE_START, Date.from(slicingContext.getTimeRangeStart()))
             .setInt(BUCKET_ID, slicingContext.getBucketId().getValue())
@@ -142,7 +142,7 @@ public class EnqueuedMailsDAO {
     Flux<EnqueuedItemWithSlicingContext> selectEnqueuedMails(
         MailQueueName queueName, Slice slice, BucketId bucketId) {
 
-        return executor.executeReactor(
+        return executor.execute(
                 selectFrom.bind()
                     .setString(QUEUE_NAME, queueName.asString())
                     .setTimestamp(TIME_RANGE_START, Date.from(slice.getStartSliceInstant()))

@@ -107,7 +107,7 @@ public class CassandraUserMailboxRightsDAO {
 
     private Mono<Void> removeAll(CassandraId cassandraId, Stream<MailboxACL.Entry> removedEntries) {
         return Flux.fromStream(removedEntries)
-            .flatMap(entry -> cassandraAsyncExecutor.executeVoidReactor(
+            .flatMap(entry -> cassandraAsyncExecutor.executeVoid(
                 delete.bind()
                     .setString(USER_NAME, entry.getKey().getName())
                     .setUUID(MAILBOX_ID, cassandraId.asUuid())))
@@ -116,7 +116,7 @@ public class CassandraUserMailboxRightsDAO {
 
     private Mono<Void> addAll(CassandraId cassandraId, Stream<MailboxACL.Entry> addedEntries) {
         return Flux.fromStream(addedEntries)
-            .flatMap(entry -> cassandraAsyncExecutor.executeVoidReactor(
+            .flatMap(entry -> cassandraAsyncExecutor.executeVoid(
                 insert.bind()
                     .setString(USER_NAME, entry.getKey().getName())
                     .setUUID(MAILBOX_ID, cassandraId.asUuid())
@@ -125,7 +125,7 @@ public class CassandraUserMailboxRightsDAO {
     }
 
     public Mono<Optional<Rfc4314Rights>> retrieve(String userName, CassandraId mailboxId) {
-        return cassandraAsyncExecutor.executeSingleRowOptionalReactor(
+        return cassandraAsyncExecutor.executeSingleRowOptional(
             select.bind()
                 .setString(USER_NAME, userName)
                 .setUUID(MAILBOX_ID, mailboxId.asUuid()))
@@ -134,7 +134,7 @@ public class CassandraUserMailboxRightsDAO {
     }
 
     public Flux<Pair<CassandraId, Rfc4314Rights>> listRightsForUser(String userName) {
-        return cassandraAsyncExecutor.executeReactor(
+        return cassandraAsyncExecutor.execute(
             selectUser.bind()
                 .setString(USER_NAME, userName))
             .flatMapMany(cassandraUtils::convertToFlux)

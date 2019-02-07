@@ -118,7 +118,7 @@ public class CassandraUsersRepository extends AbstractUsersRepository {
 
     @Override
     public User getUserByName(String name) {
-        return executor.executeSingleRowReactor(
+        return executor.executeSingleRow(
                 getUserStatement.bind()
                     .setString(NAME, name.toLowerCase(Locale.US)))
             .map(row -> new DefaultUser(row.getString(REALNAME), row.getString(PASSWORD), row.getString(ALGORITHM)))
@@ -173,14 +173,14 @@ public class CassandraUsersRepository extends AbstractUsersRepository {
 
     @Override
     public int countUsers() {
-        return executor.executeSingleRowReactor(countUserStatement.bind())
+        return executor.executeSingleRow(countUserStatement.bind())
             .map(row -> Ints.checkedCast(row.getLong(0)))
             .block();
     }
 
     @Override
     public Iterator<String> list() throws UsersRepositoryException {
-        return executor.executeReactor(listStatement.bind())
+        return executor.execute(listStatement.bind())
             .flatMapMany(Flux::fromIterable)
             .map(row -> row.getString(REALNAME))
             .toIterable()

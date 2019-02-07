@@ -96,7 +96,7 @@ public class CassandraSieveDAO {
     }
 
     public Mono<Void> insertScript(User user, Script script) {
-        return cassandraAsyncExecutor.executeVoidReactor(
+        return cassandraAsyncExecutor.executeVoid(
             insertScriptStatement.bind()
                 .setString(USER_NAME, user.asString())
                 .setString(SCRIPT_NAME, script.getName().getValue())
@@ -106,7 +106,7 @@ public class CassandraSieveDAO {
     }
 
     public Flux<ScriptSummary> listScripts(User user) {
-        return cassandraAsyncExecutor.executeReactor(
+        return cassandraAsyncExecutor.execute(
                 selectScriptsStatement.bind()
                     .setString(USER_NAME, user.asString()))
             .flatMapMany(Flux::fromIterable)
@@ -140,7 +140,7 @@ public class CassandraSieveDAO {
     }
 
     private Mono<Row> getScriptRow(User user, ScriptName name) {
-        return cassandraAsyncExecutor.executeSingleRowReactor(
+        return cassandraAsyncExecutor.executeSingleRow(
             selectScriptStatement.bind()
                 .setString(USER_NAME, user.asString())
                 .setString(SCRIPT_NAME, name.getValue()));

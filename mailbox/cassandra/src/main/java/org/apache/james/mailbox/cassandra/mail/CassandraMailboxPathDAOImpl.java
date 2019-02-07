@@ -123,7 +123,7 @@ public class CassandraMailboxPathDAOImpl implements CassandraMailboxPathDAO {
     }
 
     public Mono<CassandraIdAndPath> retrieveId(MailboxPath mailboxPath) {
-        return cassandraAsyncExecutor.executeSingleRowReactor(
+        return cassandraAsyncExecutor.executeSingleRow(
             select.bind()
                 .setUDTValue(NAMESPACE_AND_USER, mailboxBaseTupleUtil.createMailboxBaseUDT(mailboxPath.getNamespace(), mailboxPath.getUser()))
                 .setString(MAILBOX_NAME, mailboxPath.getName()))
@@ -134,7 +134,7 @@ public class CassandraMailboxPathDAOImpl implements CassandraMailboxPathDAO {
 
     @Override
     public Flux<CassandraIdAndPath> listUserMailboxes(String namespace, String user) {
-        return cassandraAsyncExecutor.executeReactor(
+        return cassandraAsyncExecutor.execute(
             selectAllForUser.bind()
                 .setUDTValue(NAMESPACE_AND_USER, mailboxBaseTupleUtil.createMailboxBaseUDT(namespace, user)))
             .flatMapMany(resultSet -> cassandraUtils.convertToFlux(resultSet)
@@ -194,19 +194,19 @@ public class CassandraMailboxPathDAOImpl implements CassandraMailboxPathDAO {
 
     @Override
     public Mono<Void> delete(MailboxPath mailboxPath) {
-        return cassandraAsyncExecutor.executeVoidReactor(delete.bind()
+        return cassandraAsyncExecutor.executeVoid(delete.bind()
             .setUDTValue(NAMESPACE_AND_USER, mailboxBaseTupleUtil.createMailboxBaseUDT(mailboxPath.getNamespace(), mailboxPath.getUser()))
             .setString(MAILBOX_NAME, mailboxPath.getName()));
     }
 
     public Flux<CassandraIdAndPath> readAll() {
-        return cassandraAsyncExecutor.executeReactor(selectAll.bind())
+        return cassandraAsyncExecutor.execute(selectAll.bind())
             .flatMapMany(Flux::fromIterable)
             .map(this::fromRowToCassandraIdAndPath);
     }
 
     public Mono<Long> countAll() {
-        return cassandraAsyncExecutor.executeSingleRowOptionalReactor(countAll.bind())
+        return cassandraAsyncExecutor.executeSingleRowOptional(countAll.bind())
             .map(optional -> optional.map(row -> row.getLong(FIRST_CELL)).orElse(0L));
     }
 

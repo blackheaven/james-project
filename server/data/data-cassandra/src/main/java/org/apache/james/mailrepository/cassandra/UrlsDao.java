@@ -71,20 +71,20 @@ public class UrlsDao {
     }
 
     public Mono<Void> addUrl(MailRepositoryUrl url) {
-        return executor.executeVoidReactor(
+        return executor.executeVoid(
             insert.bind()
                 .setString(URL, url.asString()));
     }
 
     public Mono<Optional<MailRepositoryUrl>> retrieve(MailRepositoryUrl url) {
-        return executor.executeSingleRowOptionalReactor(
+        return executor.executeSingleRowOptional(
                 select.bind()
                     .setString(URL, url.asString()))
             .map(optional -> optional.map(this::toUrl));
     }
 
     public Flux<MailRepositoryUrl> retrieveUsedUrls() {
-        return executor.executeReactor(selectAll.bind())
+        return executor.execute(selectAll.bind())
             .flatMapMany(Flux::fromIterable)
             .map(this::toUrl);
     }

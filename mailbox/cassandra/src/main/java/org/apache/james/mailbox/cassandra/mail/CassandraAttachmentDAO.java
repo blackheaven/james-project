@@ -100,14 +100,14 @@ public class CassandraAttachmentDAO {
 
     public Mono<Attachment> getAttachment(AttachmentId attachmentId) {
         Preconditions.checkArgument(attachmentId != null);
-        return cassandraAsyncExecutor.executeSingleRowReactor(
+        return cassandraAsyncExecutor.executeSingleRow(
             selectStatement.bind()
                 .setString(ID, attachmentId.getId()))
             .map(this::attachment);
     }
 
     public Flux<Attachment> retrieveAll() {
-        return cassandraAsyncExecutor.executeReactor(
+        return cassandraAsyncExecutor.execute(
                 selectAllStatement.bind()
                     .setReadTimeoutMillis(configuration.getAttachmentV2MigrationReadTimeout())
                     .setFetchSize(1))
@@ -116,7 +116,7 @@ public class CassandraAttachmentDAO {
     }
 
     public Mono<Void> storeAttachment(Attachment attachment) throws IOException {
-        return cassandraAsyncExecutor.executeVoidReactor(
+        return cassandraAsyncExecutor.executeVoid(
             insertStatement.bind()
                 .setString(ID, attachment.getAttachmentId().getId())
                 .setLong(SIZE, attachment.getSize())
@@ -125,7 +125,7 @@ public class CassandraAttachmentDAO {
     }
 
     public Mono<Void> deleteAttachment(AttachmentId attachmentId) {
-        return cassandraAsyncExecutor.executeVoidReactor(
+        return cassandraAsyncExecutor.executeVoid(
             deleteStatement
                 .bind()
                 .setString(ID, attachmentId.getId()));

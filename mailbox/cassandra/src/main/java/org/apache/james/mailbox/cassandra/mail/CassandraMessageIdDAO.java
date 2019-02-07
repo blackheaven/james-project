@@ -170,7 +170,7 @@ public class CassandraMessageIdDAO {
     }
 
     public Mono<Void> delete(CassandraId mailboxId, MessageUid uid) {
-        return cassandraAsyncExecutor.executeVoidReactor(delete.bind()
+        return cassandraAsyncExecutor.executeVoid(delete.bind()
                 .setUUID(MAILBOX_ID, mailboxId.asUuid())
                 .setLong(IMAP_UID, uid.asLong()));
     }
@@ -178,7 +178,7 @@ public class CassandraMessageIdDAO {
     public Mono<Void> insert(ComposedMessageIdWithMetaData composedMessageIdWithMetaData) {
         ComposedMessageId composedMessageId = composedMessageIdWithMetaData.getComposedMessageId();
         Flags flags = composedMessageIdWithMetaData.getFlags();
-        return cassandraAsyncExecutor.executeVoidReactor(insert.bind()
+        return cassandraAsyncExecutor.executeVoid(insert.bind()
                 .setUUID(MAILBOX_ID, ((CassandraId) composedMessageId.getMailboxId()).asUuid())
                 .setLong(IMAP_UID, composedMessageId.getUid().asLong())
                 .setUUID(MESSAGE_ID, ((CassandraMessageId) composedMessageId.getMessageId()).get())
@@ -196,7 +196,7 @@ public class CassandraMessageIdDAO {
     public Mono<Void> updateMetadata(ComposedMessageIdWithMetaData composedMessageIdWithMetaData) {
         ComposedMessageId composedMessageId = composedMessageIdWithMetaData.getComposedMessageId();
         Flags flags = composedMessageIdWithMetaData.getFlags();
-        return cassandraAsyncExecutor.executeVoidReactor(update.bind()
+        return cassandraAsyncExecutor.executeVoid(update.bind()
                 .setLong(MOD_SEQ, composedMessageIdWithMetaData.getModSeq())
                 .setBool(ANSWERED, flags.contains(Flag.ANSWERED))
                 .setBool(DELETED, flags.contains(Flag.DELETED))
@@ -222,7 +222,7 @@ public class CassandraMessageIdDAO {
     }
 
     private Mono<ResultSet> selectOneRow(CassandraId mailboxId, MessageUid uid) {
-        return cassandraAsyncExecutor.executeReactor(select.bind()
+        return cassandraAsyncExecutor.execute(select.bind()
                 .setUUID(MAILBOX_ID, mailboxId.asUuid())
                 .setLong(IMAP_UID, uid.asLong()));
     }
@@ -242,18 +242,18 @@ public class CassandraMessageIdDAO {
     }
 
     private Mono<ResultSet> selectAll(CassandraId mailboxId) {
-        return cassandraAsyncExecutor.executeReactor(selectAllUids.bind()
+        return cassandraAsyncExecutor.execute(selectAllUids.bind()
                 .setUUID(MAILBOX_ID, mailboxId.asUuid()));
     }
 
     private Mono<ResultSet> selectFrom(CassandraId mailboxId, MessageUid uid) {
-        return cassandraAsyncExecutor.executeReactor(selectUidGte.bind()
+        return cassandraAsyncExecutor.execute(selectUidGte.bind()
                 .setUUID(MAILBOX_ID, mailboxId.asUuid())
                 .setLong(IMAP_UID, uid.asLong()));
     }
 
     private Mono<ResultSet> selectRange(CassandraId mailboxId, MessageUid from, MessageUid to) {
-        return cassandraAsyncExecutor.executeReactor(selectUidRange.bind()
+        return cassandraAsyncExecutor.execute(selectUidRange.bind()
                 .setUUID(MAILBOX_ID, mailboxId.asUuid())
                 .setLong(IMAP_UID_GTE, from.asLong())
                 .setLong(IMAP_UID_LTE, to.asLong()));

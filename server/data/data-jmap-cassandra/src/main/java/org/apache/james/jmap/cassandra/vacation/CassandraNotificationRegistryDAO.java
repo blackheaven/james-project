@@ -74,7 +74,7 @@ public class CassandraNotificationRegistryDAO {
     }
 
     public Mono<Void> register(AccountId accountId, RecipientId recipientId, Optional<Integer> ttl) {
-        return cassandraAsyncExecutor.executeVoidReactor(
+        return cassandraAsyncExecutor.executeVoid(
             ttl.map(value -> registerWithTTLStatement.bind().setInt(TTL, value))
                 .orElse(registerStatement.bind())
                 .setString(CassandraNotificationTable.ACCOUNT_ID, accountId.getIdentifier())
@@ -82,7 +82,7 @@ public class CassandraNotificationRegistryDAO {
     }
 
     public Mono<Boolean> isRegistered(AccountId accountId, RecipientId recipientId) {
-        return cassandraAsyncExecutor.executeSingleRowOptionalReactor(
+        return cassandraAsyncExecutor.executeSingleRowOptional(
             isRegisteredStatement.bind()
                 .setString(CassandraNotificationTable.ACCOUNT_ID, accountId.getIdentifier())
                 .setString(CassandraNotificationTable.RECIPIENT_ID, recipientId.getAsString()))
@@ -90,7 +90,7 @@ public class CassandraNotificationRegistryDAO {
     }
 
     public Mono<Void> flush(AccountId accountId) {
-        return cassandraAsyncExecutor.executeVoidReactor(
+        return cassandraAsyncExecutor.executeVoid(
             flushStatement.bind()
                 .setString(CassandraNotificationTable.ACCOUNT_ID, accountId.getIdentifier()));
     }

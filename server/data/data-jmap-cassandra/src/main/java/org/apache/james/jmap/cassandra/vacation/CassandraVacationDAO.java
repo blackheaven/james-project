@@ -80,14 +80,14 @@ public class CassandraVacationDAO {
     }
 
     public Mono<Void> modifyVacation(AccountId accountId, VacationPatch vacationPatch) {
-        return cassandraAsyncExecutor.executeVoidReactor(
+        return cassandraAsyncExecutor.executeVoid(
             createSpecificUpdate(vacationPatch,
                 insertInto(CassandraVacationTable.TABLE_NAME)
                     .value(CassandraVacationTable.ACCOUNT_ID, accountId.getIdentifier())));
     }
 
     public Mono<Optional<Vacation>> retrieveVacation(AccountId accountId) {
-        return cassandraAsyncExecutor.executeSingleRowOptionalReactor(readStatement.bind()
+        return cassandraAsyncExecutor.executeSingleRowOptional(readStatement.bind()
                 .setString(CassandraVacationTable.ACCOUNT_ID, accountId.getIdentifier()))
             .map(optional -> optional.map(row -> Vacation.builder()
                 .enabled(row.getBool(CassandraVacationTable.IS_ENABLED))

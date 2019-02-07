@@ -176,7 +176,7 @@ public class CassandraMessageDAO {
 
     public Mono<Void> save(MailboxMessage message) throws MailboxException {
         return saveContent(message)
-            .flatMap(pair -> cassandraAsyncExecutor.executeVoidReactor(boundWriteStatement(message, pair)))
+            .flatMap(pair -> cassandraAsyncExecutor.executeVoid(boundWriteStatement(message, pair)))
             .then();
     }
 
@@ -249,7 +249,7 @@ public class CassandraMessageDAO {
     private Mono<ResultSet> retrieveRow(ComposedMessageIdWithMetaData messageId, FetchType fetchType) {
         CassandraMessageId cassandraMessageId = (CassandraMessageId) messageId.getComposedMessageId().getMessageId();
 
-        return cassandraAsyncExecutor.executeReactor(retrieveSelect(fetchType)
+        return cassandraAsyncExecutor.execute(retrieveSelect(fetchType)
             .bind()
             .setUUID(MESSAGE_ID, cassandraMessageId.get()));
     }
@@ -331,7 +331,7 @@ public class CassandraMessageDAO {
     }
 
     public Mono<Void> delete(CassandraMessageId messageId) {
-        return cassandraAsyncExecutor.executeVoidReactor(delete.bind()
+        return cassandraAsyncExecutor.executeVoid(delete.bind()
             .setUUID(MESSAGE_ID, messageId.get()));
     }
 
@@ -399,7 +399,7 @@ public class CassandraMessageDAO {
     }
 
     public Flux<MessageIdAttachmentIds> retrieveAllMessageIdAttachmentIds() {
-        return cassandraAsyncExecutor.executeReactor(
+        return cassandraAsyncExecutor.execute(
             selectAllMessagesWithAttachment.bind()
                 .setReadTimeoutMillis(configuration.getMessageAttachmentIdsReadTimeout()))
             .flatMapMany(Flux::fromIterable)

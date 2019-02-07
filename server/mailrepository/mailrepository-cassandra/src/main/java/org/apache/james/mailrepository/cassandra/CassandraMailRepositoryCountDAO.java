@@ -76,17 +76,17 @@ public class CassandraMailRepositoryCountDAO {
     }
 
     public Mono<Void> increment(MailRepositoryUrl url) {
-        return executor.executeVoidReactor(increment.bind()
+        return executor.executeVoid(increment.bind()
             .setString(REPOSITORY_NAME, url.asString()));
     }
 
     public Mono<Void> decrement(MailRepositoryUrl url) {
-        return executor.executeVoidReactor(decrement.bind()
+        return executor.executeVoid(decrement.bind()
             .setString(REPOSITORY_NAME, url.asString()));
     }
 
     public Mono<Long> getCount(MailRepositoryUrl url) {
-        return executor.executeSingleRowOptionalReactor(select.bind()
+        return executor.executeSingleRowOptional(select.bind()
                 .setString(REPOSITORY_NAME, url.asString()))
             .map(this::toCount);
     }

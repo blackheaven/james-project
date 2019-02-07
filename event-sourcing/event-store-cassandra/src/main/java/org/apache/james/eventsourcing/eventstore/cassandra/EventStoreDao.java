@@ -97,7 +97,7 @@ public class EventStoreDao {
     }
 
     public History getEventsOfAggregate(AggregateId aggregateId) {
-        return cassandraAsyncExecutor.executeReactor(
+        return cassandraAsyncExecutor.execute(
                 select.bind()
                     .setString(AGGREGATE_ID, aggregateId.asAggregateKey()))
             .flatMapMany(Flux::fromIterable)

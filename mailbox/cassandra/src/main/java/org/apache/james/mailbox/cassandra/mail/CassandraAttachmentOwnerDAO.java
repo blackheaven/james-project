@@ -69,14 +69,14 @@ public class CassandraAttachmentOwnerDAO {
     }
 
     public Mono<Void> addOwner(AttachmentId attachmentId, Username owner) {
-        return executor.executeVoidReactor(
+        return executor.executeVoid(
             addStatement.bind()
                 .setUUID(ID, attachmentId.asUUID())
                 .setString(OWNER, owner.getValue()));
     }
 
     public Flux<Username> retrieveOwners(AttachmentId attachmentId) {
-        return executor.executeReactor(
+        return executor.execute(
                 selectStatement.bind()
                     .setUUID(ID, attachmentId.asUUID()))
             .flatMapMany(Flux::fromIterable)
