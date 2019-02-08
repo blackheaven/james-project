@@ -331,7 +331,7 @@ class UnionBlobStoreTest implements BlobStoreContract {
         @MethodSource("blobStoresCauseThrowExceptions")
         void operationShouldThrow(UnionBlobStore blobStoreThrowsException,
                                   Function<UnionBlobStore, Mono<?>> blobStoreOperation) {
-            assertThatThrownBy(() -> blobStoreOperation.apply(blobStoreThrowsException))
+            assertThatThrownBy(() -> blobStoreOperation.apply(blobStoreThrowsException).block())
                 .isInstanceOf(RuntimeException.class);
         }
 
