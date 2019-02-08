@@ -143,8 +143,8 @@ public class SpamAssassinTest {
             .awaitMessage(awaitAtMostOneMinute);
 
         String receivedHeaders = messageReader.readFirstMessageHeaders();
-        assertThat(receivedHeaders).contains(SpamAssassinResult.FLAG_MAIL + ": NO");
-        assertThat(receivedHeaders).contains(SpamAssassinResult.STATUS_MAIL + ": No");
+        assertThat(receivedHeaders).contains(SpamAssassinResult.FLAG_MAIL.asString() + ": NO");
+        assertThat(receivedHeaders).contains(SpamAssassinResult.STATUS_MAIL.asString() + ": No");
     }
 
     @Test
