@@ -110,17 +110,21 @@ public class PostDequeueDecorator extends MailQueueItemDecorator {
     }
 
     private boolean checkMessageIdAttribute() {
-        Object messageId = retrieveMessageId();
-        if (messageId instanceof String) {
-            try {
-                messageIdFactory.fromString((String) messageId);
-                return true;
-            } catch (Exception e) {
-                LOG.error("Invalid messageId: {}", messageId, e);
+        Optional<?> messageId = retrieveMessageId();
+        if (messageId.isPresent()) {
+            Object messageIdValue = messageId.get();
+            if (messageIdValue instanceof String) {
+                try {
+                    messageIdFactory.fromString((String) messageIdValue);
+                    return true;
+                } catch (Exception e) {
+                    LOG.error("Invalid messageId: {}", messageId, e);
+                }
             }
-        } else if (messageId != null) {
+
             LOG.error("Non-String messageId {} has type {}", messageId, messageId.getClass());
         }
+
         return false;
     }
 
