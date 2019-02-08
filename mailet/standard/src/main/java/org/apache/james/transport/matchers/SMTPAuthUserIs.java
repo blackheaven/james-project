@@ -59,7 +59,7 @@ public class SMTPAuthUserIs extends GenericMatcher {
     @Override
     public Collection<MailAddress> match(Mail mail) {
         return AttributeUtils
-            .getValueAndCastFromMail(mail, Mail.SMTP_AUTH_USER, String.class)
+            .getValueAndCastFromMail(mail, Mail.SMTP_AUTH_USER)
             .filter(users::contains)
             .map(ignored -> mail.getRecipients())
             .orElse(null);

@@ -48,7 +48,6 @@ import com.google.common.collect.ImmutableMap;
 class MimeDecodingMailetTest {
 
     private static final AttributeName MAIL_ATTRIBUTE = AttributeName.of("mime.attachments");
-    private static final Class<Map<String, byte[]>> MAP_STRING_BYTES_CLASS = (Class<Map<String, byte[]>>) (Object) Map.class;
 
     private MailetContext mailetContext;
     private MimeDecodingMailet testee;
@@ -151,7 +150,7 @@ class MimeDecodingMailetTest {
         byte[] expectedValue = text.getBytes(StandardCharsets.UTF_8);
         testee.service(mail);
 
-        Optional<Map<String, byte[]>> processedAttribute = AttributeUtils.getValueAndCastFromMail(mail, MAIL_ATTRIBUTE, MAP_STRING_BYTES_CLASS);
+        Optional<Map<String, byte[]>> processedAttribute = AttributeUtils.getValueAndCastFromMail(mail, MAIL_ATTRIBUTE);
         assertThat(processedAttribute).hasValueSatisfying(map ->
             assertThat(map)
                 .containsExactly(MapEntry.entry(expectedKey, expectedValue)));

@@ -253,7 +253,7 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
 
         try {
 
-            int msgPrio = AttributeUtils.getValueAndCastFromMail(mail, MAIL_PRIORITY, Integer.class)
+            int msgPrio = AttributeUtils.<Integer>getValueAndCastFromMail(mail, MAIL_PRIORITY)
                 .orElse(NORMAL_PRIORITY);
 
             Map<String, Object> props = getJMSProperties(mail, nextDeliveryTimestamp);

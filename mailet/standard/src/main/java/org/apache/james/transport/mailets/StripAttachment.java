@@ -93,7 +93,6 @@ public class StripAttachment extends GenericMailet {
     private static final Logger LOGGER = LoggerFactory.getLogger(StripAttachment.class);
 
     @SuppressWarnings("unchecked")
-    private static final Class<List<AttributeValue<String>>> LIST_OF_STRINGS = (Class<List<AttributeValue<String>>>)(Object) List.class;
     private static final String MULTIPART_MIME_TYPE = "multipart/*";
     public static final String PATTERN_PARAMETER_NAME = "pattern";
     public static final String NOTPATTERN_PARAMETER_NAME = "notpattern";
@@ -343,7 +342,7 @@ public class StripAttachment extends GenericMailet {
                 values.stream().map(value -> (AttributeValue<?>) value).collect(Collectors.toList());
 
         List<AttributeValue<?>> attributeValues = AttributeUtils
-                .getValueAndCastFromMail(mail, attributeName, LIST_OF_STRINGS)
+                .<List<AttributeValue<String>>>getValueAndCastFromMail(mail, attributeName)
                 .map(typeWeakner)
                 .orElse(new ArrayList<>());
         attributeValues.add(attributeValue);

@@ -39,8 +39,6 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import com.github.fge.lambdas.Throwing;
-import com.github.fge.lambdas.consumers.ConsumerChainer;
 import org.apache.commons.io.IOUtils;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.junit.TemporaryFolderExtension;
@@ -54,15 +52,16 @@ import org.apache.mailet.Mailet;
 import org.apache.mailet.MailetException;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.fge.lambdas.consumers.ConsumerChainer;
+
 @ExtendWith(TemporaryFolderExtension.class)
 class StripAttachmentTest {
-
-    private static Class<Collection<AttributeValue<String>>> COLLECTION_STRING_CLASS = (Class<Collection<AttributeValue<String>>>) (Object) Collection.class;
-    private static Class<Map<String, byte[]>> MAP_STRING_BYTES_CLASS = (Class<Map<String, byte[]>>) (Object) Map.class;
 
     private static final String EXPECTED_ATTACHMENT_CONTENT = "#¤ãàé";
     private static final Optional<String> ABSENT_MIME_TYPE = Optional.empty();
@@ -125,7 +124,7 @@ class StripAttachmentTest {
 
         mailet.service(mail);
 
-        Optional<Collection<AttributeValue<String>>> savedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS, COLLECTION_STRING_CLASS);
+        Optional<Collection<AttributeValue<String>>> savedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS);
         assertThat(savedAttachments)
             .isPresent()
             .hasValueSatisfying(attachments -> {
@@ -160,7 +159,7 @@ class StripAttachmentTest {
 
         mailet.service(mail);
 
-        Optional<Collection<AttributeValue<String>>> removedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.REMOVED_ATTACHMENTS, COLLECTION_STRING_CLASS);
+        Optional<Collection<AttributeValue<String>>> removedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.REMOVED_ATTACHMENTS);
         assertThat(removedAttachments)
             .isPresent()
             .hasValueSatisfying(attachments ->
@@ -199,7 +198,7 @@ class StripAttachmentTest {
 
         mailet.service(mail);
 
-        Optional<Collection<AttributeValue<String>>> savedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS, COLLECTION_STRING_CLASS);
+        Optional<Collection<AttributeValue<String>>> savedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS);
         assertThat(savedAttachments)
             .isPresent()
             .hasValueSatisfying(attachments -> {
@@ -236,7 +235,7 @@ class StripAttachmentTest {
 
         mailet.service(mail);
 
-        Optional<Collection<AttributeValue<String>>> savedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS, COLLECTION_STRING_CLASS);
+        Optional<Collection<AttributeValue<String>>> savedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS);
         assertThat(savedAttachments)
             .isPresent()
             .hasValueSatisfying(attachments -> {
@@ -277,7 +276,7 @@ class StripAttachmentTest {
 
         mailet.service(mail);
 
-        Optional<Map<String, byte[]>> savedValue = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(customAttribute), MAP_STRING_BYTES_CLASS);
+        Optional<Map<String, byte[]>> savedValue = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(customAttribute));
         ConsumerChainer<Map<String, byte[]>> assertValue = Throwing.consumer(saved -> {
             assertThat(saved)
                     .hasSize(1)
@@ -315,7 +314,7 @@ class StripAttachmentTest {
 
         mailet.service(mail);
 
-        Optional<Map<String, byte[]>> savedValue = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(customAttribute), MAP_STRING_BYTES_CLASS);
+        Optional<Map<String, byte[]>> savedValue = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(customAttribute));
         ConsumerChainer<Map<String, byte[]>> assertValue = Throwing.consumer(saved -> {
             assertThat(saved)
                     .hasSize(1)
@@ -612,7 +611,7 @@ class StripAttachmentTest {
         boolean actual = mailet.processMultipartPartMessage(mimeMessage, mail);
         //Then
         assertThat(actual).isTrue();
-        Optional<Collection<AttributeValue<String>>> removedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS, COLLECTION_STRING_CLASS);
+        Optional<Collection<AttributeValue<String>>> removedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS);
         assertThat(removedAttachments)
             .isPresent()
             .hasValueSatisfying(attachments ->
@@ -649,7 +648,7 @@ class StripAttachmentTest {
         
         //Then
         assertThat(actual).isTrue();
-        Optional<Map<String, byte[]>> savedValue = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(customAttribute), MAP_STRING_BYTES_CLASS);
+        Optional<Map<String, byte[]>> savedValue = AttributeUtils.getValueAndCastFromMail(mail, AttributeName.of(customAttribute));
         assertThat(savedValue)
                 .isPresent()
                 .hasValueSatisfying(saved ->
@@ -760,7 +759,7 @@ class StripAttachmentTest {
         boolean actual = mailet.processMultipartPartMessage(mimeMessage, mail);
         //Then
         assertThat(actual).isTrue();
-        Optional<Collection<AttributeValue<String>>> removedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS, COLLECTION_STRING_CLASS);
+        Optional<Collection<AttributeValue<String>>> removedAttachments = AttributeUtils.getValueAndCastFromMail(mail, StripAttachment.SAVED_ATTACHMENTS);
         assertThat(removedAttachments)
             .isPresent()
             .hasValueSatisfying(attachments ->

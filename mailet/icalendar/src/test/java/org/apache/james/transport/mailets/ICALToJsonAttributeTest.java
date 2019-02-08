@@ -51,7 +51,6 @@ import net.fortuna.ical4j.model.Calendar;
 
 public class ICALToJsonAttributeTest {
     private static final MailAddress SENDER = MailAddressFixture.ANY_AT_JAMES;
-    private static final Class<Map<String, byte[]>> MAP_STRING_BYTES_CLASS = (Class<Map<String, byte[]>>) (Object) Map.class;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -228,7 +227,7 @@ public class ICALToJsonAttributeTest {
             .build();
         testee.service(mail);
 
-        assertThat(AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION, Map.class))
+        assertThat(AttributeUtils.<Map>getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION))
             .isPresent()
             .hasValueSatisfying(map -> assertThat(map).isEmpty());
     }
@@ -251,7 +250,7 @@ public class ICALToJsonAttributeTest {
             .build();
         testee.service(mail);
 
-        assertThat(AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION, MAP_STRING_BYTES_CLASS))
+        assertThat(AttributeUtils.<Map<String, byte[]>>getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION))
             .isPresent()
             .hasValueSatisfying(jsons -> {
                 assertThat(jsons).hasSize(1);
@@ -290,7 +289,7 @@ public class ICALToJsonAttributeTest {
             .build();
         testee.service(mail);
 
-        assertThat(AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION, MAP_STRING_BYTES_CLASS))
+        assertThat(AttributeUtils.<Map<String, byte[]>>getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION))
                 .isPresent()
                 .hasValueSatisfying(jsons -> {
                     assertThat(jsons).hasSize(2);
@@ -339,7 +338,7 @@ public class ICALToJsonAttributeTest {
             .build();
         testee.service(mail);
 
-        assertThat(AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION, MAP_STRING_BYTES_CLASS))
+        assertThat(AttributeUtils.<Map<String, byte[]>>getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION))
                 .isPresent()
                 .hasValueSatisfying(jsons -> {
                     assertThat(jsons).hasSize(2);
@@ -388,7 +387,7 @@ public class ICALToJsonAttributeTest {
             .build();
         testee.service(mail);
 
-        assertThat(AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION, MAP_STRING_BYTES_CLASS))
+        assertThat(AttributeUtils.<Map<String, byte[]>>getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION))
                 .isPresent()
                 .hasValueSatisfying(jsons -> {
                     assertThat(jsons).hasSize(1);
@@ -427,7 +426,7 @@ public class ICALToJsonAttributeTest {
             .build();
         testee.service(mail);
 
-        assertThat(AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION, MAP_STRING_BYTES_CLASS))
+        assertThat(AttributeUtils.<Map<String, byte[]>>getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION))
                 .isPresent()
                 .hasValueSatisfying(jsons -> {
                     assertThat(jsons).hasSize(1);
@@ -467,7 +466,7 @@ public class ICALToJsonAttributeTest {
             .build();
         testee.service(mail);
 
-        assertThat(AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION, MAP_STRING_BYTES_CLASS))
+        assertThat(AttributeUtils.<Map<String, byte[]>>getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION))
                 .isPresent()
                 .hasValueSatisfying(jsons -> {
                     assertThat(jsons).hasSize(1);
@@ -504,7 +503,7 @@ public class ICALToJsonAttributeTest {
             .build();
         testee.service(mail);
 
-        assertThat(AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION, MAP_STRING_BYTES_CLASS))
+        assertThat(AttributeUtils.<Map<String, byte[]>>getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION))
                 .isPresent()
                 .hasValueSatisfying(jsons -> {
                     assertThat(jsons).hasSize(1);
@@ -542,7 +541,7 @@ public class ICALToJsonAttributeTest {
             .build();
         testee.service(mail);
 
-        assertThat(AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION, MAP_STRING_BYTES_CLASS))
+        assertThat(AttributeUtils.<Map<String, byte[]>>getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION))
                 .isPresent()
                 .hasValueSatisfying(jsons -> {
                     assertThat(jsons).hasSize(1);

@@ -564,7 +564,7 @@ public abstract class AbstractSign extends GenericMailet {
 
         MailAddress reversePath = mail.getMaybeSender().get();
 
-        Optional<String> fetchedAuthUser = AttributeUtils.getValueAndCastFromMail(mail, Mail.SMTP_AUTH_USER, String.class);
+        Optional<String> fetchedAuthUser = AttributeUtils.getValueAndCastFromMail(mail, Mail.SMTP_AUTH_USER);
         // was the sender user SMTP authorized?
         if (!fetchedAuthUser.isPresent()) {
             LOGGER.info("Can not sign mail for sender <{}> as he is not a SMTP authenticated user", mail.getMaybeSender().asString());

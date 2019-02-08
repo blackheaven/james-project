@@ -34,10 +34,11 @@ public class AttributeUtils {
      *
      * Returns an empty optional upon missing attribute or type mismatch.
      */
-    public static <T> Optional<T> getValueAndCastFromMail(Mail mail, AttributeName name, Class<T> type) {
+    public static <T> Optional<T> getValueAndCastFromMail(Mail mail, AttributeName name) {
         return getAttributeValueFromMail(mail, name)
-                .flatMap(value -> tryToCast(type, value));
+                .flatMap(AttributeUtils::tryToCast);
     }
+
 
     /**
      * Returns the raw attribute value corresponding to an attribute name.
@@ -57,10 +58,10 @@ public class AttributeUtils {
         return attribute.getValue().getValue();
     }
 
-    private static <T> Optional<T> tryToCast(Class<T> type, Object value) {
-        if (type.isInstance(value)) {
-            return Optional.of(type.cast(value));
-        } else {
+    private static <T> Optional<T> tryToCast(Object value) {
+        try {
+            return Optional.of((T)value);
+        } catch (ClassCastException e) {
             return Optional.empty();
         }
     }
