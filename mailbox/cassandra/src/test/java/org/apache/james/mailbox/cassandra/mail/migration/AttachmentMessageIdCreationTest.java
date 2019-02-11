@@ -37,6 +37,7 @@ import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.cassandra.migration.Migration;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
+import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionModule;
 import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.cassandra.CassandraBlobModule;
 import org.apache.james.blob.cassandra.CassandraBlobsDAO;
@@ -62,12 +63,15 @@ import com.google.common.collect.ImmutableSet;
 import reactor.core.publisher.Flux;
 
 class AttachmentMessageIdCreationTest {
-    @RegisterExtension
-    static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(
-        CassandraModule.aggregateModules(
+    public static final CassandraModule MODULES = CassandraModule.aggregateModules(
             CassandraMessageModule.MODULE,
             CassandraAttachmentModule.MODULE,
-            CassandraBlobModule.MODULE));
+            CassandraBlobModule.MODULE,
+            CassandraSchemaVersionModule.MODULE);
+
+    @RegisterExtension
+    static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(
+            MODULES);
 
     private CassandraBlobsDAO blobsDAO;
     private CassandraMessageDAO cassandraMessageDAO;
@@ -141,7 +145,7 @@ class AttachmentMessageIdCreationTest {
         CassandraAttachmentMessageIdDAO attachmentMessageIdDAO = mock(CassandraAttachmentMessageIdDAO.class);
         migration = new AttachmentMessageIdCreation(cassandraMessageDAO, attachmentMessageIdDAO);
 
-        when(cassandraMessageDAO.retrieveAllMessageIdAttachmentIds()).thenThrow(new RuntimeException());
+        when(cassandraMessageDAO.retrieveAllMessageIdAttachmentIds()).thenReturn(Flux.error(new RuntimeException("Mocked exception")));
 
         assertThat(migration.run()).isEqualTo(Migration.Result.PARTIAL);
     }
