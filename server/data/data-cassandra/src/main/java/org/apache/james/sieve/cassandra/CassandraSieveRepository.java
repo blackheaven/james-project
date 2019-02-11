@@ -72,16 +72,29 @@ public class CassandraSieveRepository implements SieveRepository {
 
     @Override
     public void haveSpace(User user, ScriptName name, long newSize) throws QuotaExceededException {
-        throwOnOverQuota(user, spaceThatWillBeUsedByNewScript(user, name, newSize));
+        reThrowQuotaExceededException(() ->
+            spaceThatWillBeUsedByNewScript(user, name, newSize)
+                .flatMap(sizeDifference -> throwOnOverQuota(user, sizeDifference))
+                .block());
     }
 
-    private void throwOnOverQuota(User user, Mono<Long> sizeDifference) throws QuotaExceededException {
-        Mono<Optional<QuotaSize>> userQuotaFuture = cassandraSieveQuotaDAO.getQuota(user);
-        Mono<Optional<QuotaSize>> globalQuotaFuture = cassandraSieveQuotaDAO.getQuota();
-        Mono<Long> spaceUsedFuture = cassandraSieveQuotaDAO.spaceUsedBy(user);
+    private Mono<Void> throwOnOverQuota(User user, Long sizeDifference) {
+        Mono<Optional<QuotaSize>> userQuotaMono = cassandraSieveQuotaDAO.getQuota(user);
+        Mono<Optional<QuotaSize>> globalQuotaMono = cassandraSieveQuotaDAO.getQuota();
+        Mono<Long> spaceUsedMono = cassandraSieveQuotaDAO.spaceUsedBy(user);
 
-        new SieveQuota(spaceUsedFuture.block(), limitToUse(userQuotaFuture, globalQuotaFuture))
-            .checkOverQuotaUponModification(sizeDifference.block());
+        return limitToUse(userQuotaMono, globalQuotaMono).zipWith(spaceUsedMono)
+            .flatMap(pair -> checkOverQuotaUponModification(sizeDifference, pair.getT2(), pair.getT1()));
+    }
+
+    private Mono<Void> checkOverQuotaUponModification(Long sizeDifference, Long spaceUsed, Optional<QuotaSize> limit) {
+        try {
+            new SieveQuota(spaceUsed, limit)
+                    .checkOverQuotaUponModification(sizeDifference);
+            return Mono.empty();
+        } catch (QuotaExceededException e) {
+            return Mono.error(new RuntimeException(e));
+        }
     }
 
     private Mono<Long> spaceThatWillBeUsedByNewScript(User user, ScriptName name, long scriptSize) {
@@ -91,28 +104,39 @@ public class CassandraSieveRepository implements SieveRepository {
             .map(sizeOfStoredScript -> scriptSize - sizeOfStoredScript);
     }
 
-    private Optional<QuotaSize> limitToUse(Mono<Optional<QuotaSize>> userQuota, Mono<Optional<QuotaSize>> globalQuota) {
-        if (userQuota.block().isPresent()) {
-            return userQuota.block();
-        }
-        return globalQuota.block();
+    private Mono<Optional<QuotaSize>> limitToUse(Mono<Optional<QuotaSize>> userQuota, Mono<Optional<QuotaSize>> globalQuota) {
+        return userQuota
+            .filter(Optional::isPresent)
+            .switchIfEmpty(globalQuota);
     }
 
     @Override
     public void putScript(User user, ScriptName name, ScriptContent content) throws QuotaExceededException {
-        Mono<Long> spaceUsed = spaceThatWillBeUsedByNewScript(user, name, content.length());
-        throwOnOverQuota(user, spaceUsed);
+        Function<Long, Mono<Void>> updateAndInsert = spaceUsed -> Flux.merge(
+                updateSpaceUsed(user, spaceUsed),
+                cassandraSieveDAO.insertScript(user,
+                        Script.builder()
+                                .name(name)
+                                .content(content)
+                                .isActive(false)
+                                .build()))
+                .then();
 
-        Flux.merge(
-            updateSpaceUsed(user, spaceUsed.block()),
-            cassandraSieveDAO.insertScript(user,
-                Script.builder()
-                    .name(name)
-                    .content(content)
-                    .isActive(false)
-                    .build()))
-            .then()
-            .block();
+        reThrowQuotaExceededException(() ->
+            spaceThatWillBeUsedByNewScript(user, name, content.length())
+                .flatMap(spaceUsed -> throwOnOverQuota(user, spaceUsed)
+                        .thenEmpty(updateAndInsert.apply(spaceUsed)))
+                .block());
+    }
+
+    private void reThrowQuotaExceededException(Runnable runnable) throws QuotaExceededException {
+       try {
+           runnable.run();
+       } catch (RuntimeException e) {
+           if (e.getCause() instanceof QuotaExceededException) {
+               throw (QuotaExceededException) e.getCause();
+           }
+       }
     }
 
     private Mono<Void> updateSpaceUsed(User user, long spaceUsed) {
