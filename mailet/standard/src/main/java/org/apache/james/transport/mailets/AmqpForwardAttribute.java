@@ -110,18 +110,9 @@ public class AmqpForwardAttribute extends GenericMailet {
 
     @Override
     public void service(Mail mail) throws MailetException {
-        try {
-            Optional<Attribute> fetchedAttribute = mail.getAttribute(attribute);
-            if (fetchedAttribute.isPresent()) {
-                sendContent(getAttributeContent(fetchedAttribute.get()));
-            }
-        } catch (IOException e) {
-            LOGGER.error("IOException while writing to AMQP: {}", e.getMessage(), e);
-        } catch (TimeoutException e) {
-            LOGGER.error("TimeoutException while writing to AMQP: {}", e.getMessage(), e);
-        } catch (AlreadyClosedException e) {
-            LOGGER.error("AlreadyClosedException while writing to AMQP: {}", e.getMessage(), e);
-        }
+        mail.getAttribute(attribute)
+            .map(Throwing.function(this::getAttributeContent).sneakyThrow())
+            .ifPresent(this::sendContent);
     }
 
     private Stream<byte[]> getAttributeContent(Attribute attribute) throws MailetException {
@@ -144,7 +135,19 @@ public class AmqpForwardAttribute extends GenericMailet {
         return Optional.empty();
     }
 
-    private void sendContent(Stream<byte[]> content) throws IOException, TimeoutException {
+    private void sendContent(Stream<byte[]> content) {
+        try {
+            trySendContent(content);
+        } catch (IOException e) {
+            LOGGER.error("IOException while writing to AMQP: {}", e.getMessage(), e);
+        } catch (TimeoutException e) {
+            LOGGER.error("TimeoutException while writing to AMQP: {}", e.getMessage(), e);
+        } catch (AlreadyClosedException e) {
+            LOGGER.error("AlreadyClosedException while writing to AMQP: {}", e.getMessage(), e);
+        }
+    }
+
+    private void trySendContent(Stream<byte[]> content) throws IOException, TimeoutException {
         Connection connection = null;
         Channel channel = null;
         try {

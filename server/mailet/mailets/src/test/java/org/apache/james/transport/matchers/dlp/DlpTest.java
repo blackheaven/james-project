@@ -508,13 +508,13 @@ class DlpTest {
 
     @Test
     void matchShouldAttachMatchingRuleNameToMail() throws Exception {
-        String value = "should match sender";
+        String attributeValue = "should match sender";
         Dlp dlp = new Dlp(
             asRulesLoaderFor(
                 JAMES_APACHE_ORG_DOMAIN,
                 DlpDomainRules.builder()
                     .recipientRule(Id.of("should not match recipient"), Pattern.compile(RECIPIENT3.asString()))
-                    .senderRule(Id.of(value), Pattern.compile(JAMES_APACHE_ORG))
+                    .senderRule(Id.of(attributeValue), Pattern.compile(JAMES_APACHE_ORG))
                     .build()));
 
         FakeMail mail = FakeMail.builder()
@@ -526,7 +526,7 @@ class DlpTest {
         dlp.match(mail);
 
         AttributeName name = AttributeName.of("DlpMatchedRule");
-        assertThat(mail.getAttribute(name)).contains(new Attribute(name, AttributeValue.of(value)));
+        assertThat(mail.getAttribute(name)).contains(new Attribute(name, AttributeValue.of(attributeValue)));
     }
 
 }
