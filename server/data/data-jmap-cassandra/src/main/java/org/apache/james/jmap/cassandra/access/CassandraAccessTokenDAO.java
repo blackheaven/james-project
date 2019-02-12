@@ -27,7 +27,6 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
 import static org.apache.james.jmap.api.access.AccessTokenRepository.TOKEN_EXPIRATION_IN_MS;
 
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -83,9 +82,9 @@ public class CassandraAccessTokenDAO {
             .setUUID(CassandraAccessTokenTable.TOKEN, accessToken.asUUID()));
     }
 
-    public Mono<Optional<String>> getUsernameFromToken(AccessToken accessToken) {
-        return cassandraAsyncExecutor.executeSingleRowOptional(selectStatement.bind()
+    public Mono<String> getUsernameFromToken(AccessToken accessToken) {
+        return cassandraAsyncExecutor.executeSingleRow(selectStatement.bind()
                 .setUUID(CassandraAccessTokenTable.TOKEN, accessToken.asUUID()))
-            .map(optional -> optional.map(row -> row.getString(CassandraAccessTokenTable.USERNAME)));
+            .map(row -> row.getString(CassandraAccessTokenTable.USERNAME));
     }
 }

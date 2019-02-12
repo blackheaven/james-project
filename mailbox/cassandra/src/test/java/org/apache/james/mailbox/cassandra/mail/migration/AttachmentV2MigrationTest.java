@@ -138,7 +138,7 @@ class AttachmentV2MigrationTest {
         CassandraBlobsDAO blobsDAO = mock(CassandraBlobsDAO.class);
         migration = new AttachmentV2Migration(attachmentDAO, attachmentDAOV2, blobsDAO);
 
-        when(attachmentDAO.retrieveAll()).thenThrow(new RuntimeException());
+        when(attachmentDAO.retrieveAll()).thenReturn(Flux.error(new RuntimeException()));
 
         assertThat(migration.run()).isEqualTo(Migration.Result.PARTIAL);
     }

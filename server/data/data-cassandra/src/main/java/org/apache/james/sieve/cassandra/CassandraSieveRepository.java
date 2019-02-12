@@ -90,7 +90,7 @@ public class CassandraSieveRepository implements SieveRepository {
     private Mono<Void> checkOverQuotaUponModification(Long sizeDifference, Long spaceUsed, Optional<QuotaSize> limit) {
         try {
             new SieveQuota(spaceUsed, limit)
-                    .checkOverQuotaUponModification(sizeDifference);
+                .checkOverQuotaUponModification(sizeDifference);
             return Mono.empty();
         } catch (QuotaExceededException e) {
             return Mono.error(new RuntimeException(e));
