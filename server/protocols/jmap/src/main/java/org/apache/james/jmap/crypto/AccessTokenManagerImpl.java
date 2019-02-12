@@ -19,8 +19,6 @@
 
 package org.apache.james.jmap.crypto;
 
-import java.util.concurrent.CompletionException;
-
 import javax.inject.Inject;
 
 import org.apache.james.jmap.api.AccessTokenManager;
@@ -49,15 +47,7 @@ public class AccessTokenManagerImpl implements AccessTokenManager {
 
     @Override
     public String getUsernameFromToken(AccessToken token) throws InvalidAccessToken {
-        try {
-            return accessTokenRepository.getUsernameFromToken(token).block();
-        } catch (CompletionException completionException) {
-            if (completionException.getCause() instanceof InvalidAccessToken) {
-                throw (InvalidAccessToken) completionException.getCause();
-            } else {
-                throw new RuntimeException(completionException);
-            }
-        }
+        return accessTokenRepository.getUsernameFromToken(token).block();
     }
     
     @Override

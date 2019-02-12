@@ -19,14 +19,19 @@
 package org.apache.james.jmap.crypto;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.apache.james.jmap.api.AccessTokenManager;
 import org.apache.james.jmap.api.access.AccessToken;
 import org.apache.james.jmap.api.access.AccessTokenRepository;
 import org.apache.james.jmap.api.access.exceptions.InvalidAccessToken;
 import org.apache.james.jmap.memory.access.MemoryAccessTokenRepository;
+
 import org.junit.Before;
 import org.junit.Test;
+
+import reactor.core.publisher.Mono;
 
 public class AccessTokenManagerImplTest {
     
@@ -121,5 +126,16 @@ public class AccessTokenManagerImplTest {
         AccessToken token = accessTokenManager.grantAccessToken("username");
         accessTokenManager.revoke(token);
         assertThat(accessTokenManager.isValid(token)).isFalse();
+    }
+
+    @Test(expected = InvalidAccessToken.class)
+    public void getUsernameShouldThrowWhenRepositoryThrows() throws Exception {
+        accessTokenRepository = mock(AccessTokenRepository.class);
+        accessTokenManager = new AccessTokenManagerImpl(accessTokenRepository);
+
+        AccessToken accessToken = AccessToken.generate();
+        when(accessTokenRepository.getUsernameFromToken(accessToken)).thenReturn(Mono.error(new InvalidAccessToken(accessToken)));
+
+        accessTokenManager.getUsernameFromToken(accessToken);
     }
 }
