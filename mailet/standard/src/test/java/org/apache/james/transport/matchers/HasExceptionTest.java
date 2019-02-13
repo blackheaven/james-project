@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.mailet.Attribute;
@@ -32,6 +33,7 @@ import org.apache.mailet.Matcher;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMatcherConfig;
 import org.apache.mailet.base.test.MailUtil;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -49,7 +51,7 @@ public class HasExceptionTest {
 
     @Test
     public void matchShouldReturnAddressesWhenSpecifiedExceptionHasOccurred() throws MessagingException {
-        mockedMail.setAttribute(new Attribute(Mail.MAILET_ERROR, AttributeValue.ofSerializable(new javax.mail.internet.AddressException())));
+        mockedMail.setAttribute(new Attribute(Mail.MAILET_ERROR, AttributeValue.ofSerializable(new AddressException())));
 
         FakeMatcherConfig matcherConfig = FakeMatcherConfig.builder()
                 .matcherName("HasException")
@@ -63,7 +65,7 @@ public class HasExceptionTest {
 
     @Test
     public void matchShouldReturnAddressesWhenSubclassOfSpecifiedExceptionHasOccurred() throws MessagingException {
-        mockedMail.setAttribute(new Attribute(Mail.MAILET_ERROR, AttributeValue.ofSerializable(new javax.mail.internet.AddressException())));
+        mockedMail.setAttribute(new Attribute(Mail.MAILET_ERROR, AttributeValue.ofSerializable(new AddressException())));
 
         FakeMatcherConfig matcherConfig = FakeMatcherConfig.builder()
                 .matcherName("HasException")
