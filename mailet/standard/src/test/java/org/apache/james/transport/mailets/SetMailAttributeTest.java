@@ -46,7 +46,7 @@ class SetMailAttributeTest {
 
     @Test
     void shouldAddConfiguredAttributes() throws MessagingException {
-        AttributeName name1 = AttributeName.of( "org.apache.james.junit1");
+        AttributeName name1 = AttributeName.of("org.apache.james.junit1");
         AttributeName name2 = AttributeName.of("org.apache.james.junit2");
         AttributeValue<String> value1 = AttributeValue.of("true");
         AttributeValue<String> value2 = AttributeValue.of("happy");
