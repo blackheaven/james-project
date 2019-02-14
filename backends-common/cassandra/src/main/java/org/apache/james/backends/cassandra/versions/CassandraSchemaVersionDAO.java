@@ -65,8 +65,7 @@ public class CassandraSchemaVersionDAO {
     }
 
     public Mono<Optional<SchemaVersion>> getCurrentSchemaVersion() {
-        return cassandraAsyncExecutor.execute(readVersionStatement.bind())
-            .flatMapMany(Flux::fromIterable)
+        return cassandraAsyncExecutor.executeRows(readVersionStatement.bind())
             .map(row -> row.getInt(VALUE))
             .reduce(Math::max)
             .map(SchemaVersion::new)
