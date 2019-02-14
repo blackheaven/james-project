@@ -213,16 +213,15 @@ public class CassandraMessageIdDAO {
         return asOptionalOfCassandraMessageId(selectOneRow(mailboxId, uid));
     }
 
-    private Mono<Optional<ComposedMessageIdWithMetaData>> asOptionalOfCassandraMessageId(Flux<Row> rows) {
-        return rows
-                .next()
+    private Mono<Optional<ComposedMessageIdWithMetaData>> asOptionalOfCassandraMessageId(Mono<Row> row) {
+        return row
                 .map(this::fromRowToComposedMessageIdWithFlags)
                 .map(Optional::of)
                 .switchIfEmpty(Mono.just(Optional.empty()));
     }
 
-    private Flux<Row> selectOneRow(CassandraId mailboxId, MessageUid uid) {
-        return cassandraAsyncExecutor.executeRows(select.bind()
+    private Mono<Row> selectOneRow(CassandraId mailboxId, MessageUid uid) {
+        return cassandraAsyncExecutor.executeSingleRow(select.bind()
                 .setUUID(MAILBOX_ID, mailboxId.asUuid())
                 .setLong(IMAP_UID, uid.asLong()));
     }
@@ -241,7 +240,7 @@ public class CassandraMessageIdDAO {
         case RANGE:
             return selectRange(mailboxId, set.getUidFrom(), set.getUidTo());
         case ONE:
-            return selectOneRow(mailboxId, set.getUidFrom());
+            return Flux.concat(selectOneRow(mailboxId, set.getUidFrom()));
         }
         throw new UnsupportedOperationException();
     }
