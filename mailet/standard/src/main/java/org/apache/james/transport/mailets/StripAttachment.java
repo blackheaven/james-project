@@ -342,12 +342,13 @@ public class StripAttachment extends GenericMailet {
         Function<List<AttributeValue<String>>, List<AttributeValue<?>>> typeWeakner = values ->
                 values.stream().map(value -> (AttributeValue<?>) value).collect(Collectors.toList());
 
-        List<AttributeValue<?>> attributeValues = AttributeUtils
-                .getValueAndCastFromMail(mail, attributeName, LIST_OF_STRINGS)
-                .map(typeWeakner)
-                .orElse(new ArrayList<>());
+        ImmutableList.Builder<AttributeValue<?>> attributeValues = ImmutableList.<AttributeValue<?>>builder()
+                .addAll(AttributeUtils
+                    .getValueAndCastFromMail(mail, attributeName, LIST_OF_STRINGS)
+                    .map(typeWeakner)
+                    .orElse(new ArrayList<>()));
         attributeValues.add(attributeValue);
-        mail.setAttribute(new Attribute(attributeName, AttributeValue.of(attributeValues)));
+        mail.setAttribute(new Attribute(attributeName, AttributeValue.of(attributeValues.build())));
     }
 
     private void storeBodyPartAsMailAttribute(BodyPart bodyPart, Mail mail, String fileName) throws IOException, MessagingException {
