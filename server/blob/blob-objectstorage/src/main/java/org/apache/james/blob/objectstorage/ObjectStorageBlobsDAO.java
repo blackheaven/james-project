@@ -22,6 +22,7 @@ package org.apache.james.blob.objectstorage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.james.blob.api.BlobId;
@@ -119,7 +120,9 @@ public class ObjectStorageBlobsDAO implements BlobStore {
 
     @Override
     public InputStream read(BlobId blobId) throws ObjectStoreException {
-        Blob blob = blobStore.getBlob(containerName.value(), blobId.asString());
+        Blob blob = Mono.fromCallable(() -> blobStore.getBlob(containerName.value(), blobId.asString()))
+            .retryBackoff(5, Duration.ofMillis(100))
+            .block();
 
         try {
             if (blob != null) {
