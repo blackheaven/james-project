@@ -23,10 +23,16 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.steveash.guavate.Guavate;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.james.util.OptionalUtils;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeUtils;
@@ -71,16 +77,22 @@ public class MimeDecodingMailet extends GenericMailet {
 
     @Override
     public void service(Mail mail) throws MessagingException {
-        mail.getAttribute(attributeName).ifPresent(attribute -> {
-            ImmutableMap.Builder<String, byte[]> extractedMimeContentByName = ImmutableMap.builder();
-            for (Map.Entry<String, byte[]> entry: getAttributeContent(attribute).entrySet()) {
-                Optional<byte[]> maybeContent = extractContent(entry.getValue());
-                if (maybeContent.isPresent()) {
-                    extractedMimeContentByName.put(entry.getKey(), maybeContent.get());
-                }
-            }
-            mail.setAttribute(new Attribute(attributeName, AttributeValue.ofAny(extractedMimeContentByName.build()));
-        });
+        mail.getAttribute(attributeName)
+            .ifPresent(Throwing.<Attribute>consumer(attribute -> setAttribute(mail, attribute)).sneakyThrow());
+    }
+
+    private void setAttribute(Mail mail, Attribute attribute) throws MailetException {
+        Function<Map.Entry<String, byte[]>, Stream<Pair<String, byte[]>>> convertToMapContent = Throwing.<Map.Entry<String, byte[]>, Stream<Pair<String, byte[]>>>function(entry ->
+                OptionalUtils.toStream(extractContent(entry.getValue())
+                        .map(content -> Pair.of(entry.getKey(), content)))).sneakyThrow();
+
+        ImmutableMap<String, byte[]> extractedMimeContentByName = getAttributeContent(attribute)
+                .entrySet()
+                .stream()
+                .flatMap(convertToMapContent)
+                .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
+
+        mail.setAttribute(new Attribute(attributeName, AttributeValue.ofAny(extractedMimeContentByName)));
     }
 
     @SuppressWarnings("unchecked")
