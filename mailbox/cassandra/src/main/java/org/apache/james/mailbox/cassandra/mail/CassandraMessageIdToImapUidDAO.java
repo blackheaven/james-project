@@ -40,7 +40,6 @@ import static org.apache.james.mailbox.cassandra.table.MessageIdToImapUid.FIELDS
 import static org.apache.james.mailbox.cassandra.table.MessageIdToImapUid.MOD_SEQ;
 import static org.apache.james.mailbox.cassandra.table.MessageIdToImapUid.TABLE_NAME;
 
-import java.time.Duration;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -189,8 +188,7 @@ public class CassandraMessageIdToImapUidDAO {
                 .setUUID(MESSAGE_ID, ((CassandraMessageId) composedMessageId.getMessageId()).get())
                 .setUUID(MAILBOX_ID, ((CassandraId) composedMessageId.getMailboxId()).asUuid())
                 .setLong(IMAP_UID, composedMessageId.getUid().asLong())
-                .setLong(MOD_SEQ_CONDITION, oldModSeq))
-                .retryBackoff(5, Duration.ofMillis(100));
+                .setLong(MOD_SEQ_CONDITION, oldModSeq));
     }
 
     public Flux<ComposedMessageIdWithMetaData> retrieve(CassandraMessageId messageId, Optional<CassandraId> mailboxId) {
