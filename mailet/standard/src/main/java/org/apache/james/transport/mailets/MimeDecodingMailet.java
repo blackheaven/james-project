@@ -20,7 +20,6 @@ package org.apache.james.transport.mailets;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -28,14 +27,11 @@ import java.util.stream.Stream;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
-import com.github.fge.lambdas.Throwing;
-import com.github.steveash.guavate.Guavate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.util.OptionalUtils;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
-import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.AttributeValue;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
@@ -43,6 +39,8 @@ import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 

@@ -19,22 +19,20 @@
 
 package org.apache.james.transport.mailets;
 
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import com.github.fge.lambdas.Throwing;
-import com.github.steveash.guavate.Guavate;
-import com.google.common.collect.ImmutableMap;
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * <p>Convert attributes of type String to headers</p>
