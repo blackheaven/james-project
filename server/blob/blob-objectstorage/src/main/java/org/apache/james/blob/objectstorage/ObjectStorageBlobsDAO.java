@@ -78,7 +78,6 @@ public class ObjectStorageBlobsDAO implements BlobStore {
 
     public Mono<ContainerName> createContainer(ContainerName name) {
         return Mono.fromCallable(() -> blobStore.createContainerInLocation(DEFAULT_LOCATION, name.value()))
-            .subscribeOn(Schedulers.elastic())
             .filter(created -> created == false)
             .doOnNext(ignored -> LOGGER.debug("{} already existed", name))
             .thenReturn(name);
@@ -120,8 +119,7 @@ public class ObjectStorageBlobsDAO implements BlobStore {
 
     @Override
     public Mono<byte[]> readBytes(BlobId blobId) {
-        return Mono.fromCallable(() -> IOUtils.toByteArray(read(blobId)))
-            .subscribeOn(Schedulers.elastic());
+        return Mono.fromCallable(() -> IOUtils.toByteArray(read(blobId)));
     }
 
     @Override
