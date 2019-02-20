@@ -21,10 +21,16 @@ package org.apache.james.transport.mailets;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import com.github.fge.lambdas.Throwing;
+import com.github.steveash.guavate.Guavate;
+import com.google.common.collect.ImmutableMap;
+import org.apache.mailet.AttributeName;
+import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 
@@ -44,7 +50,7 @@ import com.google.common.base.Strings;
  */
 public class MailAttributesToMimeHeaders extends GenericMailet {
 
-    private Map<String, String> mappings;
+    private ImmutableMap<AttributeName, String> mappings;
 
     @Override
     public void init() throws MessagingException {
@@ -54,20 +60,32 @@ public class MailAttributesToMimeHeaders extends GenericMailet {
             throw new MessagingException("simplemapping is required");
         }
 
-        mappings = MappingArgument.parse(simpleMappings);
+        mappings = MappingArgument
+            .parse(simpleMappings)
+            .entrySet()
+            .stream()
+            .collect(Guavate.toImmutableMap(
+                entry -> AttributeName.of(entry.getKey()),
+                entry -> entry.getValue()));
     }
 
     @Override
     public void service(Mail mail) throws MessagingException {
         MimeMessage message = mail.getMessage();
-        for (Entry<String, String> entry : mappings.entrySet()) {
-            String value = (String) mail.getAttribute(entry.getKey());
-            if (value != null) {
+        mappings
+            .entrySet()
+            .stream()
+            .forEach(entry -> addHeader(entry, mail, message));
+        message.saveChanges();
+    }
+
+    private void addHeader(Entry<AttributeName, String> entry, Mail mail, MimeMessage message) {
+        AttributeUtils
+            .getValueAndCastFromMail(mail, entry.getKey(), String.class)
+            .ifPresent(Throwing.<String>consumer(value -> {
                 String headerName = entry.getValue();
                 message.addHeader(headerName, value);
-            }
-        }
-        message.saveChanges();
+            }).sneakyThrow());
     }
 
 }

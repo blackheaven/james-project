@@ -43,7 +43,7 @@ public class DeliveryRetriesHelper {
         mail.setAttribute(makeAttribute(retrieveRetries(mail) + 1));
     }
 
-    private static Attribute makeAttribute(Integer value) {
+    public static Attribute makeAttribute(Integer value) {
         return new Attribute(DELIVERY_RETRY_COUNT, AttributeValue.of(value));
     }
 }
