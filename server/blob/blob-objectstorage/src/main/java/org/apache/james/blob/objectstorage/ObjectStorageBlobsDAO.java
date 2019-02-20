@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.james.blob.api.BlobId;
@@ -120,22 +121,22 @@ public class ObjectStorageBlobsDAO implements BlobStore {
 
     @Override
     public InputStream read(BlobId blobId) throws ObjectStoreException {
-        Blob blob = Mono.fromCallable(() -> blobStore.getBlob(containerName.value(), blobId.asString()))
+        Optional<Blob> retrievedBlob = Mono.fromCallable(() -> Optional.ofNullable(blobStore.getBlob(containerName.value(), blobId.asString())))
             .retryBackoff(5, Duration.ofMillis(100))
             .block();
 
-        try {
-            if (blob != null) {
-                return payloadCodec.read(blob.getPayload());
-            } else {
-                throw new ObjectStoreException("fail to load blob with id " + blobId);
-            }
-        } catch (IOException cause) {
-            throw new ObjectStoreException(
-                "Failed to readBytes blob " + blobId.asString(),
-                cause);
-        }
+        return retrievedBlob
+            .map(blob -> readPayload(blobId, blob.getPayload()))
+            .orElseThrow(() -> new ObjectStoreException("fail to load blob with id " + blobId));
 
+    }
+
+    private InputStream readPayload(BlobId blobId, Payload payload) {
+        try {
+            return payloadCodec.read(payload);
+        } catch (IOException cause) {
+            throw new ObjectStoreException("Failed to readBytes blob " + blobId.asString(), cause);
+        }
     }
 
     public void deleteContainer() {
