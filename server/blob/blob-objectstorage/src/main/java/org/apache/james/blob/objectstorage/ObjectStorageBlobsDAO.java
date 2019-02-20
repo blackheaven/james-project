@@ -43,6 +43,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingInputStream;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class ObjectStorageBlobsDAO implements BlobStore {
     private static final Location DEFAULT_LOCATION = null;
@@ -77,6 +78,7 @@ public class ObjectStorageBlobsDAO implements BlobStore {
 
     public Mono<ContainerName> createContainer(ContainerName name) {
         return Mono.fromCallable(() -> blobStore.createContainerInLocation(DEFAULT_LOCATION, name.value()))
+            .subscribeOn(Schedulers.elastic())
             .filter(created -> created == false)
             .doOnNext(ignored -> LOGGER.debug("{} already existed", name))
             .thenReturn(name);
@@ -100,6 +102,7 @@ public class ObjectStorageBlobsDAO implements BlobStore {
         String containerName = this.containerName.value();
         return Mono
             .fromCallable(() -> blobStore.copyBlob(containerName, from.asString(), containerName, to.asString(), CopyOptions.NONE))
+            .subscribeOn(Schedulers.elastic())
             .then(Mono.fromRunnable(() -> blobStore.removeBlob(containerName, from.asString())))
             .thenReturn(to);
     }
@@ -111,17 +114,20 @@ public class ObjectStorageBlobsDAO implements BlobStore {
         Blob blob = blobStore.blobBuilder(id.asString()).payload(payload).build();
 
         return Mono.fromCallable(() -> blobStore.putBlob(containerName, blob))
+            .subscribeOn(Schedulers.elastic())
             .then(Mono.fromCallable(() -> blobIdFactory.from(hashingInputStream.hash().toString())));
     }
 
     @Override
     public Mono<byte[]> readBytes(BlobId blobId) {
-        return Mono.fromCallable(() -> IOUtils.toByteArray(read(blobId)));
+        return Mono.fromCallable(() -> IOUtils.toByteArray(read(blobId)))
+            .subscribeOn(Schedulers.elastic());
     }
 
     @Override
     public InputStream read(BlobId blobId) throws ObjectStoreException {
         Optional<Blob> retrievedBlob = Mono.fromCallable(() -> Optional.ofNullable(blobStore.getBlob(containerName.value(), blobId.asString())))
+            .subscribeOn(Schedulers.elastic())
             .retryBackoff(5, Duration.ofMillis(100))
             .block();
 
