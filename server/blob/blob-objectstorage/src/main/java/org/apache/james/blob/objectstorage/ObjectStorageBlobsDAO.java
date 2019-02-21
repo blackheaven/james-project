@@ -43,7 +43,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingInputStream;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 public class ObjectStorageBlobsDAO implements BlobStore {
     private static final Location DEFAULT_LOCATION = null;
@@ -101,7 +100,6 @@ public class ObjectStorageBlobsDAO implements BlobStore {
         String containerName = this.containerName.value();
         return Mono
             .fromCallable(() -> blobStore.copyBlob(containerName, from.asString(), containerName, to.asString(), CopyOptions.NONE))
-            .subscribeOn(Schedulers.elastic())
             .then(Mono.fromRunnable(() -> blobStore.removeBlob(containerName, from.asString())))
             .thenReturn(to);
     }
@@ -113,7 +111,6 @@ public class ObjectStorageBlobsDAO implements BlobStore {
         Blob blob = blobStore.blobBuilder(id.asString()).payload(payload).build();
 
         return Mono.fromCallable(() -> blobStore.putBlob(containerName, blob))
-            .subscribeOn(Schedulers.elastic())
             .then(Mono.fromCallable(() -> blobIdFactory.from(hashingInputStream.hash().toString())));
     }
 
@@ -125,19 +122,20 @@ public class ObjectStorageBlobsDAO implements BlobStore {
     @Override
     public InputStream read(BlobId blobId) throws ObjectStoreException {
         Optional<Blob> retrievedBlob = Mono.fromCallable(() -> Optional.ofNullable(blobStore.getBlob(containerName.value(), blobId.asString())))
-            .subscribeOn(Schedulers.elastic())
             .retryBackoff(5, Duration.ofMillis(100))
             .block();
 
+
         return retrievedBlob
             .map(blob -> readPayload(blobId, blob.getPayload()))
-            .orElseThrow(() -> new ObjectStoreException("fail to load blob with id " + blobId));
+            .orElseThrow(() -> new ObjectStoreException("fail to load blob with id " + blobId.asString()));
 
     }
 
     private InputStream readPayload(BlobId blobId, Payload payload) {
         try {
-            return payloadCodec.read(payload);
+            return Optional.ofNullable(payloadCodec.read(payload))
+                .orElseThrow(() -> new ObjectStoreException("readBytes blob " + blobId.asString() + " retrieved a null Payload"));
         } catch (IOException cause) {
             throw new ObjectStoreException("Failed to readBytes blob " + blobId.asString(), cause);
         }
