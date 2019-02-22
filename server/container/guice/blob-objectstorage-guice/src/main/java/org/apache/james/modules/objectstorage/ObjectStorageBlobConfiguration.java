@@ -22,6 +22,7 @@ package org.apache.james.modules.objectstorage;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -48,7 +49,6 @@ public class ObjectStorageBlobConfiguration {
     public static ObjectStorageBlobConfiguration from(Configuration configuration) throws ConfigurationException {
         String provider = configuration.getString(OBJECTSTORAGE_PROVIDER, null);
         String namespace = configuration.getString(OBJECTSTORAGE_NAMESPACE, null);
-        String authApi = configuration.getString(OBJECTSTORAGE_SWIFT_AUTH_API, null);
         String codecName = configuration.getString(OBJECTSTORAGE_PAYLOAD_CODEC, null);
         Optional<String> aesSalt = Optional.ofNullable(configuration.getString(OBJECTSTORAGE_AES256_HEXSALT, null));
         Optional<char[]> aesPassword = Optional.ofNullable(configuration.getString(OBJECTSTORAGE_AES256_PASSWORD, null))
@@ -56,9 +56,6 @@ public class ObjectStorageBlobConfiguration {
 
         if (Strings.isNullOrEmpty(provider)) {
             throw new ConfigurationException("Mandatory configuration value " + OBJECTSTORAGE_PROVIDER + " is missing from " + OBJECTSTORAGE_CONFIGURATION_NAME + " configuration");
-        }
-        if (Strings.isNullOrEmpty(authApi)) {
-            throw new ConfigurationException("Mandatory configuration value " + OBJECTSTORAGE_SWIFT_AUTH_API + " is missing from " + OBJECTSTORAGE_CONFIGURATION_NAME + " configuration");
         }
         if (Strings.isNullOrEmpty(namespace)) {
             throw new ConfigurationException("Mandatory configuration value " + OBJECTSTORAGE_NAMESPACE + " is missing from " + OBJECTSTORAGE_CONFIGURATION_NAME + " configuration");
@@ -77,24 +74,12 @@ public class ObjectStorageBlobConfiguration {
             .swift()
             .container(ContainerName.of(namespace));
 
-        return defineAuthApi(configuration, authApi, requireAuthConfiguration)
+        return Builder.ReadyToBuild.Factory.find(provider)
+            .defineAuthApi(configuration, requireAuthConfiguration)
             .aesSalt(aesSalt)
             .aesPassword(aesPassword)
             .build();
     }
-
-    private static Builder.ReadyToBuild defineAuthApi(Configuration configuration, String authApi, Builder.RequireAuthConfiguration requireAuthConfiguration) {
-        switch (authApi) {
-            case SwiftTempAuthObjectStorage.AUTH_API_NAME:
-                return requireAuthConfiguration.tempAuth(SwiftTmpAuthConfigurationReader.readSwiftConfiguration(configuration));
-            case SwiftKeystone2ObjectStorage.AUTH_API_NAME:
-                return requireAuthConfiguration.keystone2(SwiftKeystone2ConfigurationReader.readSwiftConfiguration(configuration));
-            case SwiftKeystone3ObjectStorage.AUTH_API_NAME:
-                return requireAuthConfiguration.keystone3(SwiftKeystone3ConfigurationReader.readSwiftConfiguration(configuration));
-        }
-        throw new IllegalStateException("unexpected auth api " + authApi);
-    }
-
 
     public static Builder.RequirePayloadCodec builder() {
         return payloadCodec -> () -> container -> new Builder.RequireAuthConfiguration(payloadCodec,"swift", container);
@@ -142,6 +127,59 @@ public class ObjectStorageBlobConfiguration {
         }
 
         public static class ReadyToBuild {
+
+            public static interface Factory {
+                static enum Factories {
+                    SWIFT("swift", new Swift()),
+                    AWSS3("aws-s3", new AwsS3());
+
+                    private final String providerName;
+                    private final Factory factory;
+
+                    private Factories(String providerName, Factory factory) {
+                        this.providerName = providerName;
+                        this.factory = factory;
+                    }
+
+                    public static Optional<Factory> find(String providerName) {
+                        return Stream.of(values())
+                            .filter(factory -> factory.providerName.equalsIgnoreCase(providerName))
+                            .findFirst()
+                            .map(factory -> factory.factory);
+                    }
+                }
+
+                static Factory find(String provider) throws ConfigurationException {
+                    return Factories.find(provider)
+                            .orElseThrow(() -> new ConfigurationException("Mandatory configuration value " + OBJECTSTORAGE_PROVIDER + " is not supported: " + provider));
+                }
+
+                Builder.ReadyToBuild defineAuthApi(Configuration configuration, Builder.RequireAuthConfiguration requireAuthConfiguration) throws ConfigurationException;
+
+                static class Swift implements Factory {
+                    public Builder.ReadyToBuild defineAuthApi(Configuration configuration, Builder.RequireAuthConfiguration requireAuthConfiguration) throws ConfigurationException {
+                        String authApi = configuration.getString(OBJECTSTORAGE_SWIFT_AUTH_API, null);
+                        if (Strings.isNullOrEmpty(authApi)) {
+                            throw new ConfigurationException("Mandatory configuration value " + OBJECTSTORAGE_SWIFT_AUTH_API + " is missing from " + OBJECTSTORAGE_CONFIGURATION_NAME + " configuration");
+                        }
+                        switch (authApi) {
+                            case SwiftTempAuthObjectStorage.AUTH_API_NAME:
+                                return requireAuthConfiguration.tempAuth(SwiftTmpAuthConfigurationReader.readSwiftConfiguration(configuration));
+                            case SwiftKeystone2ObjectStorage.AUTH_API_NAME:
+                                return requireAuthConfiguration.keystone2(SwiftKeystone2ConfigurationReader.readSwiftConfiguration(configuration));
+                            case SwiftKeystone3ObjectStorage.AUTH_API_NAME:
+                                return requireAuthConfiguration.keystone3(SwiftKeystone3ConfigurationReader.readSwiftConfiguration(configuration));
+                        }
+                        throw new IllegalStateException("unexpected auth api " + authApi);
+                    }
+                }
+
+                static class AwsS3 implements Factory {
+                    public Builder.ReadyToBuild defineAuthApi(Configuration configuration, Builder.RequireAuthConfiguration requireAuthConfiguration) throws ConfigurationException {
+                        return requireAuthConfiguration.s3Auth(AwsS3ConfigurationReader.readAwsS3Configuration(configuration));
+                    }
+                }
+            }
 
             private final PayloadCodecFactory payloadCodecFactory;
             private final String provider;

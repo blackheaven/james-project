@@ -78,6 +78,7 @@ public class ObjectStorageDependenciesModule extends AbstractModule {
         if (!configuration.getProvider().equals(OBJECTSTORAGE_PROVIDER_SWIFT)) {
             throw new IllegalArgumentException("unknown provider " + configuration.getProvider());
         }
+        // TODO
         switch (configuration.getAuthApi()) {
             case SwiftTempAuthObjectStorage.AUTH_API_NAME:
                 return ObjectStorageBlobsDAO.builder(configuration.getTempAuthConfiguration().get());
