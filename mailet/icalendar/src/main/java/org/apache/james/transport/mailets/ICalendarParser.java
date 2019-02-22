@@ -26,7 +26,6 @@ import java.util.stream.Stream;
 
 import javax.mail.MessagingException;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
@@ -38,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
