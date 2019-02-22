@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
@@ -59,6 +60,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import reactor.core.publisher.Flux;
@@ -1136,11 +1138,17 @@ public abstract class MessageMapperTest {
 
     @Test
     public void flagsAdditionShouldWorkOnALargeSetOfMessages() throws MailboxException {
+        Consumer<Integer> saveMessage = Throwing.<Integer>consumer(index -> {
+            MailboxMessage message = createMessage(benwaInboxMailbox, mapperProvider.generateMessageId(), "Subject: Test " + index + " \n\nBody " + index + "\n.\n", BODY_START, new PropertyBuilder());
+            message.setModSeq(messageMapper.getHighestModSeq(benwaInboxMailbox));
+            messageMapper.add(benwaInboxMailbox, message);
+        }).sneakyThrow();
+
         int numberOfMessages = 1000;
         Flux
             .range(0, numberOfMessages)
             .limitRate(1)
-            .flatMapSequential(index -> Mono.fromRunnable(() -> createMessage(benwaInboxMailbox, mapperProvider.generateMessageId(), "Subject: Test1 \n\nBody1\n.\n", BODY_START, new PropertyBuilder())))
+            .flatMapSequential(index -> Mono.fromRunnable(() -> saveMessage.accept(index)))
             .then()
             .block();
 
