@@ -185,6 +185,7 @@ public class ImapChannelUpstreamHandler extends SimpleChannelUpstreamHandler imp
             ImapMessage message = (ImapMessage) e.getMessage();
             ChannelPipeline cp = ctx.getPipeline();
 
+            LOGGER.info("DBG: Received message: {}", message.toString());
             try {
                 if (cp.get(NettyConstants.EXECUTION_HANDLER) != null) {
                     cp.addBefore(NettyConstants.EXECUTION_HANDLER, NettyConstants.HEARTBEAT_HANDLER, heartbeatHandler);

@@ -19,6 +19,7 @@
 package org.apache.james.protocols.netty;
 
 import java.io.Closeable;
+import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,6 +74,8 @@ public class BasicChannelUpstreamHandler extends SimpleChannelUpstreamHandler {
 
     @Override
     public void channelBound(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        InetSocketAddress address = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
+        LOGGER.info("Channel bound for {}", address.getAddress().getHostAddress());
         try (Closeable closeable = ProtocolMDCContext.from(protocol, ctx)) {
             ctx.setAttachment(createSession(ctx));
             super.channelBound(ctx, e);
@@ -87,6 +90,8 @@ public class BasicChannelUpstreamHandler extends SimpleChannelUpstreamHandler {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        InetSocketAddress address = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
+        LOGGER.info("Channel connected for {}", address.getAddress().getHostAddress());
         try (Closeable closeable = ProtocolMDCContext.from(protocol, ctx)) {
             List<ConnectHandler> connectHandlers = chain.getHandlers(ConnectHandler.class);
             List<ProtocolHandlerResultHandler> resultHandlers = chain.getHandlers(ProtocolHandlerResultHandler.class);
@@ -122,6 +127,8 @@ public class BasicChannelUpstreamHandler extends SimpleChannelUpstreamHandler {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        InetSocketAddress address = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
+        LOGGER.info("Channel disconnected for {}", address.getAddress().getHostAddress());
         try (Closeable closeable = ProtocolMDCContext.from(protocol, ctx)) {
             List<DisconnectHandler> connectHandlers = chain.getHandlers(DisconnectHandler.class);
             ProtocolSession session = (ProtocolSession) ctx.getAttachment();
@@ -141,6 +148,7 @@ public class BasicChannelUpstreamHandler extends SimpleChannelUpstreamHandler {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+        LOGGER.info("DBG: Received message: {}", e.getMessage().toString());
         try (Closeable closeable = ProtocolMDCContext.from(protocol, ctx)) {
             ProtocolSession pSession = (ProtocolSession) ctx.getAttachment();
             LinkedList<LineHandler> lineHandlers = chain.getHandlers(LineHandler.class);
@@ -177,6 +185,8 @@ public class BasicChannelUpstreamHandler extends SimpleChannelUpstreamHandler {
 
     @Override
     public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        InetSocketAddress address = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
+        LOGGER.info("Channel closed for {}", address.getAddress().getHostAddress());
         try (Closeable closeable = ProtocolMDCContext.from(protocol, ctx)) {
             ProtocolSession session = (ProtocolSession) ctx.getAttachment();
             LOGGER.info("Connection closed for {}", session.getRemoteAddress().getAddress().getHostAddress());

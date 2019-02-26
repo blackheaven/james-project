@@ -18,6 +18,8 @@
  ****************************************************************/
 package org.apache.james.smtpserver.netty;
 
+import java.net.InetSocketAddress;
+
 import org.apache.james.lifecycle.api.LifecycleUtil;
 import org.apache.james.protocols.api.Encryption;
 import org.apache.james.protocols.api.Protocol;
@@ -30,12 +32,15 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ChannelUpstreamHandler;
 import org.jboss.netty.channel.MessageEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link ChannelUpstreamHandler} which is used by the SMTPServer
  */
 @Sharable
 public class SMTPChannelUpstreamHandler extends BasicChannelUpstreamHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SMTPChannelUpstreamHandler.class);
 
     private final SmtpMetrics smtpMetrics;
 
@@ -52,18 +57,23 @@ public class SMTPChannelUpstreamHandler extends BasicChannelUpstreamHandler {
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
         super.channelConnected(ctx, e);
+        InetSocketAddress address = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
+        LOGGER.info("Channel connected for {}", address.getAddress().getHostAddress());
         smtpMetrics.getConnectionMetric().increment();
     }
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         super.messageReceived(ctx, e);
+        LOGGER.info("DBG: Received message: {}", e.getMessage().toString());
         smtpMetrics.getCommandsMetric().increment();
     }
 
     @Override
     public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
         super.channelDisconnected(ctx, e);
+        InetSocketAddress address = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
+        LOGGER.info("Channel disconnected for {}", address.getAddress().getHostAddress());
         smtpMetrics.getConnectionMetric().decrement();
     }
 
