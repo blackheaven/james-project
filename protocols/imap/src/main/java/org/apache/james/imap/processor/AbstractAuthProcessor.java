@@ -18,7 +18,6 @@
  ****************************************************************/
 package org.apache.james.imap.processor;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.apache.james.imap.api.ImapCommand;
@@ -40,6 +39,7 @@ import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.metrics.api.MetricFactory;
+import org.apache.james.util.OptionalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,11 +130,10 @@ public abstract class AbstractAuthProcessor<M extends ImapRequest> extends Abstr
         } else {
             try {
                 Optional<MailboxId> mailboxId = mailboxManager.createMailbox(inboxPath, mailboxSession);
-                LOGGER.info("Provisioning INBOX. {} created.", mailboxId.get());
+                OptionalUtils.executeIfEmpty(mailboxId, () -> LOGGER.warn("Provisioning INBOX successful. But no MailboxId have been returned."))
+                    .ifPresent(id -> LOGGER.info("Provisioning INBOX. {} created.", id));
             } catch (MailboxExistsException e) {
                 LOGGER.warn("Mailbox INBOX created by concurrent call. Safe to ignore this exception.");
-            } catch (NoSuchElementException e) {
-                LOGGER.warn("Provisioning INBOX successful. But no MailboxId have been returned.");
             }
         }
     }
