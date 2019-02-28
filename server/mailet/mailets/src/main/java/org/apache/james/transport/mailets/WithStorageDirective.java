@@ -65,10 +65,9 @@ public class WithStorageDirective extends GenericMailet {
     @Override
     public void init() throws MessagingException {
         targetFolderName = AttributeValue.of(validateMailetConfiguration(TARGET_FOLDER_NAME));
-        validateMailetConfiguration(getInitParameter(TARGET_FOLDER_NAME));
     }
 
-    public String validateMailetConfiguration(String initParameterName) {
+    private String validateMailetConfiguration(String initParameterName) {
         String initParameterValue = getInitParameter(initParameterName);
         Preconditions.checkState(!Strings.isNullOrEmpty(initParameterValue), "You need to specify " + initParameterName);
         return initParameterValue;
