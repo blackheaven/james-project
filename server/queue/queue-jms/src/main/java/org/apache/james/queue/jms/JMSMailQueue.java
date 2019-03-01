@@ -438,7 +438,7 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
         Object attrValue = Throwing.function(message::getObjectProperty).apply(name);
 
         if (attrValue instanceof String) {
-            return Stream.of(new Attribute(AttributeName.of(name), AttributeValue.ofSerializable(SerializationUtil.deserialize((String) attrValue))));
+            return Stream.of(new Attribute(AttributeName.of(name), AttributeValue.ofAny(SerializationUtil.deserialize((String) attrValue))));
         } else {
             LOGGER.error("Not supported mail attribute {} of type {} for mail {}", name, attrValue, name);
         }
