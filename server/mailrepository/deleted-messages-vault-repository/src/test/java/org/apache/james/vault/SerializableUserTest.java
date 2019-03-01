@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.james.core.User;
+import org.apache.james.util.OptionalUtils;
 import org.apache.mailet.AttributeValue;
 import org.junit.jupiter.api.Test;
 
@@ -35,8 +36,7 @@ class SerializableUserTest {
     void serializeBackAndForthShouldPreserveUser() {
         JsonNode serializableUser = AttributeValue.of(new SerializableUser(USER)).toJson();
 
-        User user = AttributeValue.fromJson(serializableUser)
-            .valueAs(SerializableUser.class)
+        User user = OptionalUtils.cast(SerializableUser.class, AttributeValue.fromJson(serializableUser).value())
             .get()
             .getValue();
 

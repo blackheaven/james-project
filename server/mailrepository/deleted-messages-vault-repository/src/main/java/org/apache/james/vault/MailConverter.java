@@ -33,6 +33,7 @@ import org.apache.james.core.User;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.server.core.MailImpl;
+import org.apache.james.util.OptionalUtils;
 import org.apache.mailet.AttributeName;
 import org.apache.mailet.AttributeUtils;
 import org.apache.mailet.AttributeValue;
@@ -111,7 +112,7 @@ class MailConverter {
         Optional<String> optional = Optional.of(object)
             .filter(obj -> obj instanceof AttributeValue)
             .map(AttributeValue.class::cast)
-            .flatMap(attributeValue -> attributeValue.valueAs(String.class));
+            .flatMap(attributeValue -> OptionalUtils.cast(String.class, attributeValue.value()));
 
         return optional
             .orElseThrow(() -> new IllegalArgumentException("mail should have a 'subject' attribute being of type 'Optional<String>"));
@@ -150,7 +151,7 @@ class MailConverter {
         Optional<String> serializedMailboxId = Optional.of(object)
             .filter(obj -> obj instanceof AttributeValue)
             .map(AttributeValue.class::cast)
-            .flatMap(attributeValue -> attributeValue.valueAs(String.class));
+            .flatMap(attributeValue -> OptionalUtils.cast(String.class, attributeValue.value()));
 
         return serializedMailboxId
             .map(mailboxIdFactory::fromString)

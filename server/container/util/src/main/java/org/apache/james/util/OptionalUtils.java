@@ -56,6 +56,14 @@ public class OptionalUtils {
             .orElse(ImmutableSet.of());
     }
 
+    public static <T> Optional<T> cast(Class<T> type, Object value) {
+        if (type.isInstance(value)) {
+            return Optional.of(type.cast(value));
+        } else {
+            return Optional.empty();
+        }
+    }
+
     @SafeVarargs
     public static <T> Optional<T> or(Optional<T>... optionals) {
         return orStream(Arrays.stream(optionals));

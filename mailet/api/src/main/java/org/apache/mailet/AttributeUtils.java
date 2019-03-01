@@ -21,6 +21,8 @@ package org.apache.mailet;
 
 import java.util.Optional;
 
+import org.apache.james.util.OptionalUtils;
+
 /** 
  * Attribute
  * 
@@ -36,7 +38,7 @@ public class AttributeUtils {
      */
     public static <T> Optional<T> getValueAndCastFromMail(Mail mail, AttributeName name, Class<T> type) {
         return getAttributeValueFromMail(mail, name)
-                .flatMap(value -> tryToCast(type, value));
+                .flatMap(value -> OptionalUtils.cast(type, value));
     }
 
     /**
@@ -55,13 +57,5 @@ public class AttributeUtils {
      */
     public static Object getAttributeValue(Attribute attribute) {
         return attribute.getValue().getValue();
-    }
-
-    private static <T> Optional<T> tryToCast(Class<T> type, Object value) {
-        if (type.isInstance(value)) {
-            return Optional.of(type.cast(value));
-        } else {
-            return Optional.empty();
-        }
     }
 }

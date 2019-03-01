@@ -279,4 +279,15 @@ public class OptionalUtilsTest {
             .isTrue();
     }
 
+    @Test
+    void castShouldCastValueWhenRightType() {
+        assertThat(OptionalUtils.cast(String.class, "value"))
+                .contains("value");
+    }
+
+    @Test
+    void castShouldReturnEmptyWhenWrongType() {
+        assertThat(OptionalUtils.cast(Boolean.class, "value"))
+                .isEmpty();
+    }
 }

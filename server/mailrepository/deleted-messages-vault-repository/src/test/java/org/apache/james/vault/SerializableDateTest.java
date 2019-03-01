@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.ZonedDateTime;
 
+import org.apache.james.util.OptionalUtils;
 import org.apache.mailet.AttributeValue;
 import org.junit.jupiter.api.Test;
 
@@ -36,8 +37,7 @@ class SerializableDateTest {
     void serializeBackAndForthShouldPreserveDate() {
         JsonNode serializableDate = AttributeValue.of(new SerializableDate(DATE)).toJson();
 
-        ZonedDateTime deserializedDate = AttributeValue.fromJson(serializableDate)
-            .valueAs(SerializableDate.class)
+        ZonedDateTime deserializedDate = OptionalUtils.cast(SerializableDate.class, AttributeValue.fromJson(serializableDate).value())
             .get()
             .getValue();
 
