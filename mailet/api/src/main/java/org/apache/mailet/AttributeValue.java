@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.james.mailbox.model.MessageIdDto;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -206,18 +207,6 @@ public class AttributeValue<T> {
 
     public T value() {
         return value;
-    }
-
-    public <T> Optional<T> valueAs(Class<T> type) {
-        return tryToCast(type, value);
-    }
-
-    private static <T> Optional<T> tryToCast(Class<T> type, Object value) {
-        if (type.isInstance(value)) {
-            return Optional.of(type.cast(value));
-        } else {
-            return Optional.empty();
-        }
     }
 
     //FIXME : poor performance

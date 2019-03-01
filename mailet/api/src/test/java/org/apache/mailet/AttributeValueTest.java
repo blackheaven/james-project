@@ -32,6 +32,7 @@ import java.util.Optional;
 
 import org.apache.james.mailbox.model.MessageIdDto;
 import org.apache.james.mailbox.model.TestMessageId;
+
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -637,18 +638,6 @@ class AttributeValueTest {
     void fromJsonStringShouldThrowOnMissingValueField() {
         assertThatIllegalStateException()
             .isThrownBy(() -> AttributeValue.fromJsonString("{\"serializer\":\"MapSerializer\"}"));
-    }
-
-    @Test
-    void valueAsShouldCastValueWhenRightType() {
-        assertThat(AttributeValue.of("value").valueAs(String.class))
-            .contains("value");
-    }
-
-    @Test
-    void valueAsShouldReturnEmptyWhenWrongType() {
-        assertThat(AttributeValue.of("value").valueAs(Boolean.class))
-            .isEmpty();
     }
 
     private static class TestArbitrarySerializable implements ArbitrarySerializable<TestArbitrarySerializable> {
