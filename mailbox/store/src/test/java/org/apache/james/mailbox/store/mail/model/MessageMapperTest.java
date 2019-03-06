@@ -63,8 +63,6 @@ import org.junit.rules.ExpectedException;
 import com.github.fge.lambdas.Throwing;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 public abstract class MessageMapperTest {
 
@@ -1134,28 +1132,6 @@ public abstract class MessageMapperTest {
 
         assertThat(messageMapper.listAllMessageUids(benwaInboxMailbox))
             .containsOnly(message1.getUid(), message5.getUid());
-    }
-
-    @Test
-    public void flagsAdditionShouldWorkOnALargeSetOfMessages() throws MailboxException {
-        Consumer<Integer> saveMessage = Throwing.<Integer>consumer(index -> {
-            MailboxMessage message = createMessage(benwaInboxMailbox, mapperProvider.generateMessageId(), "Subject: Test " + index + " \n\nBody " + index + "\n.\n", BODY_START, new PropertyBuilder());
-            message.setModSeq(messageMapper.getHighestModSeq(benwaInboxMailbox));
-            messageMapper.add(benwaInboxMailbox, message);
-        }).sneakyThrow();
-
-        int numberOfMessages = 1000;
-        Flux
-            .range(0, numberOfMessages)
-            .limitRate(1)
-            .flatMapSequential(index -> Mono.fromRunnable(() -> saveMessage.accept(index)))
-            .then()
-            .block();
-
-        messageMapper.updateFlags(benwaInboxMailbox, new FlagsUpdateCalculator(new Flags(Flag.FLAGGED), FlagsUpdateMode.ADD), MessageRange.all());
-        assertThat(messageMapper.findInMailbox(benwaInboxMailbox, MessageRange.all(), FetchType.Full, numberOfMessages * 2))
-                .hasSize(numberOfMessages)
-                .allMatch(MailboxMessage::isFlagged);
     }
 
     private List<MessageUid> markThenPerformRetrieveMessagesMarkedForDeletion(MessageRange range) throws MailboxException {
