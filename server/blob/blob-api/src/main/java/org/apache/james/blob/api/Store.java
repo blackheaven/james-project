@@ -20,6 +20,7 @@
 package org.apache.james.blob.api;
 
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -65,6 +66,8 @@ public interface Store<T, I> {
     }
 
     class Impl<T, I extends BlobPartsId> implements Store<T, I> {
+        private static final int READ_RETRIES_NUMBER = 5;
+        private static final Duration READ_RETRIES_BACKOFF = Duration.ofMillis(100);
 
         public interface Encoder<T> {
             Stream<Pair<BlobType, FixedLengthInputStream>> encode(T t);
@@ -103,12 +106,17 @@ public interface Store<T, I> {
         public Mono<T> read(I blobIds) {
             return Flux.fromIterable(blobIds.asMap().entrySet())
                 .flatMapSequential(
-                    entry -> blobStore.readBytes(entry.getValue())
+                    entry -> readBytes(blobStore, entry.getValue())
                         .zipWith(Mono.just(entry.getKey())))
                 .map(entry -> Pair.of(entry.getT2(), entry.getT1()))
                 .collectList()
                 .map(Collection::stream)
                 .map(decoder::decode);
+        }
+
+        private Mono<byte[]> readBytes(BlobStore blobStore, BlobId blobId) {
+            return blobStore.readBytes(blobId)
+                .retryBackoff(READ_RETRIES_NUMBER, READ_RETRIES_BACKOFF);
         }
     }
 
