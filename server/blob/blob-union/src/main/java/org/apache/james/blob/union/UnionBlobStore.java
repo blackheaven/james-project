@@ -22,7 +22,6 @@ package org.apache.james.blob.union;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -114,21 +113,18 @@ public class UnionBlobStore implements BlobStore {
     }
 
     @Override
-    public InputStream read(BlobId blobId) {
-        try {
-            return readFallBackIfEmptyResult(blobId);
-        } catch (Exception e) {
-            LOGGER.error("exception directly happens while read, fall back to legacy blob store", e);
-            return legacyBlobStore.read(blobId);
-        }
-    }
-
-    private InputStream readFallBackIfEmptyResult(BlobId blobId) {
-        return Optional.ofNullable(currentBlobStore.read(blobId))
+    public Mono<InputStream> read(BlobId blobId) {
+        return currentBlobStore.read(blobId)
             .map(PushbackInputStream::new)
             .filter(Throwing.predicate(this::streamHasContent).sneakyThrow())
             .<InputStream>map(Function.identity())
-            .orElseGet(() -> legacyBlobStore.read(blobId));
+            .single()
+            .onErrorResume(error -> readFallBackLegacy(blobId, error));
+    }
+
+    private Mono<InputStream> readFallBackLegacy(BlobId blobId, Throwable error) {
+        LOGGER.error("exception directly happens while read, fall back to legacy blob store", error);
+        return legacyBlobStore.read(blobId);
     }
 
     @VisibleForTesting

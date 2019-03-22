@@ -39,6 +39,7 @@ import org.jclouds.domain.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Preconditions;
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingInputStream;
@@ -123,25 +124,25 @@ public class ObjectStorageBlobsDAO implements BlobStore {
 
     @Override
     public Mono<byte[]> readBytes(BlobId blobId) {
-        return Mono.fromCallable(() -> IOUtils.toByteArray(read(blobId)));
+        return read(blobId)
+            .map(Throwing.<InputStream, byte[]>function(IOUtils::toByteArray).sneakyThrow());
     }
 
     @Override
-    public InputStream read(BlobId blobId) throws ObjectStoreException {
-        Blob blob = blobStore.getBlob(containerName.value(), blobId.asString());
+    public Mono<InputStream> read(BlobId blobId) throws ObjectStoreException {
+        return Mono.fromCallable(() -> Optional.ofNullable(blobStore.getBlob(containerName.value(), blobId.asString())))
+            .flatMap(Mono::justOrEmpty)
+            .map(blob -> readPayload(blobId, blob.getPayload()))
+            .switchIfEmpty(Mono.error(() -> new ObjectStoreException("fail to load blob with id " + blobId.asString())));
+    }
 
+    private InputStream readPayload(BlobId blobId, org.jclouds.io.Payload payload) {
         try {
-            if (blob != null) {
-                return payloadCodec.read(new Payload(blob.getPayload(), Optional.empty()));
-            } else {
-                throw new ObjectStoreException("fail to load blob with id " + blobId);
-            }
+            return Optional.ofNullable(payloadCodec.read(new Payload(payload, Optional.empty())))
+                .orElseThrow(() -> new ObjectStoreException("readBytes blob " + blobId.asString() + " retrieved a null Payload"));
         } catch (IOException cause) {
-            throw new ObjectStoreException(
-                "Failed to readBytes blob " + blobId.asString(),
-                cause);
+            throw new ObjectStoreException("Failed to readBytes blob " + blobId.asString(), cause);
         }
-
     }
 
     public void deleteContainer() {

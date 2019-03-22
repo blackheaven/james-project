@@ -192,11 +192,11 @@ public class CassandraBlobsDAO implements BlobStore {
     }
 
     @Override
-    public InputStream read(BlobId blobId) {
+    public Mono<InputStream> read(BlobId blobId) {
         PipedInputStream pipedInputStream = new PipedInputStream();
         readBlobParts(blobId)
             .subscribe(new PipedStreamSubscriber(pipedInputStream));
-        return pipedInputStream;
+        return Mono.just(pipedInputStream);
     }
 
     private Flux<byte[]> readBlobParts(BlobId blobId) {

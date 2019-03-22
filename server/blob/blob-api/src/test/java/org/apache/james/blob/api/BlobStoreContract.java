@@ -121,7 +121,7 @@ public interface BlobStoreContract {
 
     @Test
     default void readShouldThrowWhenNoExistingStream() {
-        assertThatThrownBy(() -> testee().read(blobIdFactory().from("unknown")))
+        assertThatThrownBy(() -> testee().read(blobIdFactory().from("unknown")).block())
             .isInstanceOf(ObjectStoreException.class);
     }
 
@@ -129,7 +129,7 @@ public interface BlobStoreContract {
     default void readShouldReturnSavedData() {
         BlobId blobId = testee().save(SHORT_BYTEARRAY).block();
 
-        InputStream read = testee().read(blobId);
+        InputStream read = testee().read(blobId).block();
 
         assertThat(read).hasSameContentAs(new ByteArrayInputStream(SHORT_BYTEARRAY));
     }
@@ -138,7 +138,7 @@ public interface BlobStoreContract {
     default void readShouldReturnLongSavedData() {
         BlobId blobId = testee().save(ELEVEN_KILOBYTES).block();
 
-        InputStream read = testee().read(blobId);
+        InputStream read = testee().read(blobId).block();
 
         assertThat(read).hasSameContentAs(new ByteArrayInputStream(ELEVEN_KILOBYTES));
     }
@@ -148,7 +148,7 @@ public interface BlobStoreContract {
         // 12 MB of text
         BlobId blobId = testee().save(TWELVE_MEGABYTES).block();
 
-        InputStream read = testee().read(blobId);
+        InputStream read = testee().read(blobId).block();
 
         assertThat(read).hasSameContentAs(new ByteArrayInputStream(TWELVE_MEGABYTES));
     }

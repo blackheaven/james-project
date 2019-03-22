@@ -66,7 +66,7 @@ public class MetricableBlobStore implements BlobStore {
     }
 
     @Override
-    public InputStream read(BlobId blobId) {
+    public Mono<InputStream> read(BlobId blobId) {
         return metricFactory
             .runPublishingTimerMetric(READ_TIMER_NAME, () -> blobStoreImpl.read(blobId));
     }

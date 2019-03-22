@@ -22,7 +22,6 @@ package org.apache.james.blob.memory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.IOUtils;
@@ -65,16 +64,13 @@ public class MemoryBlobStore implements BlobStore {
 
     @Override
     public Mono<byte[]> readBytes(BlobId blobId) {
-        return Mono.fromCallable(() -> retrieveStoredValue(blobId));
+        return Mono.justOrEmpty(blobs.get(blobId))
+            .switchIfEmpty(Mono.error(() -> new ObjectStoreException("unable to find blob with id " + blobId)));
     }
 
     @Override
-    public InputStream read(BlobId blobId) {
-        return new ByteArrayInputStream(retrieveStoredValue(blobId));
-    }
-
-    private byte[] retrieveStoredValue(BlobId blobId) {
-        return Optional.ofNullable(blobs.get(blobId))
-            .orElseThrow(() -> new ObjectStoreException("unable to find blob with id " + blobId));
+    public Mono<InputStream> read(BlobId blobId) {
+        return readBytes(blobId)
+            .map(ByteArrayInputStream::new);
     }
 }

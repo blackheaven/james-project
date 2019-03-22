@@ -136,7 +136,7 @@ public class ObjectStorageBlobsDAOTest implements MetricableBlobStoreContract {
         byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
         BlobId blobId = encryptedDao.save(bytes).block();
 
-        InputStream read = encryptedDao.read(blobId);
+        InputStream read = encryptedDao.read(blobId).block();
         ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
         String expectedContent = IOUtils.toString(inputStream, Charsets.UTF_8);
         assertThat(content).isEqualTo(expectedContent);
@@ -154,12 +154,12 @@ public class ObjectStorageBlobsDAOTest implements MetricableBlobStoreContract {
         byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
         BlobId blobId = encryptedDao.save(bytes).block();
 
-        InputStream encryptedIs = testee.read(blobId);
+        InputStream encryptedIs = testee.read(blobId).block();
         assertThat(encryptedIs).isNotNull();
         byte[] encryptedBytes = IOUtils.toByteArray(encryptedIs);
         assertThat(encryptedBytes).isNotEqualTo(bytes);
 
-        InputStream clearTextIs = encryptedDao.read(blobId);
+        InputStream clearTextIs = encryptedDao.read(blobId).block();
         ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
         String expectedContent = IOUtils.toString(inputStream, Charsets.UTF_8);
         assertThat(content).isEqualTo(expectedContent);

@@ -103,8 +103,8 @@ public interface MetricableBlobStoreContract extends BlobStoreContract {
     @Test
     default void readShouldPublishReadTimerMetrics() {
         BlobId blobId = testee().save(BYTES_CONTENT).block();
-        testee().read(blobId);
-        testee().read(blobId);
+        testee().read(blobId).block();
+        testee().read(blobId).block();
         verify(metricsTestExtension.readTimeMetric, times(2)).stopAndPublish();
     }
 }

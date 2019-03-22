@@ -70,8 +70,8 @@ class UnionBlobStoreTest implements BlobStoreContract {
         }
 
         @Override
-        public InputStream read(BlobId blobId) {
-            throw new RuntimeException("broken everywhere");
+        public Mono<InputStream> read(BlobId blobId) {
+            return Mono.error(new RuntimeException("broken everywhere"));
         }
 
         @Override
@@ -99,8 +99,8 @@ class UnionBlobStoreTest implements BlobStoreContract {
         }
 
         @Override
-        public InputStream read(BlobId blobId) {
-            throw new RuntimeException("broken everywhere");
+        public Mono<InputStream> read(BlobId blobId) {
+            return Mono.error(new RuntimeException("broken everywhere"));
         }
 
         @Override
@@ -150,9 +150,9 @@ class UnionBlobStoreTest implements BlobStoreContract {
             BlobId blobId = unionBlobStore.save(BLOB_CONTENT).block();
 
             SoftAssertions.assertSoftly(softly -> {
-                softly.assertThat(unionBlobStore.read(blobId))
+                softly.assertThat(unionBlobStore.read(blobId).block())
                     .hasSameContentAs(new ByteArrayInputStream(BLOB_CONTENT));
-                softly.assertThat(legacyBlobStore.read(blobId))
+                softly.assertThat(legacyBlobStore.read(blobId).block())
                     .hasSameContentAs(new ByteArrayInputStream(BLOB_CONTENT));
             });
         }
@@ -167,9 +167,9 @@ class UnionBlobStoreTest implements BlobStoreContract {
             BlobId blobId = unionBlobStore.save(new ByteArrayInputStream(BLOB_CONTENT), BLOB_CONTENT.length).block();
 
             SoftAssertions.assertSoftly(softly -> {
-                softly.assertThat(unionBlobStore.read(blobId))
+                softly.assertThat(unionBlobStore.read(blobId).block())
                     .hasSameContentAs(new ByteArrayInputStream(BLOB_CONTENT));
-                softly.assertThat(legacyBlobStore.read(blobId))
+                softly.assertThat(legacyBlobStore.read(blobId).block())
                     .hasSameContentAs(new ByteArrayInputStream(BLOB_CONTENT));
             });
         }
@@ -188,9 +188,9 @@ class UnionBlobStoreTest implements BlobStoreContract {
             BlobId blobId = unionBlobStore.save(BLOB_CONTENT).block();
 
             SoftAssertions.assertSoftly(softly -> {
-                softly.assertThat(unionBlobStore.read(blobId))
+                softly.assertThat(unionBlobStore.read(blobId).block())
                     .hasSameContentAs(new ByteArrayInputStream(BLOB_CONTENT));
-                softly.assertThat(legacyBlobStore.read(blobId))
+                softly.assertThat(legacyBlobStore.read(blobId).block())
                     .hasSameContentAs(new ByteArrayInputStream(BLOB_CONTENT));
             });
         }
@@ -205,9 +205,9 @@ class UnionBlobStoreTest implements BlobStoreContract {
             BlobId blobId = unionBlobStore.save(new ByteArrayInputStream(BLOB_CONTENT), BLOB_CONTENT.length).block();
 
             SoftAssertions.assertSoftly(softly -> {
-                softly.assertThat(unionBlobStore.read(blobId))
+                softly.assertThat(unionBlobStore.read(blobId).block())
                     .hasSameContentAs(new ByteArrayInputStream(BLOB_CONTENT));
-                softly.assertThat(legacyBlobStore.read(blobId))
+                softly.assertThat(legacyBlobStore.read(blobId).block())
                     .hasSameContentAs(new ByteArrayInputStream(BLOB_CONTENT));
             });
         }
@@ -226,7 +226,7 @@ class UnionBlobStoreTest implements BlobStoreContract {
                 .build();
             BlobId blobId = legacyBlobStore.save(BLOB_CONTENT).block();
 
-            assertThat(unionBlobStore.read(blobId))
+            assertThat(unionBlobStore.read(blobId).block())
                 .hasSameContentAs(new ByteArrayInputStream(BLOB_CONTENT));
         }
 
@@ -258,7 +258,7 @@ class UnionBlobStoreTest implements BlobStoreContract {
                 .build();
             BlobId blobId = legacyBlobStore.save(BLOB_CONTENT).block();
 
-            assertThat(unionBlobStore.read(blobId))
+            assertThat(unionBlobStore.read(blobId).block())
                 .hasSameContentAs(new ByteArrayInputStream(BLOB_CONTENT));
         }
 
@@ -290,7 +290,7 @@ class UnionBlobStoreTest implements BlobStoreContract {
 
         Stream<Function<UnionBlobStore, InputStream>> blobStoreOperationsNotReturnFutures() {
             return Stream.of(
-                blobStore -> blobStore.read(BLOB_ID_FACTORY.randomId()));
+                blobStore -> blobStore.read(BLOB_ID_FACTORY.randomId()).block());
         }
 
         Stream<Arguments> blobStoresCauseReturnExceptionallyFutures() {
@@ -348,7 +348,7 @@ class UnionBlobStoreTest implements BlobStoreContract {
     void readShouldReturnFromCurrentWhenAvailable() {
         BlobId blobId = currentBlobStore.save(BLOB_CONTENT).block();
 
-        assertThat(unionBlobStore.read(blobId))
+        assertThat(unionBlobStore.read(blobId).block())
             .hasSameContentAs(new ByteArrayInputStream(BLOB_CONTENT));
     }
 
@@ -356,7 +356,7 @@ class UnionBlobStoreTest implements BlobStoreContract {
     void readShouldReturnFromLegacyWhenCurrentNotAvailable() {
         BlobId blobId = legacyBlobStore.save(BLOB_CONTENT).block();
 
-        assertThat(unionBlobStore.read(blobId))
+        assertThat(unionBlobStore.read(blobId).block())
             .hasSameContentAs(new ByteArrayInputStream(BLOB_CONTENT));
     }
 

@@ -40,7 +40,7 @@ public interface ObjectStorageBlobsDAOContract {
 
         BlobId blobId = dao.save(BYTES).block();
 
-        InputStream inputStream = dao.read(blobId);
+        InputStream inputStream = dao.read(blobId).block();
         assertThat(inputStream).hasSameContentAs(new ByteArrayInputStream(BYTES));
     }
 }

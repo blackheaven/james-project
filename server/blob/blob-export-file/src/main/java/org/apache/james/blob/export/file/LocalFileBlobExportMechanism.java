@@ -81,7 +81,7 @@ public class LocalFileBlobExportMechanism implements BlobExportMechanism {
             String fileName = RandomStringUtils.random(STRING_LENGTH, WITH_LETTERS, !WITH_NUMBERS);
             String fileURL = configuration.exportDirectory + "/" + fileName;
             File file = fileSystem.getFile(fileURL);
-            FileUtils.copyToFile(blobStore.read(blobId), file);
+            FileUtils.copyToFile(blobStore.read(blobId).block(), file);
 
             return fileURL;
         } catch (IOException e) {

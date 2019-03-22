@@ -30,5 +30,5 @@ public interface BlobStore {
 
     Mono<byte[]> readBytes(BlobId blobId);
 
-    InputStream read(BlobId blobId);
+    Mono<InputStream> read(BlobId blobId);
 }
