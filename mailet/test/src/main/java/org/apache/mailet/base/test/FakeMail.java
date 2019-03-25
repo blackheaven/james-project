@@ -109,7 +109,7 @@ public class FakeMail implements Mail {
         private Optional<String> fileName;
         private Optional<MimeMessage> mimeMessage;
         private List<MailAddress> recipients;
-        private Optional<MailAddress> sender;
+        private MaybeSender sender;
         private Optional<String> state;
         private Optional<String> errorMessage;
         private Optional<Date> lastUpdated;
@@ -126,7 +126,7 @@ public class FakeMail implements Mail {
             fileName = Optional.empty();
             mimeMessage = Optional.empty();
             recipients = Lists.newArrayList();
-            sender = Optional.empty();
+            sender = MaybeSender.nullSender();
             state = Optional.empty();
             errorMessage = Optional.empty();
             lastUpdated = Optional.empty();
@@ -200,7 +200,7 @@ public class FakeMail implements Mail {
         }
 
         public Builder sender(MaybeSender sender) {
-            this.sender = sender.asOptional();
+            this.sender = sender;
             return this;
         }
 
@@ -283,7 +283,7 @@ public class FakeMail implements Mail {
         }
 
         public FakeMail build() throws MessagingException {
-            return new FakeMail(getMimeMessage(), recipients, name, sender.orElse(null), state.orElse(null), errorMessage.orElse(null), lastUpdated.orElse(null),
+            return new FakeMail(getMimeMessage(), recipients, name, sender, state.orElse(null), errorMessage.orElse(null), lastUpdated.orElse(null),
                 attributes, size.orElse(0L), remoteAddr.orElse(DEFAULT_REMOTE_ADDRESS), remoteHost.orElse(DEFAULT_REMOTE_HOST), perRecipientHeaders);
         }
 
@@ -312,7 +312,7 @@ public class FakeMail implements Mail {
     private transient MimeMessage msg;
     private Collection<MailAddress> recipients;
     private String name;
-    private MailAddress sender;
+    private MaybeSender sender;
     private String state;
     private String errorMessage;
     private Date lastUpdated;
@@ -322,7 +322,7 @@ public class FakeMail implements Mail {
     private String remoteHost;
     private PerRecipientHeaders perRecipientHeaders;
     
-    private FakeMail(MimeMessage msg, List<MailAddress> recipients, String name, MailAddress sender, String state, String errorMessage, Date lastUpdated,
+    private FakeMail(MimeMessage msg, List<MailAddress> recipients, String name, MaybeSender sender, String state, String errorMessage, Date lastUpdated,
                      Map<AttributeName, Attribute> attributes, long size, String remoteAddr, String remoteHost, PerRecipientHeaders perRecipientHeaders) {
         this.msg = msg;
         this.recipients = recipients;
@@ -344,7 +344,7 @@ public class FakeMail implements Mail {
             .name(name)
             .mimeMessage(msg)
             .recipients(ImmutableList.copyOf(recipients))
-            .sender(MaybeSender.of(sender))
+            .sender(sender)
             .state(Optional.ofNullable(state))
             .errorMessage(Optional.ofNullable(errorMessage))
             .lastUpdated(Optional.ofNullable(lastUpdated))
@@ -383,7 +383,7 @@ public class FakeMail implements Mail {
     }
 
     @Override
-    public MailAddress getSender() {
+    public MaybeSender getMaybeSender() {
         return sender;
     }
 
@@ -417,7 +417,7 @@ public class FakeMail implements Mail {
         this.msg = message;
         try {
             if (message != null && message.getSender() != null) {
-                this.sender = new MailAddress((InternetAddress) message.getSender());
+                this.sender = MaybeSender.of(new MailAddress((InternetAddress) message.getSender()));
             }
         } catch (MessagingException e) {
             throw new RuntimeException("Exception caught", e);
@@ -524,11 +524,11 @@ public class FakeMail implements Mail {
         try {
             Object obj = in.readObject();
             if (obj == null) {
-                sender = null;
+                sender = MaybeSender.nullSender();
             } else if (obj instanceof String) {
-                sender = new MailAddress((String) obj);
+                sender = MaybeSender.of(new MailAddress((String) obj));
             } else if (obj instanceof MailAddress) {
-                sender = (MailAddress) obj;
+                sender = MaybeSender.of((MailAddress) obj);
             }
         } catch (ParseException pe) {
             throw new IOException("Error parsing sender address: " + pe.getMessage());

@@ -368,7 +368,7 @@ public class MailImpl implements Disposable, Mail {
     /**
      * The sender of this mail.
      */
-    private MailAddress sender;
+    private MaybeSender sender;
     /**
      * The collection of recipients to whom this mail was sent.
      */
@@ -409,6 +409,7 @@ public class MailImpl implements Disposable, Mail {
         setAttributes(attributes);
         setRecipients(recipients);
         perRecipientSpecificHeaders = perRecipientHeaders;
+        sender = MaybeSender.nullSender();
     }
 
     @Override
@@ -439,7 +440,7 @@ public class MailImpl implements Disposable, Mail {
     }
 
     @Override
-    public MailAddress getSender() {
+    public MaybeSender getMaybeSender() {
         return sender;
     }
 
@@ -520,7 +521,7 @@ public class MailImpl implements Disposable, Mail {
     }
 
     public void setSender(MailAddress sender) {
-        this.sender = sender;
+        this.sender = MaybeSender.of(sender);
     }
 
     @Override
@@ -578,11 +579,11 @@ public class MailImpl implements Disposable, Mail {
         try {
             Object obj = in.readObject();
             if (obj == null) {
-                sender = null;
+                sender = MaybeSender.nullSender();
             } else if (obj instanceof String) {
-                sender = new MailAddress((String) obj);
+                sender = MaybeSender.of(new MailAddress((String) obj));
             } else if (obj instanceof MailAddress) {
-                sender = (MailAddress) obj;
+                sender = MaybeSender.of((MailAddress) obj);
             }
         } catch (ParseException pe) {
             throw new IOException("Error parsing sender address: " + pe.getMessage());

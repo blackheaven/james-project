@@ -135,20 +135,6 @@ public interface Mail extends Serializable, Cloneable {
      * @since Mailet API v2.4
      */
     void setRecipients(Collection<MailAddress> recipients);
-    
-    /**
-     * Returns the sender of the message, as specified by the SMTP "MAIL FROM" command,
-     * or internally defined.
-     *
-     * @deprecated @see {@link #getMaybeSender()} and {@link MaybeSender}
-     *
-     * Note that SMTP null sender ( "&lt;&gt;" ) needs to be implicitly handled by the caller under the form of 'null' or
-     * {@link MailAddress#nullSender()}. Replacement method adds type safety on this operation.
-     *
-     * @return the sender of this message
-     */
-    @Deprecated
-    MailAddress getSender();
 
     /**
      * Returns the sender of the message, as specified by the SMTP "MAIL FROM" command,
@@ -159,9 +145,7 @@ public interface Mail extends Serializable, Cloneable {
      * @since Mailet API v3.2.0
      * @return the sender of this message wrapped in an optional
      */
-    default MaybeSender getMaybeSender() {
-        return MaybeSender.of(getSender());
-    }
+    MaybeSender getMaybeSender();
 
     /**
      * Returns if this message has a sender.
