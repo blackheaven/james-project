@@ -161,14 +161,6 @@ public class MailImplTest extends ContractMailTest {
     }
 
     @Test
-    void setAttributeShouldThrowOnNullAttributeName() {
-        MailImpl mail = newMail();
-
-        assertThatThrownBy(() -> mail.setAttribute(null, "toto"))
-            .isInstanceOf(NullPointerException.class);
-    }
-
-    @Test
     void deriveNewNameShouldThrowOnNull() {
         assertThatThrownBy(() -> MailImpl.deriveNewName(null)).isInstanceOf(NullPointerException.class);
     }

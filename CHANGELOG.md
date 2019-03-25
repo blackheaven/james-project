@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
+### Removed
+ - From `org.apache.james.mailet.Mail`
+   - `SMTP_AUTH_USER_ATTRIBUTE_NAME`
+   - `MAILET_ERROR_ATTRIBUTE_NAME`
+   - `SENT_BY_MAILET`
+   - `getAttribute`
+   - `setAttribute`
+   - `removeAttribute`
+   - `getAttributeNames`
 
 ## [3.3.0] - 2019-03-26
 ### Added

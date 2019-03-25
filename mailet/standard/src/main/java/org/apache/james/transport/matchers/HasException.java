@@ -38,7 +38,7 @@ import com.google.common.collect.ImmutableList;
  * the subclasses of it has occured during the processing of the mail.
  * If true, all recipients are returned, else null. This matcher presupposes
  * that the exception has been captured as a Mail attribute
- * {@value org.apache.mailet.Mail#MAILET_ERROR_ATTRIBUTE_NAME} in the process.
+ * {@value org.apache.mailet.Mail#MAILET_ERROR} in the process.
  * </p>
  * 
  * <p>
