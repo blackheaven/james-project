@@ -32,6 +32,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.domainlist.lib.DomainListConfiguration;
@@ -58,6 +59,7 @@ public class JamesMailetContextTest {
     public static final String USERMAIL = USERNAME + "@" + DOMAIN_COM.name();
     public static final String PASSWORD = "password";
     public static final DNSService DNS_SERVICE = null;
+    private static final MaybeSender FIXTURE_SENDER = MaybeSender.of(MailAddressFixture.SENDER);
 
     @Rule
     public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
@@ -66,6 +68,7 @@ public class JamesMailetContextTest {
     private MemoryUsersRepository usersRepository;
     private JamesMailetContext testee;
     private MailAddress mailAddress;
+    private MaybeSender sender;
     private MailQueue spoolMailQueue;
 
     @Before
@@ -87,6 +90,7 @@ public class JamesMailetContextTest {
         testee.setDomainList(domainList);
         testee.setUsersRepository(usersRepository);
         mailAddress = new MailAddress(USERMAIL);
+        sender = MaybeSender.of(mailAddress);
     }
 
     @Test
@@ -175,7 +179,7 @@ public class JamesMailetContextTest {
     public void bounceShouldNotFailWhenNonConfiguredPostmaster() throws Exception {
         MailImpl mail = MailImpl.builder()
             .name("mail1")
-            .sender(mailAddress)
+            .sender(sender)
             .addRecipient(mailAddress)
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
             .build();
@@ -186,7 +190,7 @@ public class JamesMailetContextTest {
     public void bouncingToNullSenderShouldBeANoop() throws Exception {
         MailImpl mail = MailImpl.builder()
             .name("mail1")
-            .sender(MailAddress.nullSender())
+            .sender(MaybeSender.nullSender())
             .addRecipient(mailAddress)
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
             .build();
@@ -213,7 +217,7 @@ public class JamesMailetContextTest {
     public void bounceShouldEnqueueEmailWithRootState() throws Exception {
         MailImpl mail = MailImpl.builder()
             .name("mail1")
-            .sender(mailAddress)
+            .sender(sender)
             .addRecipient(mailAddress)
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
             .build();
@@ -231,7 +235,7 @@ public class JamesMailetContextTest {
     public void sendMailShouldEnqueueEmailWithRootState() throws Exception {
         MailImpl mail = MailImpl.builder()
             .name("mail1")
-            .sender(mailAddress)
+            .sender(sender)
             .addRecipient(mailAddress)
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
             .build();
@@ -248,7 +252,7 @@ public class JamesMailetContextTest {
     public void sendMailShouldEnqueueEmailWithOtherStateWhenSpecified() throws Exception {
         MailImpl mail = MailImpl.builder()
             .name("mail1")
-            .sender(mailAddress)
+            .sender(sender)
             .addRecipient(mailAddress)
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
             .build();
@@ -266,7 +270,7 @@ public class JamesMailetContextTest {
     public void sendMailShouldEnqueueEmailWithRootStateAndDelayWhenSpecified() throws Exception {
         MailImpl mail = MailImpl.builder()
             .name("mail1")
-            .sender(mailAddress)
+            .sender(sender)
             .addRecipient(mailAddress)
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
             .build();
@@ -287,7 +291,7 @@ public class JamesMailetContextTest {
     public void sendMailShouldEnqueueEmailWithOtherStateAndDelayWhenSpecified() throws Exception {
         MailImpl mail = MailImpl.builder()
             .name("mail1")
-            .sender(mailAddress)
+            .sender(sender)
             .addRecipient(mailAddress)
             .mimeMessage(MimeMessageUtil.defaultMimeMessage())
             .build();
@@ -372,7 +376,7 @@ public class JamesMailetContextTest {
         String otherState = "other";
         testee.sendMail(FakeMail.builder()
             .name("name")
-            .sender(MailAddressFixture.SENDER)
+            .sender(FIXTURE_SENDER)
             .recipient(MailAddressFixture.RECIPIENT1)
             .mimeMessage(message)
             .state(otherState)
@@ -395,7 +399,7 @@ public class JamesMailetContextTest {
 
         testee.sendMail(FakeMail.builder()
             .name("name")
-            .sender(MailAddressFixture.SENDER)
+            .sender(FIXTURE_SENDER)
             .recipient(MailAddressFixture.RECIPIENT1)
             .mimeMessage(message)
             .build());

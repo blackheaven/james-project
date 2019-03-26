@@ -27,6 +27,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.server.core.MailImpl;
 import org.apache.jsieve.mail.Action;
 import org.apache.jsieve.mail.optional.ActionVacation;
@@ -68,7 +69,7 @@ public class VacationAction implements MailAction {
 
         context.post(MailImpl.builder()
             .name(MailImpl.getId())
-            .sender(vacationReply.getSender())
+            .sender(MaybeSender.of(vacationReply.getSender()))
             .addRecipients(vacationReply.getRecipients())
             .mimeMessage(vacationReply.getMimeMessage())
             .build());

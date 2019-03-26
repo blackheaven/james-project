@@ -33,7 +33,6 @@ import java.util.stream.IntStream;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.james.core.MailAddress;
 import org.apache.james.core.MaybeSender;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.mailet.AttributeName;
@@ -49,6 +48,8 @@ import com.github.fge.lambdas.Throwing;
 import com.google.common.collect.ImmutableList;
 
 public class MailImplTest extends ContractMailTest {
+
+    private static final MaybeSender FIXTURE_SENDER = MaybeSender.of(MailAddressFixture.SENDER);
 
     @Override
     public MailImpl newMail() {
@@ -210,7 +211,7 @@ public class MailImplTest extends ContractMailTest {
         assertThat(
             MailImpl.builder()
                 .name("mail-id")
-                .sender(MailAddress.nullSender())
+                .sender(MaybeSender.nullSender())
                 .build()
                 .getMaybeSender())
             .isEqualTo(MaybeSender.nullSender());
@@ -231,10 +232,10 @@ public class MailImplTest extends ContractMailTest {
         assertThat(
             MailImpl.builder()
                 .name("mail-id")
-                .sender(MailAddressFixture.SENDER)
+                .sender(FIXTURE_SENDER)
                 .build()
                 .getMaybeSender())
-            .isEqualTo(MaybeSender.of(MailAddressFixture.SENDER));
+            .isEqualTo(FIXTURE_SENDER);
     }
 
     @Test
@@ -242,7 +243,7 @@ public class MailImplTest extends ContractMailTest {
         assertThat(
             MailImpl.builder()
                 .name("mail-id")
-                .sender(MailAddress.nullSender())
+                .sender(MaybeSender.nullSender())
                 .build()
                 .hasSender())
             .isFalse();
@@ -263,7 +264,7 @@ public class MailImplTest extends ContractMailTest {
         assertThat(
             MailImpl.builder()
                 .name("mail-id")
-                .sender(MailAddressFixture.SENDER)
+                .sender(FIXTURE_SENDER)
                 .build()
                 .hasSender())
             .isTrue();
@@ -297,7 +298,7 @@ public class MailImplTest extends ContractMailTest {
     void mailImplShouldBeSerializable() throws Exception {
         MailImpl mail = MailImpl.builder()
             .name("mail-id")
-            .sender(MailAddress.nullSender())
+            .sender(MaybeSender.nullSender())
             .build();
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -317,7 +318,7 @@ public class MailImplTest extends ContractMailTest {
     void mailImplShouldBeSerializableWithOptionalAttribute() throws Exception {
         MailImpl mail = MailImpl.builder()
             .name("mail-id")
-            .sender(MailAddress.nullSender())
+            .sender(MaybeSender.nullSender())
             .addAttribute(AttributeName.of("name").withValue(AttributeValue.of(Optional.empty())))
             .build();
 
@@ -338,7 +339,7 @@ public class MailImplTest extends ContractMailTest {
     void mailImplShouldBeSerializableWithCollectionAttribute() throws Exception {
         MailImpl mail = MailImpl.builder()
             .name("mail-id")
-            .sender(MailAddress.nullSender())
+            .sender(MaybeSender.nullSender())
             .addAttribute(AttributeName.of("name").withValue(AttributeValue.of(ImmutableList.of(AttributeValue.of("a")))))
             .build();
 

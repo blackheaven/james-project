@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMatcherConfig;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,7 +105,7 @@ class SenderDomainIsTest {
 
         FakeMail fakeMail = FakeMail.builder()
                 .name("mail")
-                .sender(MailAddress.nullSender())
+                .sender(MaybeSender.nullSender())
                 .recipient(recipient)
                 .build();
 

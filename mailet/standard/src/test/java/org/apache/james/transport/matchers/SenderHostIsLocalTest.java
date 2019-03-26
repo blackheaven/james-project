@@ -34,6 +34,7 @@ import javax.mail.MessagingException;
 
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetContext;
 import org.apache.mailet.Matcher;
@@ -94,7 +95,7 @@ public class SenderHostIsLocalTest {
         //Given
         Mail mail = FakeMail.builder()
             .name("mail")
-            .sender(MailAddress.nullSender())
+            .sender(MaybeSender.nullSender())
             .recipient(ANY_AT_JAMES)
             .build();
         //When

@@ -55,12 +55,6 @@ class MaybeSenderTest {
     }
 
     @Test
-    void ofShouldSanitizeNullSender() {
-        assertThat(MaybeSender.of(MailAddress.nullSender()))
-            .isEqualTo(MaybeSender.nullSender());
-    }
-
-    @Test
     void asOptionalShouldReturnWrappedValue() {
         assertThat(MaybeSender.of(mailAddress).asOptional())
             .contains(mailAddress);

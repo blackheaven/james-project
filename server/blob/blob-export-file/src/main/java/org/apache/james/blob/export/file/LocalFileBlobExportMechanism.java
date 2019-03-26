@@ -29,6 +29,7 @@ import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.api.BlobStore;
 import org.apache.james.blob.export.api.BlobExportMechanism;
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.filesystem.api.FileSystem;
@@ -100,7 +101,7 @@ public class LocalFileBlobExportMechanism implements BlobExportMechanism {
 
             MailImpl mail = MailImpl.builder()
                 .name(MailImpl.getId())
-                .sender(mailetContext.getPostmaster())
+                .sender(MaybeSender.of(mailetContext.getPostmaster()))
                 .addRecipient(mailAddress)
                 .mimeMessage(mimeMessage)
                 .build();

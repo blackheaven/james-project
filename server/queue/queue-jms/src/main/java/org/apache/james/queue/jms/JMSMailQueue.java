@@ -432,7 +432,7 @@ public class JMSMailQueue implements ManageableMailQueue, JMSSupport, MailPriori
             .flatMap(attributeName -> mailAttribute(message, attributeName))
             .collect(Guavate.toImmutableList()));
 
-        builder.sender(MaybeSender.getMailSender(message.getStringProperty(JAMES_MAIL_SENDER)).asOptional());
+        builder.sender(MaybeSender.getMailSender(message.getStringProperty(JAMES_MAIL_SENDER)));
         builder.state(message.getStringProperty(JAMES_MAIL_STATE));
         return builder;
     }

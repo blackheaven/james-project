@@ -28,6 +28,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.server.core.MailImpl;
 import org.apache.james.transport.util.MailAddressUtils;
@@ -172,12 +173,12 @@ public class MailModifier {
         if (maybeReversePath.isPresent()) {
             MailAddress reversePath = maybeReversePath.get();
             if (reversePath.equals(SpecialAddress.NULL)) {
-                mail.setSender(null);
+                mail.setSender(MaybeSender.nullSender());
                 if (mailet.getInitParameters().isDebug()) {
                     LOGGER.debug("reversePath set to: null");
                 }
             } else {
-                mail.setSender(reversePath);
+                mail.setSender(MaybeSender.of(reversePath));
                 if (mailet.getInitParameters().isDebug()) {
                     LOGGER.debug("reversePath set to: {}", reversePath);
                 }

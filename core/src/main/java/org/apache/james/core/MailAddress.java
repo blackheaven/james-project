@@ -80,66 +80,8 @@ public class MailAddress implements java.io.Serializable {
 
     public static final String NULL_SENDER_AS_STRING = "<>";
 
-    private static final MailAddress NULL_SENDER = new MailAddress() {
-
-        @Override
-        public Domain getDomain() {
-            throw new IllegalStateException("NULL sender '<>' do not have domain part");
-        }
-
-        @Override
-        public String getLocalPart() {
-            throw new IllegalStateException("NULL sender '<>' do not have local part");
-        }
-
-        @Override
-        public String toString() {
-            return "";
-        }
-
-        @Override
-        public String asString() {
-            return NULL_SENDER_AS_STRING;
-        }
-
-        @Override
-        public boolean isNullSender() {
-            return true;
-        }
-
-    };
-
-    public static MailAddress nullSender() {
-        return NULL_SENDER;
-    }
-
-    /**
-     * Prefer using {@link MaybeSender#getMailSender(String)}
-     */
-    @Deprecated
-    public static  MailAddress getMailSender(String sender) {
-        if (sender == null || sender.trim().length() <= 0) {
-            return null;
-        }
-        if (sender.equals(MailAddress.NULL_SENDER_AS_STRING)) {
-            return MailAddress.nullSender();
-        }
-        try {
-            return new MailAddress(sender);
-        } catch (AddressException e) {
-            // Should never happen as long as the user does not modify the header by himself
-            LOGGER.error("Unable to parse the sender address {}, so we fallback to a null sender", sender, e);
-            return MailAddress.nullSender();
-        }
-    }
-
     private final String localPart;
     private final Domain domain;
-
-    private MailAddress() {
-        localPart = null;
-        domain = null;
-    }
 
     /**
      * Strips source routing. According to RFC-2821 it is a valid approach
@@ -386,15 +328,7 @@ public class MailAddress implements java.io.Serializable {
             return toString().equalsIgnoreCase(theString);
         } else if (obj instanceof MailAddress) {
             MailAddress that = (MailAddress) obj;
-            boolean bothNullSender = this.isNullSender() && that.isNullSender();
-            boolean onlyOneIsNullSender = isNullSender() ^ that.isNullSender();
 
-            if (bothNullSender) {
-                return true;
-            }
-            if (onlyOneIsNullSender) {
-                return false;
-            }
             return equalsIgnoreCase(getLocalPart(), that.getLocalPart())
                 && Objects.equals(getDomain(), that.getDomain());
         }
@@ -667,13 +601,4 @@ public class MailAddress implements java.io.Serializable {
         return pos;
     }
 
-    /**
-     * Return <code>true</code> if the {@link MailAddress} should represent a null sender (<>)
-     *
-     * @Deprecated You should use an Optional&lt;MailAddress&gt; representation of a MailAddress rather than relying on a NULL object
-     */
-    @Deprecated
-    public boolean isNullSender() {
-        return false;
-    }
 }

@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import javax.mail.MessagingException;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMatcherConfig;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,7 +101,7 @@ class SenderIsRegexTest {
         FakeMail fakeMail = FakeMail.builder()
             .name("mail")
             .recipient(recipient)
-            .sender(MailAddress.nullSender())
+            .sender(MaybeSender.nullSender())
             .build();
 
         assertThat(matcher.match(fakeMail)).isNull();
@@ -116,7 +117,7 @@ class SenderIsRegexTest {
         FakeMail fakeMail = FakeMail.builder()
             .name("mail")
             .recipient(recipient)
-            .sender(MailAddress.nullSender())
+            .sender(MaybeSender.nullSender())
             .build();
 
         assertThat(matcher.match(fakeMail)).containsExactly(recipient);

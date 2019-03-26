@@ -57,6 +57,7 @@ import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
 import org.apache.james.blob.api.BlobId;
 import org.apache.james.blob.mail.MimeMessagePartsId;
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.queue.rabbitmq.EnqueuedItem;
 import org.apache.james.queue.rabbitmq.MailQueueName;
 import org.apache.james.queue.rabbitmq.view.cassandra.model.BucketedSlices;
@@ -90,9 +91,8 @@ public class EnqueuedMailsDaoUtil {
             .bodyBlobId(bodyBlobId)
             .build();
 
-        MailAddress sender = Optional.ofNullable(row.getString(SENDER))
-            .map(Throwing.function(MailAddress::new))
-            .orElse(null);
+        MaybeSender sender = MaybeSender.getMailSender(row.getString(SENDER));
+
         List<MailAddress> recipients = row.getList(RECIPIENTS, String.class)
             .stream()
             .map(Throwing.function(MailAddress::new))

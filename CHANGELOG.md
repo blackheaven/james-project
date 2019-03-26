@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Removed
+ - From `org.apache.james.core.MailAddress`
+   - `NULL_SENDER`
+   - `getMailSender()`
+   - `isNullSender()`
+ - From `org.apache.james.protocols.smtp.MailEnvelope`
+   - `getSender()`
+ - From `org.apache.james.protocols.smtp.hook.MailHook`
+   - `doMail()`
  - From `org.apache.james.mailet.Mail`
    - `SMTP_AUTH_USER_ATTRIBUTE_NAME`
    - `MAILET_ERROR_ATTRIBUTE_NAME`

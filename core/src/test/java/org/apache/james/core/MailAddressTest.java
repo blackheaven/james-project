@@ -227,40 +227,6 @@ public class MailAddressTest {
     }
 
     @Test
-    public void equalsShouldReturnTrueWhenBothNullSender() {
-        assertThat(MailAddress.nullSender())
-            .isEqualTo(MailAddress.nullSender());
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void getMailSenderShouldReturnNullSenderWhenNullSender() {
-        assertThat(MailAddress.getMailSender(MailAddress.NULL_SENDER_AS_STRING))
-            .isEqualTo(MailAddress.nullSender());
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void getMailSenderShouldReturnParsedAddressWhenNotNullAddress() throws Exception {
-        assertThat(MailAddress.getMailSender(GOOD_ADDRESS))
-            .isEqualTo(new MailAddress(GOOD_ADDRESS));
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void equalsShouldReturnFalseWhenOnlyFirstMemberIsANullSender() {
-        assertThat(MailAddress.getMailSender(GOOD_ADDRESS))
-            .isNotEqualTo(MailAddress.nullSender());
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void equalsShouldReturnFalseWhenOnlySecondMemberIsANullSender() {
-        assertThat(MailAddress.nullSender())
-            .isNotEqualTo(MailAddress.getMailSender(GOOD_ADDRESS));
-    }
-
-    @Test
     public void shouldMatchBeanContract() {
         EqualsVerifier.forClass(MailAddress.class)
             .verify();

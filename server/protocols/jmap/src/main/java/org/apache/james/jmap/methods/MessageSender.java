@@ -64,7 +64,7 @@ public class MessageSender {
         String name = message.getMessageId().serialize();
         return MailImpl.builder()
             .name(name)
-            .sender(envelope.getFrom().asOptional().orElseThrow(() -> new RuntimeException("Sender is mandatory")))
+            .sender(envelope.getFrom())
             .addRecipients(envelope.getRecipients())
             .mimeMessage(toMimeMessage(name, message.getContent()))
             .build();

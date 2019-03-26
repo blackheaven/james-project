@@ -53,6 +53,7 @@ import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.lib.AbstractMailRepository;
@@ -679,11 +680,7 @@ public class JDBCMailRepository extends AbstractMailRepository {
             mc.state(rsMessage.getString(1));
             mc.errorMessage(rsMessage.getString(2));
             String sender = rsMessage.getString(3);
-            if (sender == null) {
-                mc.sender((MailAddress)null);
-            } else {
-                mc.sender(new MailAddress(sender));
-            }
+            mc.sender(sender);
             StringTokenizer st = new StringTokenizer(rsMessage.getString(4), "\r\n", false);
             while (st.hasMoreTokens()) {
                 mc.addRecipient(st.nextToken());

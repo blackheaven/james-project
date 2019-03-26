@@ -138,7 +138,7 @@ public class MailImpl implements Disposable, Mail {
         private final String name;
         private Optional<MimeMessage> mimeMessage;
         private List<MailAddress> recipients;
-        private Optional<MailAddress> sender;
+        private MaybeSender sender;
         private Optional<String> state;
         private Optional<String> errorMessage;
         private Optional<Date> lastUpdated;
@@ -153,7 +153,7 @@ public class MailImpl implements Disposable, Mail {
             this.name = name;
             mimeMessage = Optional.empty();
             recipients = Lists.newArrayList();
-            sender = Optional.empty();
+            sender = MaybeSender.nullSender();
             state = Optional.empty();
             errorMessage = Optional.empty();
             lastUpdated = Optional.empty();
@@ -196,22 +196,13 @@ public class MailImpl implements Disposable, Mail {
             return addRecipients(recipient);
         }
 
-        public Builder sender(MailAddress sender) {
-            return sender(Optional.ofNullable(sender));
-        }
-
-        public Builder sender(Optional<MailAddress> sender) {
+        public Builder sender(MaybeSender sender) {
             this.sender = sender;
             return this;
         }
 
-        public Builder sender(MaybeSender sender) {
-            this.sender = sender.asOptional();
-            return this;
-        }
-
         public Builder sender(String sender) throws AddressException {
-            return sender(new MailAddress(sender));
+            return sender(MaybeSender.getMailSender(sender));
         }
 
         public Builder state(String state) {
@@ -268,7 +259,7 @@ public class MailImpl implements Disposable, Mail {
             MailImpl mail = new MailImpl(name, state.orElse(DEFAULT), attributes, recipients, perRecipientHeaders);
 
             mimeMessage.ifPresent(Throwing.consumer(mail::setMessage).sneakyThrow());
-            sender.ifPresent(mail::setSender);
+            mail.setSender(sender);
             errorMessage.ifPresent(mail::setErrorMessage);
             lastUpdated.ifPresent(mail::setLastUpdated);
             remoteAddr.ifPresent(mail::setRemoteAddr);
@@ -292,10 +283,10 @@ public class MailImpl implements Disposable, Mail {
             .collect(Guavate.toImmutableList());
     }
 
-    private static MailAddress getSender(MimeMessage mimeMessage) throws MessagingException {
+    private static MaybeSender getSender(MimeMessage mimeMessage) throws MessagingException {
         Address[] sender = mimeMessage.getFrom();
         Preconditions.checkArgument(sender.length == 1);
-        return castToMailAddress(sender[0]);
+        return MaybeSender.of(castToMailAddress(sender[0]));
     }
 
     private static MailAddress castToMailAddress(Address address) throws AddressException {
@@ -519,8 +510,8 @@ public class MailImpl implements Disposable, Mail {
         this.recipients = ImmutableList.copyOf(recipients);
     }
 
-    public void setSender(MailAddress sender) {
-        this.sender = MaybeSender.of(sender);
+    public void setSender(MaybeSender sender) {
+        this.sender = sender;
     }
 
     @Override
@@ -646,7 +637,7 @@ public class MailImpl implements Disposable, Mail {
      * @throws IOException if an error occurs while writing to the stream
      */
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        out.writeObject(sender);
+        out.writeObject(sender.asOptional().orElse(null));
         out.writeObject(recipients);
         out.writeObject(state);
         out.writeObject(errorMessage);

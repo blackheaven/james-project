@@ -31,6 +31,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.ParseException;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.server.core.MailImpl;
 import org.apache.james.user.api.UsersRepositoryException;
@@ -649,7 +650,7 @@ public class MessageProcessor extends ProcessorAbstract {
 
     /**
      * <p>
-     * Method getSender answers a <code>MailAddress</code> for the sender. When
+     * Method getSender answers a <code>MaybeSender</code> for the sender. When
      * the sender local part and/or domain part can not be obtained from the
      * mail, default values are used. The flags 'defaultSenderLocalPart' and
      * 'defaultSenderDomainPart' are set accordingly.
@@ -658,9 +659,9 @@ public class MessageProcessor extends ProcessorAbstract {
      * @return MailAddress
      * @throws MessagingException
      */
-    protected MailAddress getSender() throws MessagingException {
+    protected MaybeSender getSender() throws MessagingException {
         String from;
-        InternetAddress internetAddress;
+        String internetAddress;
 
         try {
             from = ((InternetAddress) getMessageIn().getFrom()[0]).getAddress().trim();
@@ -680,7 +681,7 @@ public class MessageProcessor extends ProcessorAbstract {
             StringBuilder fromBuffer = new StringBuilder(from);
             fromBuffer.append('@');
             fromBuffer.append(getDefaultDomainName());
-            internetAddress = new InternetAddress(fromBuffer.toString());
+            internetAddress = fromBuffer.toString();
             setDefaultSenderDomainPart(true);
 
             StringBuilder buffer = new StringBuilder(32);
@@ -689,11 +690,11 @@ public class MessageProcessor extends ProcessorAbstract {
             buffer.append(')');
             logStatusInfo(buffer.toString());
         } else {
-            internetAddress = new InternetAddress(from);
+            internetAddress = from;
             setDefaultSenderDomainPart(false);
         }
 
-        return new MailAddress(internetAddress);
+        return MaybeSender.getMailSender(internetAddress);
     }
 
     /**

@@ -43,6 +43,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
+import org.apache.james.core.MaybeSender;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.dnsservice.api.TemporaryResolutionException;
 import org.apache.james.dnsservice.library.MXHostAddressIterator;
@@ -192,7 +193,7 @@ public class JamesMailetContext implements MailetContext, Configurable {
 
         reply.getMessage().saveChanges();
         // Send it off ... with null reverse-path
-        reply.setSender(null);
+        reply.setSender(MaybeSender.nullSender());
         sendMail(reply);
         LifecycleUtil.dispose(reply);
     }
@@ -218,7 +219,7 @@ public class JamesMailetContext implements MailetContext, Configurable {
         reply.setSubject("Re: " + original.getSubject());
         reply.setSentDate(new Date());
         Collection<MailAddress> recipients = mail.getMaybeSender().asList();
-        MailAddress sender = mail.getMaybeSender().get();
+        MaybeSender sender = mail.getMaybeSender();
 
         reply.setRecipient(Message.RecipientType.TO, new InternetAddress(mail.getMaybeSender().asString()));
         reply.setFrom(new InternetAddress(mail.getRecipients().iterator().next().toString()));
@@ -429,7 +430,7 @@ public class JamesMailetContext implements MailetContext, Configurable {
     public void sendMail(MailAddress sender, Collection<MailAddress> recipients, MimeMessage message, String state) throws MessagingException {
         MailImpl mail = MailImpl.builder()
             .name(MailImpl.getId())
-            .sender(sender)
+            .sender(MaybeSender.of(sender))
             .addRecipients(recipients)
             .mimeMessage(message)
             .build();

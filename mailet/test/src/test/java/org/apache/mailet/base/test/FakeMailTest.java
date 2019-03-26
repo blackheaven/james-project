@@ -58,7 +58,7 @@ public class FakeMailTest extends ContractMailTest {
         assertThat(
             FakeMail.builder()
                 .name("mail")
-                .sender(MailAddress.nullSender())
+                .sender(MaybeSender.nullSender())
                 .build()
                 .getMaybeSender())
             .isEqualTo(MaybeSender.nullSender());
@@ -90,7 +90,7 @@ public class FakeMailTest extends ContractMailTest {
         assertThat(
             FakeMail.builder()
                 .name("mail")
-                .sender(MailAddress.nullSender())
+                .sender(MaybeSender.nullSender())
                 .build()
                 .hasSender())
             .isFalse();
