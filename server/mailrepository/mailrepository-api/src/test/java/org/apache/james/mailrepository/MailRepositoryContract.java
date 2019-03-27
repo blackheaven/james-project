@@ -142,7 +142,7 @@ public interface MailRepositoryContract {
         MailRepository testee = retrieveRepository();
         Mail mail = FakeMail.builder()
             .name(MAIL_1.asString())
-            .sender(MailAddress.nullSender())
+            .sender(MaybeSender.nullSender())
             .recipient(MailAddressFixture.RECIPIENT1)
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
                 .setSubject("test")
