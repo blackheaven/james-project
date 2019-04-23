@@ -56,7 +56,7 @@ public class RandomStoring extends GenericMailet {
     private static final int MAX_NUMBER_OF_RECIPIENTS = 8;
     private static final Duration CACHE_DURATION = Duration.ofMinutes(15);
 
-    private final Mono<Collection<ReroutingInfos>> mailboxList;
+    private final Mono<List<ReroutingInfos>> reroutingInfos;
     private final UsersRepository usersRepository;
     private final MailboxManager mailboxManager;
     private final Iterator<Integer> randomRecipientsNumbers;
@@ -66,12 +66,12 @@ public class RandomStoring extends GenericMailet {
         this.usersRepository = usersRepository;
         this.mailboxManager = mailboxManager;
         this.randomRecipientsNumbers = new Random().ints(MIN_NUMBER_OF_RECIPIENTS, MAX_NUMBER_OF_RECIPIENTS + 1).boxed().iterator();
-        this.mailboxList = Mono.fromCallable(this::generateRandomMailboxes).cache(CACHE_DURATION);
+        this.reroutingInfos = Mono.fromCallable(this::retrieveReroutingInfos).cache(CACHE_DURATION);
     }
 
     @Override
     public void service(Mail mail) throws MessagingException {
-        Collection<ReroutingInfos> reroutingInfos = mailboxList.block();
+        Collection<ReroutingInfos> reroutingInfos = generateRandomMailboxes();
         Collection<MailAddress> mailAddresses = reroutingInfos
             .stream()
             .map(ReroutingInfos::getMailAddress)
@@ -91,18 +91,22 @@ public class RandomStoring extends GenericMailet {
     public void init() throws MessagingException {
     }
 
-    private Collection<ReroutingInfos> generateRandomMailboxes() throws UsersRepositoryException {
-        List<ReroutingInfos> reroutingInfos = Streams.stream(usersRepository.list())
-            .map(User::fromUsername)
-            .flatMap(this::buildReRoutingInfos)
-            .distinct()
-            .collect(Collectors.toList());
-
+    private Collection<ReroutingInfos> generateRandomMailboxes() {
+        List<ReroutingInfos> reroutingInfos = this.reroutingInfos.block();
         Collections.shuffle(reroutingInfos);
+
         return reroutingInfos
             .stream()
             .limit(randomRecipientsNumbers.next())
             .collect(Guavate.toImmutableSet());
+    }
+
+    private List<ReroutingInfos> retrieveReroutingInfos() throws UsersRepositoryException {
+        return Streams.stream(usersRepository.list())
+            .map(User::fromUsername)
+            .flatMap(this::buildReRoutingInfos)
+            .distinct()
+            .collect(Collectors.toList());
     }
 
     private Stream<ReroutingInfos> buildReRoutingInfos(User user) {
