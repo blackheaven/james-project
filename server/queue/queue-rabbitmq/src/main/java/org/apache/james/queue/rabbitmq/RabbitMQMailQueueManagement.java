@@ -31,6 +31,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 public class RabbitMQMailQueueManagement {
 
+    private static final String VHOST = "/";
     private final RabbitMQManagementAPI api;
 
     @Inject
@@ -54,15 +55,21 @@ public class RabbitMQMailQueueManagement {
 
     public void deleteAllQueues() {
         api.listQueues()
-            .forEach(queue -> api.deleteQueue("/", queue.getName()));
+            .forEach(queue -> api.deleteQueue(VHOST, queue.getName()));
     }
 
     public Long getQueueSize(MailQueueName name) {
         return api.listQueues()
             .stream()
-            .filter(queue -> queue.getName().equals(name.asString()))
+            .filter(queue -> areMatchingQueueNames(name, queue.getName()))
             .map(RabbitMQManagementAPI.MessageQueue::getMessages)
             .findFirst()
             .orElseThrow(() -> new RuntimeException("Unable to get mail queue size of " + name));
+    }
+
+    private boolean areMatchingQueueNames(MailQueueName referenceName, String rawQueueName) {
+        return MailQueueName.fromRabbitWorkQueueName(rawQueueName)
+            .map(referenceName::equals)
+            .orElse(false);
     }
 }
