@@ -56,4 +56,13 @@ public class RabbitMQMailQueueManagement {
         api.listQueues()
             .forEach(queue -> api.deleteQueue("/", queue.getName()));
     }
+
+    public Long getQueueSize(MailQueueName name) {
+        return api.listQueues()
+            .stream()
+            .filter(queue -> queue.getName().equals(name.asString()))
+            .map(RabbitMQManagementAPI.MessageQueue::getMessages)
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Unable to get mail queue size of " + name));
+    }
 }

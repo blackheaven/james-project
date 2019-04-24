@@ -124,7 +124,8 @@ class RabbitMQMailQueueConfigurationChangeTest {
             BLOB_ID_FACTORY,
             mailQueueViewFactory,
             clock,
-            new RawMailQueueItemDecoratorFactory());
+            new RawMailQueueItemDecoratorFactory(),
+            new RabbitMQMailQueueManagement(rabbitMQExtension.managementAPI()));
         RabbitMQMailQueueFactory mailQueueFactory = new RabbitMQMailQueueFactory(rabbitClient, mqManagementApi, privateFactory);
         return mailQueueFactory.createQueue(SPOOL);
     }

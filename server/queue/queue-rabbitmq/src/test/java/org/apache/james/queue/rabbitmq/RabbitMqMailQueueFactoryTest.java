@@ -70,7 +70,8 @@ class RabbitMqMailQueueFactoryTest implements MailQueueFactoryContract<RabbitMQM
             BLOB_ID_FACTORY,
             mailQueueViewFactory,
             Clock.systemUTC(),
-            new RawMailQueueItemDecoratorFactory());
+            new RawMailQueueItemDecoratorFactory(),
+            new RabbitMQMailQueueManagement(rabbitMQExtension.managementAPI()));
         mqManagementApi = new RabbitMQMailQueueManagement(rabbitMQExtension.managementAPI());
         mailQueueFactory = new RabbitMQMailQueueFactory(rabbitClient, mqManagementApi, factory);
     }

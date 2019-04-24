@@ -44,16 +44,19 @@ public class RabbitMQMailQueue implements ManageableMailQueue {
     private final Dequeuer dequeuer;
     private final MailQueueView mailQueueView;
     private final MailQueueItemDecoratorFactory decoratorFactory;
+    private final RabbitMQMailQueueManagement mailQueueManagement;
 
     RabbitMQMailQueue(MetricFactory metricFactory, MailQueueName name,
                       Enqueuer enqueuer, Dequeuer dequeuer,
-                      MailQueueView mailQueueView, MailQueueItemDecoratorFactory decoratorFactory) {
+                      MailQueueView mailQueueView, MailQueueItemDecoratorFactory decoratorFactory,
+                      RabbitMQMailQueueManagement mailQueueManagement) {
         this.metricFactory = metricFactory;
         this.name = name;
         this.enqueuer = enqueuer;
         this.dequeuer = dequeuer;
         this.mailQueueView = mailQueueView;
         this.decoratorFactory = decoratorFactory;
+        this.mailQueueManagement = mailQueueManagement;
     }
 
     @Override
@@ -83,7 +86,7 @@ public class RabbitMQMailQueue implements ManageableMailQueue {
 
     @Override
     public long getSize() {
-        return mailQueueView.getSize();
+        return mailQueueManagement.getQueueSize(name);
     }
 
     @Override

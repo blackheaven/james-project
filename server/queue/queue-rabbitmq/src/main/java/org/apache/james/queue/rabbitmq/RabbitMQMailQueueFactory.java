@@ -57,6 +57,7 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<RabbitMQMailQu
         private final MailQueueView.Factory mailQueueViewFactory;
         private final Clock clock;
         private final MailQueueItemDecoratorFactory decoratorFactory;
+        private final RabbitMQMailQueueManagement mailQueueManagement;
 
         @Inject
         @VisibleForTesting PrivateFactory(MetricFactory metricFactory,
@@ -66,7 +67,8 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<RabbitMQMailQu
                                           BlobId.Factory blobIdFactory,
                                           MailQueueView.Factory mailQueueViewFactory,
                                           Clock clock,
-                                          MailQueueItemDecoratorFactory decoratorFactory) {
+                                          MailQueueItemDecoratorFactory decoratorFactory,
+                                          RabbitMQMailQueueManagement mailQueueManagement) {
             this.metricFactory = metricFactory;
             this.gaugeRegistry = gaugeRegistry;
             this.rabbitClient = rabbitClient;
@@ -76,6 +78,7 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<RabbitMQMailQu
             this.decoratorFactory = decoratorFactory;
             this.mailReferenceSerializer = new MailReferenceSerializer();
             this.mailLoader = Throwing.function(new MailLoader(mimeMessageStore, blobIdFactory)::load).sneakyThrow();
+            this.mailQueueManagement = mailQueueManagement;
         }
 
         RabbitMQMailQueue create(MailQueueName mailQueueName) {
@@ -90,7 +93,8 @@ public class RabbitMQMailQueueFactory implements MailQueueFactory<RabbitMQMailQu
                 new Dequeuer(mailQueueName, rabbitClient, mailLoader, mailReferenceSerializer,
                     metricFactory, mailQueueView),
                 mailQueueView,
-                decoratorFactory);
+                decoratorFactory,
+                mailQueueManagement);
 
             registerGaugeFor(rabbitMQMailQueue);
             return rabbitMQMailQueue;
