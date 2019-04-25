@@ -19,6 +19,7 @@
 
 package org.apache.james.queue.rabbitmq;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -58,13 +59,12 @@ public class RabbitMQMailQueueManagement {
             .forEach(queue -> api.deleteQueue(VHOST, queue.getName()));
     }
 
-    public Long getQueueSize(MailQueueName name) {
+    public Optional<Long> getQueueSize(MailQueueName name) {
         return api.listQueues()
             .stream()
             .filter(queue -> areMatchingQueueNames(name, queue.getName()))
-            .map(RabbitMQManagementAPI.MessageQueue::getMessages)
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException("Unable to get mail queue size of " + name));
+            .map(RabbitMQManagementAPI.MessageQueue::getMessagesCount)
+            .findFirst();
     }
 
     private boolean areMatchingQueueNames(MailQueueName referenceName, String rawQueueName) {

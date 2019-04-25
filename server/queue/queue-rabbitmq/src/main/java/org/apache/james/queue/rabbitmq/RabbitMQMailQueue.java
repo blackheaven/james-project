@@ -86,7 +86,8 @@ public class RabbitMQMailQueue implements ManageableMailQueue {
 
     @Override
     public long getSize() {
-        return mailQueueManagement.getQueueSize(name);
+        return mailQueueManagement.getQueueSize(name)
+            .orElseThrow(() -> new RuntimeException("Unable to get mail queue size of " + name));
     }
 
     @Override

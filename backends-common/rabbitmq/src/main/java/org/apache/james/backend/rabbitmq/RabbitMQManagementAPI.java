@@ -60,7 +60,7 @@ public interface RabbitMQManagementAPI {
         Map<String, String> arguments;
 
         @JsonProperty("messages")
-        Long messages;
+        Long messagesCount;
 
         public String getName() {
             return name;
@@ -86,8 +86,8 @@ public interface RabbitMQManagementAPI {
             return arguments;
         }
 
-        public Long getMessages() {
-            return messages;
+        public Long getMessagesCount() {
+            return messagesCount;
         }
     }
 
