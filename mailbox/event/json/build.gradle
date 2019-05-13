@@ -1,0 +1,21 @@
+
+description = 'Apache James :: Mailbox :: Event :: JSON'
+dependencies {
+  compile project(':apache-james-mailbox:apache-james-mailbox-api')
+    compile group: 'com.beachape', name: 'enumeratum_2.12', version:'1.5.13'
+    compile group: 'com.typesafe.play', name: 'play-json_2.12', version:'2.6.10'
+    compile group: 'org.julienrf', name: 'play-json-derived-codecs_2.12', version:'4.0.1'
+    compile group: 'org.scala-lang', name: 'scala-library', version:'2.12.7'
+    compile group: 'org.scala-lang.modules', name: 'scala-java8-compat_2.12', version:'0.9.0'
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-api')
+    testCompile group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version:'2.0.0.RC1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version:'5.2.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

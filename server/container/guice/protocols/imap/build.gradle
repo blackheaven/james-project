@@ -1,0 +1,15 @@
+
+description = 'Apache James :: Server :: Guice :: Imap'
+dependencies {
+  compile project(':james-server:james-server-guice:james-server-guice-configuration')
+  compile project(':james-server:james-server-guice:james-server-guice-mailbox')
+  compile project(':james-server:james-server-protocols-imap4')
+    compile group: 'com.google.inject', name: 'guice', version:'4.2.0'
+    compile group: 'com.google.inject.extensions', name: 'guice-multibindings', version:'4.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

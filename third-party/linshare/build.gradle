@@ -1,0 +1,40 @@
+
+description = 'Apache James :: Third Party :: LinShare'
+dependencies {
+  compile project(':james-core')
+  compile project(':james-server:james-server-blob:blob-export-api')
+    compile group: 'com.github.steveash.guavate', name: 'guavate', version:'1.0.0'
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+    compile(group: 'commons-configuration', name: 'commons-configuration', version:'1.9') {
+exclude(module: 'dom4j')
+exclude(module: 'servletapi')
+exclude(module: 'xerces')
+exclude(module: 'commons-digester')
+exclude(module: 'commons-beanutils-core')
+exclude(module: 'commons-beanutils-bean-collections')
+exclude(module: 'commons-logging')
+    }
+    compile group: 'io.github.openfeign', name: 'feign-core', version:'10.2.0'
+    compile group: 'io.github.openfeign', name: 'feign-jackson', version:'10.2.0'
+    compile group: 'io.github.openfeign', name: 'feign-slf4j', version:'10.2.0'
+    compile group: 'io.github.openfeign.form', name: 'feign-form', version:'3.8.0'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+  testCompile project(':james-server:james-server-testing')
+  testCompile project(':james-server:james-server-blob:blob-memory')
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    testCompile(group: 'io.rest-assured', name: 'rest-assured', version:'3.1.0') {
+exclude(module: 'commons-logging')
+    }
+    testCompile group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version:'2.5.1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.slf4j', name: 'jcl-over-slf4j', version:'1.7.25'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

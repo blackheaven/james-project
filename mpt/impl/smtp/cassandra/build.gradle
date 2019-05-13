@@ -1,0 +1,22 @@
+
+description = 'Apache James MPT SMTP Cassandra'
+dependencies {
+  compile project(':apache-james-mpt:apache-james-mpt-core')
+  compile project(':james-server:james-server-guice:james-server-cassandra-guice')
+    compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+  testCompile project(':james-backends-common:apache-james-backends-cassandra')
+  testCompile project(':apache-james-mpt:apache-james-mpt-smtp:apache-james-mpt-smtp-core')
+  testCompile project(':james-server:james-server-guice:james-server-cassandra-guice')
+  testCompile project(':james-server:james-server-guice:james-server-guice-common')
+  testCompile project(':james-server:james-server-guice:james-server-guice-jmap')
+  testCompile project(':james-server:james-server-util')
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

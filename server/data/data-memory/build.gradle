@@ -1,0 +1,26 @@
+
+description = 'Apache James :: Server :: Data  :: MEMORY'
+dependencies {
+  compile project(':james-server:james-server-data-api')
+  compile project(':james-server:james-server-data-library')
+  testCompile project(':apache-mailet:apache-mailet-test')
+  testCompile project(':event-sourcing:event-sourcing-event-store-memory')
+  testCompile project(':james-server:james-server-data-api')
+  testCompile project(':james-server:james-server-data-library')
+  testCompile project(':james-server:james-server-dnsservice-test')
+  testCompile project(':james-server:james-server-mailrepository-memory')
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    testCompile group: 'io.cucumber', name: 'cucumber-java', version:'2.4.0'
+    testCompile group: 'io.cucumber', name: 'cucumber-junit', version:'2.4.0'
+    testCompile group: 'io.cucumber', name: 'cucumber-picocontainer', version:'2.4.0'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

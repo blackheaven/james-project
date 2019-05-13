@@ -1,0 +1,14 @@
+
+description = 'Apache James MPT ManageSieve File'
+dependencies {
+  compile project(':apache-james-mpt:apache-james-mpt-managesieve:apache-james-mpt-managesieve-core')
+  compile project(':james-server:james-server-data-file')
+  compile project(':james-server:james-server-data-memory')
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

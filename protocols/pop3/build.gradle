@@ -1,0 +1,21 @@
+group = 'org.apache.james.protocols'
+description = 'Apache James :: Protocols :: POP3'
+dependencies {
+  compile project(':protocols:protocols-api')
+    compile group: 'ch.qos.logback', name: 'logback-core', version:'1.2.3'
+  testCompile project(':protocols:protocols-api')
+  testCompile project(':protocols:protocols-netty')
+    testCompile group: 'commons-net', name: 'commons-net', version:'3.6'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.21.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

@@ -1,0 +1,29 @@
+
+description = 'Apache James :: Event sourcing :: Event Store :: Cassandra'
+dependencies {
+  compile project(':james-backends-common:apache-james-backends-cassandra')
+  compile project(':event-sourcing:event-sourcing-event-store-api')
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.9.6'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-guava', version:'2.9.6'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version:'2.9.6'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version:'2.9.6'
+  testCompile project(':james-backends-common:apache-james-backends-cassandra')
+  testCompile project(':event-sourcing:event-sourcing-core')
+  testCompile project(':event-sourcing:event-sourcing-event-store-api')
+  testCompile project(':event-sourcing:event-sourcing-core')
+  testCompile project(':event-sourcing:event-sourcing-pojo')
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version:'2.0.0.RC1'
+    testCompile group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version:'2.5.1'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.21.0'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

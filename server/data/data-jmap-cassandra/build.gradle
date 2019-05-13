@@ -1,0 +1,27 @@
+
+description = 'Apache James :: Server :: Data :: JMAP :: Cassandra persistance'
+dependencies {
+  compile project(':james-backends-common:apache-james-backends-cassandra')
+  compile project(':event-sourcing:event-sourcing-event-store-cassandra')
+  compile project(':james-server:james-server-data-jmap')
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+    compile group: 'javax.inject', name: 'javax.inject', version:'1'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+  testCompile project(':james-backends-common:apache-james-backends-cassandra')
+  testCompile project(':event-sourcing:event-sourcing-event-store-cassandra')
+  testCompile project(':james-server:james-server-data-jmap')
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    testCompile group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version:'2.0.0.RC1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.awaitility', name: 'awaitility', version:'3.1.2'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.21.0'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

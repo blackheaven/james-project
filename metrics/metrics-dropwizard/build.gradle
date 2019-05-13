@@ -1,0 +1,15 @@
+
+description = 'Apache James :: Metrics :: Dropwizard'
+dependencies {
+  compile project(':metrics:metrics-api')
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+    compile group: 'io.dropwizard.metrics', name: 'metrics-core', version:'3.2.6'
+    compile group: 'io.dropwizard.metrics', name: 'metrics-jvm', version:'3.2.6'
+    compile group: 'javax.inject', name: 'javax.inject', version:'1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

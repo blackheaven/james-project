@@ -1,0 +1,19 @@
+
+description = 'Apache James :: Server :: Blob :: Mail store'
+dependencies {
+  compile project(':james-server:james-server-blob:blob-api')
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+  testCompile project(':james-server:james-server-blob:blob-memory')
+  testCompile project(':james-core')
+    testCompile group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version:'2.5.1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

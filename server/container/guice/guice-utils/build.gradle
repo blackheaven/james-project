@@ -1,0 +1,14 @@
+
+description = ''
+dependencies {
+  compile project(':james-server:james-server-filesystem-api')
+  compile project(':james-server:james-server-util')
+    compile group: 'com.github.fge', name: 'throwing-lambdas', version:'0.5.0'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

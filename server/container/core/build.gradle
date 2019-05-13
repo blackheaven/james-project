@@ -1,0 +1,32 @@
+
+description = 'Apache James :: Server :: Core'
+dependencies {
+  compile project(':apache-mailet:apache-mailet-api')
+  compile project(':apache-mailet:apache-mailet-base')
+  compile project(':james-server:james-server-filesystem-api')
+  compile project(':james-server:james-server-lifecycle-api')
+  compile project(':james-server:james-server-util')
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+    compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.6.1') {
+exclude(module: 'activation')
+    }
+    compile group: 'commons-io', name: 'commons-io', version:'2.6'
+    compile group: 'javax.inject', name: 'javax.inject', version:'1'
+  testCompile project(':apache-mailet:apache-mailet-api')
+  testCompile project(':apache-mailet:apache-mailet-test')
+  testCompile project(':james-server:james-server-filesystem-api')
+  testCompile project(':javax-mail-extension')
+    testCompile group: 'com.sparkjava', name: 'spark-core', version:'2.8.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'pl.pragmatists', name: 'JUnitParams', version:'1.1.1'
+    compileOnly group: 'javax.activation', name: 'activation', version:'1.1.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

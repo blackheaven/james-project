@@ -1,0 +1,22 @@
+
+description = 'Apache James MPT AntLib'
+dependencies {
+  compile project(':apache-james-mpt:apache-james-mpt-core')
+    compile(group: 'commons-logging', name: 'commons-logging', version:'1.1') {
+exclude(module: 'logkit')
+exclude(module: 'avalon-framework')
+exclude(module: 'log4j')
+exclude(module: 'servlet-api')
+    }
+    compile group: 'junit', name: 'junit', version:'4.11'
+    compile group: 'org.apache.ant', name: 'ant', version:'1.10.5'
+    compile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+  testCompile project(':apache-james-mpt:apache-james-mpt-core')
+    testCompile group: 'org.apache.ant', name: 'ant-antunit', version:'1.4'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

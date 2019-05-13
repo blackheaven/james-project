@@ -1,0 +1,45 @@
+
+description = 'Apache James :: Server :: JMAP :: Integration testing Common'
+dependencies {
+  compile project(':third-party:apache-james-linshare')
+  compile project(':james-server:james-server-webadmin-core')
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+    compile group: 'com.jayway.jsonpath', name: 'json-path', version:'2.4.0'
+    compile group: 'org.apache.commons', name: 'commons-text', version:'1.4'
+  testCompile project(':third-party:apache-james-linshare')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-api')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-spamassassin')
+  testCompile project(':apache-mailet:apache-mailet-base')
+  testCompile project(':apache-james-mailbox:backup')
+  testCompile project(':james-server:james-server-data-jmap')
+  testCompile project(':james-server:james-server-dnsservice-test')
+  testCompile project(':james-server:james-server-guice:james-server-guice-common')
+  testCompile project(':james-server:james-server-guice:james-server-guice-common')
+  testCompile project(':james-server:james-server-guice:james-server-guice-jmap')
+  testCompile project(':james-server:james-server-guice:james-server-guice-imap')
+  testCompile project(':james-server:james-server-guice:james-server-guice-mailbox')
+  testCompile project(':james-server:james-server-guice:james-server-guice-smtp')
+  testCompile project(':james-server:james-server-guice:james-server-guice-webadmin')
+  testCompile project(':third-party:apache-james-spamassassin')
+  testCompile project(':james-server:james-server-testing')
+  testCompile project(':james-server:james-server-util')
+  testCompile project(':javax-mail-extension')
+    testCompile group: 'io.cucumber', name: 'cucumber-guice', version:'2.4.0'
+    testCompile group: 'io.cucumber', name: 'cucumber-java', version:'2.4.0'
+    testCompile group: 'io.cucumber', name: 'cucumber-junit', version:'2.4.0'
+    testCompile(group: 'io.rest-assured', name: 'rest-assured', version:'3.1.0') {
+exclude(module: 'commons-logging')
+    }
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.hamcrest', name: 'java-hamcrest', version:'2.0.0.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

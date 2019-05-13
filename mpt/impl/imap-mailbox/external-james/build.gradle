@@ -1,0 +1,22 @@
+
+description = 'Apache James MPT Imap Mailbox - External James'
+dependencies {
+  compile project(':apache-james-mailbox:apache-james-mailbox-api')
+  compile project(':apache-james-mpt:apache-james-mpt-core')
+  compile project(':metrics:metrics-logger')
+    compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    compile group: 'com.google.inject', name: 'guice', version:'4.0'
+    compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.6.1') {
+exclude(module: 'activation')
+    }
+    compile group: 'commons-io', name: 'commons-io', version:'2.6'
+    compile group: 'junit', name: 'junit', version:'4.11'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.7'
+  testCompile project(':james-server:james-server-testing')
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

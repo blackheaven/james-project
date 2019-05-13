@@ -1,0 +1,32 @@
+
+description = 'Apache James :: Server :: Jetty'
+dependencies {
+  compile project(':james-core')
+  compile project(':james-server:james-server-util')
+    compile group: 'com.github.fge', name: 'throwing-lambdas', version:'0.5.0'
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+    compile(group: 'commons-configuration', name: 'commons-configuration', version:'1.9') {
+exclude(module: 'dom4j')
+exclude(module: 'servletapi')
+exclude(module: 'xerces')
+exclude(module: 'commons-digester')
+exclude(module: 'commons-beanutils-core')
+exclude(module: 'commons-beanutils-bean-collections')
+exclude(module: 'commons-logging')
+    }
+    compile group: 'org.eclipse.jetty', name: 'jetty-http', version:'9.4.7.v20170914'
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version:'9.4.7.v20170914'
+    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version:'9.4.7.v20170914'
+    compile group: 'org.slf4j', name: 'jcl-over-slf4j', version:'1.7.25'
+    testCompile(group: 'io.rest-assured', name: 'rest-assured', version:'3.1.0') {
+exclude(module: 'commons-logging')
+    }
+    testCompile group: 'junit', name: 'junit', version:'4.12'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

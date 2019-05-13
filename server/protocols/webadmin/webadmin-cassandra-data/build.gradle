@@ -1,0 +1,22 @@
+
+description = 'Apache James :: Server :: Web Admin :: Cassandra :: Data'
+dependencies {
+  compile project(':james-backends-common:apache-james-backends-cassandra')
+  compile project(':james-server:james-server-data-cassandra')
+  compile project(':james-server:james-server-webadmin-core')
+  testCompile project(':james-backends-common:apache-james-backends-cassandra')
+  testCompile project(':james-server:james-server-webadmin-core')
+  testCompile project(':metrics:metrics-logger')
+    testCompile(group: 'io.rest-assured', name: 'rest-assured', version:'3.1.0') {
+exclude(module: 'commons-logging')
+    }
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

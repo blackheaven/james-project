@@ -1,0 +1,25 @@
+
+description = 'Apache James :: Server :: Guice :: ES metric reporter'
+dependencies {
+  compile project(':james-server:james-server-guice:james-server-guice-common')
+  compile project(':james-server:james-server-lifecycle-api')
+  compile project(':james-server:metrics-es-reporter')
+    compile group: 'com.google.inject', name: 'guice', version:'4.2.0'
+    compile group: 'com.google.inject.extensions', name: 'guice-multibindings', version:'4.0'
+    compile(group: 'commons-configuration', name: 'commons-configuration', version:'1.9') {
+exclude(module: 'dom4j')
+exclude(module: 'servletapi')
+exclude(module: 'xerces')
+exclude(module: 'commons-digester')
+exclude(module: 'commons-beanutils-core')
+exclude(module: 'commons-beanutils-bean-collections')
+exclude(module: 'commons-logging')
+    }
+    compile group: 'org.slf4j', name: 'jcl-over-slf4j', version:'1.7.25'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

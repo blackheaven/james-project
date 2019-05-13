@@ -1,0 +1,32 @@
+
+description = 'Apache James :: Server :: Common Utilities'
+dependencies {
+    compile group: 'org.apache.james', name: 'apache-mime4j-dom', version:'0.8.3'
+    compile group: 'com.github.fge', name: 'throwing-lambdas', version:'0.5.0'
+    compile group: 'com.github.steveash.guavate', name: 'guavate', version:'1.0.0'
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+    compile group: 'com.ibm.icu', name: 'icu4j', version:'62.1'
+    compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.6.1') {
+exclude(module: 'activation')
+    }
+    compile group: 'commons-io', name: 'commons-io', version:'2.6'
+    compile group: 'io.projectreactor', name: 'reactor-core', version:'3.2.3.RELEASE'
+    compile group: 'javax.inject', name: 'javax.inject', version:'1'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.7'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+    testCompile group: 'com.github.dpaukov', name: 'combinatoricslib3', version:'3.3.0'
+    testCompile group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version:'2.5.1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.21.0'
+    testCompile group: 'backport-util-concurrent', name: 'backport-util-concurrent', version:'3.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

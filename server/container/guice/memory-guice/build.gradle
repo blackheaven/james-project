@@ -1,0 +1,55 @@
+
+description = 'Apache James :: Server :: Memory - guice injection'
+dependencies {
+  compile project(':apache-james-mailbox:apache-james-mailbox-memory')
+  compile project(':apache-james-mailbox:apache-james-mailbox-quota-mailing')
+  compile project(':apache-james-mailbox:apache-james-mailbox-quota-search-scanning')
+  compile project(':apache-mailet:apache-mailet-icalendar')
+  compile project(':james-server:james-server-guice:blob-export-guice')
+  compile project(':james-server:james-server-guice:blob-memory-guice')
+  compile project(':event-sourcing:event-sourcing-event-store-memory')
+  compile project(':james-server:james-server-data-memory')
+  compile project(':james-server:james-server-guice:james-server-guice-activemq')
+  compile project(':james-server:james-server-guice:james-server-mailbox-plugin-deleted-messages-vault-guice')
+  compile project(':james-server:james-server-guice:james-server-guice-common')
+  compile project(':james-server:james-server-guice:james-server-guice-imap')
+  compile project(':james-server:james-server-guice:james-server-guice-jmap')
+  compile project(':james-server:james-server-guice:james-server-guice-jmx')
+  compile project(':james-server:james-server-guice:james-server-guice-lmtp')
+  compile project(':james-server:james-server-guice:james-server-guice-mailbox-plugin-spamassassin')
+  compile project(':james-server:james-server-guice:james-server-guice-managedsieve')
+  compile project(':james-server:james-server-guice:james-server-guice-pop')
+  compile project(':james-server:james-server-guice:james-server-guice-smtp')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin-data')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin-mailbox')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin-mailqueue')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin-mailrepository')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin-swagger')
+  compile project(':james-server:james-server-mailrepository-memory')
+  compile project(':james-server:james-server-queue-memory')
+  testCompile project(':third-party:apache-james-linshare')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-scanning-search')
+  testCompile project(':apache-mailet:apache-mailet-base')
+  testCompile project(':james-server:james-server-guice:blob-export-guice')
+  testCompile project(':james-server:james-server-guice:james-server-guice-common')
+  testCompile project(':james-server:james-server-guice:james-server-guice-jmap')
+  testCompile project(':james-server:james-server-testing')
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    testCompile(group: 'io.rest-assured', name: 'rest-assured', version:'3.1.0') {
+exclude(module: 'commons-logging')
+    }
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+    testCompile(group: 'org.apache.pdfbox', name: 'pdfbox', version:'2.0.12') {
+exclude(module: 'commons-logging')
+    }
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

@@ -1,0 +1,14 @@
+
+description = 'Apache James :: Server :: Mailetcontainer API'
+dependencies {
+  compile project(':apache-mailet:apache-mailet-api')
+    compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.6.1') {
+exclude(module: 'activation')
+    }
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

@@ -1,0 +1,74 @@
+
+description = 'Apache James :: Server :: App'
+dependencies {
+  compile project(':james-server:james-server-cli')
+  compile project(':james-server:james-server-core')
+  compile project(':james-server:james-server-data-api')
+  compile project(':james-server:james-server-dnsservice-library')
+  compile project(':james-server:james-server-filesystem-api')
+  compile project(':james-server:james-server-lifecycle-api')
+  compile project(':james-server:james-server-mailetcontainer-api')
+  compile project(':james-server:james-server-queue-api')
+  compile project(':james-server:james-server-spring')
+  compile project(':metrics:metrics-api')
+  compile project(':metrics:metrics-dropwizard')
+  compile project(':metrics:metrics-logger')
+    compile group: 'commons-daemon', name: 'commons-daemon', version:'1.1.0'
+  compile project(':protocols:protocols-managesieve')
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+  runtime project(':apache-james-mailbox:apache-james-mailbox-jpa')
+  runtime project(':apache-james-mailbox:apache-james-mailbox-lucene')
+  runtime project(':apache-james-mailbox:apache-james-mailbox-memory')
+  runtime project(':apache-james-mailbox:apache-james-mailbox-spring')
+  runtime project(':james-server:james-server-data-file')
+  runtime project(':james-server:james-server-data-jdbc')
+  runtime project(':james-server:james-server-data-jpa')
+  runtime project(':james-server:james-server-data-ldap')
+  runtime project(':james-server:james-server-data-library')
+  runtime project(':james-server:james-server-dnsservice-api')
+  runtime project(':james-server:james-server-dnsservice-dnsjava')
+  runtime project(':james-server:james-server-fetchmail')
+  runtime project(':james-server:james-server-mailbox-adapter')
+  runtime project(':james-server:james-server-mailetcontainer-camel')
+  runtime project(':james-server:james-server-mailets')
+  runtime project(':james-server:james-server-protocols-imap4')
+  runtime project(':james-server:james-server-protocols-library')
+  runtime project(':james-server:james-server-protocols-lmtp')
+  runtime project(':james-server:james-server-protocols-managesieve')
+  runtime project(':james-server:james-server-protocols-pop3')
+  runtime project(':james-server:james-server-protocols-smtp')
+  runtime project(':james-server:james-server-queue-activemq')
+  runtime project(':james-server:james-server-queue-file')
+  runtime project(':james-server:james-server-queue-jms')
+  runtime project(':james-server:james-server-util')
+    runtime(group: 'org.apache.camel', name: 'camel-core', version:'2.22.1') {
+exclude(module: 'tools')
+    }
+    runtime(group: 'org.apache.camel', name: 'camel-spring', version:'2.22.1') {
+exclude(module: 'tools')
+    }
+    runtime group: 'org.apache.derby', name: 'derby', version:'10.14.2.0'
+  runtime project(':protocols:protocols-imap')
+    runtime(group: 'org.apache.xbean', name: 'xbean-spring', version:'4.9') {
+exclude(module: 'commons-logging')
+exclude(module: 'spring-web')
+    }
+    runtime group: 'org.slf4j', name: 'jcl-over-slf4j', version:'1.7.25'
+    runtime group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.7.25'
+    runtime group: 'org.springframework', name: 'spring-jdbc', version:'3.2.18.RELEASE'
+    runtime group: 'org.springframework', name: 'spring-jms', version:'3.2.18.RELEASE'
+    runtime(group: 'org.springframework', name: 'spring-orm', version:'3.2.18.RELEASE') {
+exclude(module: 'toplink')
+exclude(module: 'toplink-essentials')
+exclude(module: 'hibernate')
+exclude(module: 'hibernate-entitymanager')
+exclude(module: 'spring-web')
+    }
+    runtime group: 'org.springframework', name: 'spring-tx', version:'3.2.18.RELEASE'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

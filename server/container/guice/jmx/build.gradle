@@ -1,0 +1,28 @@
+
+description = 'Apache James :: Server :: Guice :: JMX'
+dependencies {
+  compile project(':apache-james-mailbox:apache-james-mailbox-tools-copier')
+  compile project(':apache-james-mailbox:apache-james-mailbox-tools-indexer')
+  compile project(':james-server:james-server-data-api')
+  compile project(':james-server:james-server-data-library')
+  compile project(':james-server:james-server-guice:james-server-guice-common')
+  compile project(':james-server:james-server-guice:james-server-guice-configuration')
+  compile project(':james-server:james-server-mailbox-jmx')
+  compile project(':james-server:james-server-mailetcontainer-api')
+  compile project(':james-server:james-server-mailetcontainer-camel')
+  compile project(':james-server:james-server-util')
+    compile group: 'com.github.fge', name: 'throwing-lambdas', version:'0.5.0'
+    compile group: 'com.google.inject', name: 'guice', version:'4.2.0'
+    compile group: 'com.google.inject.extensions', name: 'guice-multibindings', version:'4.0'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+    testCompile group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version:'2.5.1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

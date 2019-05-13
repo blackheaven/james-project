@@ -1,0 +1,30 @@
+
+description = 'Apache James :: Server :: Cassandra/Ldap - guice injection'
+dependencies {
+  compile project(':apache-james-mailbox:apache-james-mailbox-cassandra')
+  compile project(':james-server:james-server-guice:james-server-cassandra-guice')
+  compile project(':james-server:james-server-data-ldap')
+  compile project(':james-server:james-server-guice:james-server-guice-common')
+  testCompile project(':james-backends-common:apache-james-backends-cassandra')
+  testCompile project(':james-backends-common:apache-james-backends-es')
+  testCompile project(':james-server:james-server-guice:james-server-cassandra-guice')
+  testCompile project(':james-server:james-server-data-ldap')
+  testCompile project(':james-server:james-server-guice:james-server-guice-common')
+  testCompile project(':james-server:james-server-guice:james-server-guice-jmap')
+  testCompile project(':james-server:james-server-testing')
+  testCompile project(':james-server:james-server-util')
+    testCompile(group: 'io.rest-assured', name: 'rest-assured', version:'3.1.0') {
+exclude(module: 'commons-logging')
+    }
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.awaitility', name: 'awaitility', version:'3.1.2'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

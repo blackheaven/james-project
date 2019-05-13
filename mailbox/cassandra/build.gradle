@@ -1,0 +1,43 @@
+
+description = 'Apache James :: Mailbox :: Cassandra'
+dependencies {
+  compile project(':james-backends-common:apache-james-backends-cassandra')
+  compile project(':apache-james-mailbox:apache-james-mailbox-api')
+  compile project(':apache-james-mailbox:apache-james-mailbox-store')
+  compile project(':james-server:james-server-blob:blob-api')
+  compile project(':james-server:james-server-task')
+  compile project(':james-server:james-server-util')
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.9.6'
+    compile group: 'com.github.fge', name: 'throwing-lambdas', version:'0.5.0'
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+    compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.6.1') {
+exclude(module: 'activation')
+    }
+    compile group: 'javax.inject', name: 'javax.inject', version:'1'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+  testCompile project(':james-backends-common:apache-james-backends-cassandra')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-api')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-event-memory')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-store')
+  testCompile project(':james-server:james-server-blob:blob-cassandra')
+  testCompile project(':james-server:james-server-data-api')
+  testCompile project(':javax-mail-extension')
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    testCompile group: 'com.google.inject', name: 'guice', version:'4.2.0'
+    testCompile group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version:'2.0.0.RC1'
+    testCompile group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version:'2.5.1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.assertj', name: 'assertj-guava', version:'3.2.0'
+    testCompile group: 'org.awaitility', name: 'awaitility', version:'3.1.2'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.21.0'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

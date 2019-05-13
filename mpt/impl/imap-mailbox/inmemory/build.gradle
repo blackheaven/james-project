@@ -1,0 +1,14 @@
+
+description = 'Apache James MPT Imap Mailbox - InMemory'
+dependencies {
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-api')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-memory')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-memory')
+  testCompile project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-core')
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

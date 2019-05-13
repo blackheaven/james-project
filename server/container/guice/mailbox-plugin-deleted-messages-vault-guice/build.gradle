@@ -1,0 +1,16 @@
+
+description = 'Apache James :: Server :: Guice :: Mailbox :: Plugin :: Deleted messages vault'
+dependencies {
+  compile project(':apache-james-mailbox:apache-james-mailbox-deleted-messages-vault')
+  compile project(':james-server:james-server-deleted-messages-vault')
+  compile project(':james-server:james-server-guice:james-server-guice-common')
+  compile project(':james-server:james-server-webadmin-core')
+  compile project(':james-server:james-server-webadmin-mailbox-deleted-message-vault')
+    compile group: 'com.google.inject', name: 'guice', version:'4.2.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

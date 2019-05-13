@@ -1,0 +1,21 @@
+
+description = 'Apache James :: Mailbox :: Event :: In Cassandra implementation'
+dependencies {
+  compile project(':james-backends-common:apache-james-backends-cassandra')
+  compile project(':apache-james-mailbox:apache-james-mailbox-api')
+  compile project(':apache-james-mailbox:apache-james-mailbox-event-json')
+  testCompile project(':james-backends-common:apache-james-backends-cassandra')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-api')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-cassandra')
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

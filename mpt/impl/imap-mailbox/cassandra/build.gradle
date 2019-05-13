@@ -1,0 +1,18 @@
+
+description = 'Apache James MPT Imap Mailbox - Cassandra'
+dependencies {
+  compile project(':james-backends-common:apache-james-backends-cassandra')
+  compile project(':apache-james-mailbox:apache-james-mailbox-cassandra')
+  compile project(':james-server:james-server-blob:blob-cassandra')
+  testCompile project(':james-backends-common:apache-james-backends-cassandra')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-cassandra')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-event-memory')
+  testCompile project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-core')
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

@@ -1,0 +1,17 @@
+
+description = 'Apache James :: Java Mail Extension'
+dependencies {
+    compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.6.1') {
+exclude(module: 'activation')
+    }
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+    compile(group: 'org.apache.james', name: 'apache-mime4j-core', version:'0.8.3') {
+exclude(module: 'commons-logging')
+    }
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

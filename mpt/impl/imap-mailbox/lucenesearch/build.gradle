@@ -1,0 +1,20 @@
+
+description = 'Apache James MPT Imap Mailbox - LuceneSearch'
+dependencies {
+  compile project(':apache-james-mailbox:apache-james-mailbox-api')
+  compile project(':apache-james-mailbox:apache-james-mailbox-api')
+  compile project(':apache-james-mailbox:apache-james-mailbox-event-memory')
+  compile project(':apache-james-mailbox:apache-james-mailbox-memory')
+  compile project(':apache-james-mailbox:apache-james-mailbox-memory')
+  compile project(':apache-james-mailbox:apache-james-mailbox-lucene')
+  compile project(':apache-james-mailbox:apache-james-mailbox-lucene')
+  compile project(':apache-james-mailbox:apache-james-mailbox-store')
+    compile group: 'junit', name: 'junit', version:'4.11'
+  testCompile project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-core')
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

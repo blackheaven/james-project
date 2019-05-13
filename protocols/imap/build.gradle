@@ -1,0 +1,33 @@
+group = 'org.apache.james.protocols'
+description = 'Apache James :: Protocols :: IMAP'
+dependencies {
+  compile project(':apache-james-mailbox:apache-james-mailbox-api')
+    compile(group: 'org.apache.james', name: 'apache-mime4j-core', version:'0.8.3') {
+exclude(module: 'commons-logging')
+    }
+    compile group: 'org.apache.james', name: 'apache-mime4j-dom', version:'0.8.3'
+  compile project(':james-server:james-server-util')
+  compile project(':metrics:metrics-api')
+  compile project(':protocols:protocols-api')
+    compile group: 'com.beetstra.jutf7', name: 'jutf7', version:'1.0.0'
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+    compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.6.1') {
+exclude(module: 'activation')
+    }
+    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.7'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-api')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-store')
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    testCompile group: 'junit', name: 'junit', version:'4.12'
+    testCompile group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version:'2.5.1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.assertj', name: 'assertj-guava', version:'3.2.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.21.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

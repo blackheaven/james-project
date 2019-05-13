@@ -1,0 +1,14 @@
+
+description = 'Apache James MPT Maven2 Plugin'
+dependencies {
+  compile project(':apache-james-mpt:apache-james-mpt-core')
+    compile group: 'junit', name: 'junit', version:'4.11'
+    compile group: 'org.apache.maven', name: 'maven-plugin-api', version:'3.2.5'
+  testCompile project(':apache-james-mpt:apache-james-mpt-core')
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

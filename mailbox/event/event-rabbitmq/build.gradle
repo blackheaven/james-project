@@ -1,0 +1,30 @@
+
+description = 'Apache James :: Mailbox :: Event :: RabbitMQ implementation'
+dependencies {
+  compile project(':james-backends-common:apache-james-backends-rabbitmq')
+  compile project(':apache-james-mailbox:apache-james-mailbox-api')
+  compile project(':apache-james-mailbox:apache-james-mailbox-event-json')
+  compile project(':james-server:james-server-lifecycle-api')
+  compile project(':metrics:metrics-api')
+    compile group: 'io.projectreactor', name: 'reactor-core', version:'3.2.3.RELEASE'
+    compile group: 'io.projectreactor.rabbitmq', name: 'reactor-rabbitmq', version:'1.0.0.RELEASE'
+  testCompile project(':james-backends-common:apache-james-backends-rabbitmq')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-api')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-event-memory')
+  testCompile project(':james-server:james-server-testing')
+    testCompile(group: 'com.jayway.awaitility', name: 'awaitility', version:'1.6.5') {
+exclude(module: 'commons-logging')
+    }
+    testCompile group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version:'2.5.1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.21.0'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

@@ -1,0 +1,47 @@
+
+description = 'Apache James :: Server :: JPA - guice injection'
+dependencies {
+  compile project(':apache-james-mailbox:apache-james-mailbox-jpa')
+  compile project(':apache-james-mailbox:apache-james-mailbox-quota-search-scanning')
+  compile project(':apache-james-mailbox:apache-james-mailbox-lucene')
+  compile project(':james-server:james-server-data-jpa')
+  compile project(':james-server:james-server-guice:james-server-guice-activemq')
+  compile project(':james-server:james-server-guice:james-server-guice-common')
+  compile project(':james-server:james-server-guice:james-server-guice-es-resporter')
+  compile project(':james-server:james-server-guice:james-server-guice-imap')
+  compile project(':james-server:james-server-guice:james-server-guice-jmap')
+  compile project(':james-server:james-server-guice:james-server-guice-jmx')
+  compile project(':james-server:james-server-guice:james-server-guice-lmtp')
+  compile project(':james-server:james-server-guice:james-server-guice-mailbox-plugin-spamassassin')
+  compile project(':james-server:james-server-guice:james-server-guice-managedsieve')
+  compile project(':james-server:james-server-guice:james-server-guice-pop')
+  compile project(':james-server:james-server-guice:james-server-guice-smtp')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin-data')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin-mailbox')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin-mailqueue')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin-mailrepository')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin-swagger')
+  compile project(':james-server:james-server-guice:james-server-jpa-common-guice')
+    compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    compile(group: 'com.internetitem', name: 'logback-elasticsearch-appender', version:'1.6') {
+exclude(module: 'jackson-core')
+    }
+    compile group: 'org.apache.derby', name: 'derby', version:'10.14.2.0'
+    compile group: 'org.awaitility', name: 'awaitility', version:'3.1.2'
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-jpa')
+  testCompile project(':james-server:james-server-guice:james-server-guice-common')
+  testCompile project(':james-server:james-server-guice:james-server-jpa-common-guice')
+  testCompile project(':james-server:james-server-testing')
+    testCompile(group: 'io.rest-assured', name: 'rest-assured', version:'3.1.0') {
+exclude(module: 'commons-logging')
+    }
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.21.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

@@ -1,0 +1,69 @@
+
+description = 'Apache James :: Server :: Mailets'
+dependencies {
+  compile project(':apache-james-mailbox:apache-james-mailbox-api')
+  compile project(':third-party:apache-james-spamassassin')
+  compile project(':apache-mailet:apache-mailet-api')
+  compile project(':apache-mailet:apache-mailet-base')
+  compile project(':apache-mailet:apache-mailet-standard')
+    compile group: 'org.apache.james', name: 'apache-mime4j-dom', version:'0.8.3'
+    compile group: 'org.apache.james', name: 'apache-mime4j-james-utils', version:'0.8.3'
+  compile project(':james-mdn')
+  compile project(':james-server:james-server-core')
+  compile project(':james-server:james-server-data-api')
+  compile project(':james-server:james-server-data-library')
+  compile project(':james-server:james-server-dnsservice-api')
+  compile project(':james-server:james-server-dnsservice-library')
+  compile project(':james-server:james-server-filesystem-api')
+  compile project(':james-server:james-server-lifecycle-api')
+  compile project(':james-server:james-server-queue-api')
+  compile project(':james-server:james-server-util')
+  compile project(':metrics:metrics-api')
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+    compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.6.1') {
+exclude(module: 'activation')
+    }
+    compile group: 'javax.inject', name: 'javax.inject', version:'1'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.7'
+    compile(group: 'org.apache.james.jspf', name: 'apache-jspf-resolver', version:'1.0.1') {
+exclude(module: 'log4j')
+exclude(module: 'dnsjava')
+exclude(module: 'commons-cli')
+exclude(module: 'dnsjnio')
+    }
+  compile project(':protocols:protocols-managesieve')
+  compile project(':protocols:protocols-smtp')
+    compile group: 'org.slf4j', name: 'jcl-over-slf4j', version:'1.7.25'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+    compile group: 'com.jakewharton.byteunits', name: 'byteunits', version:'0.9.1'
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-api')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-memory')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-memory')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-store')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-store')
+  testCompile project(':third-party:apache-james-spamassassin')
+  testCompile project(':apache-mailet:apache-mailet-base')
+  testCompile project(':metrics:metrics-tests')
+  testCompile project(':james-server:james-server-data-library')
+  testCompile project(':james-server:james-server-data-memory')
+  testCompile project(':james-server:james-server-dnsservice-test')
+  testCompile project(':james-server:james-server-mailrepository-memory')
+  testCompile project(':james-server:james-server-queue-memory')
+  testCompile project(':james-server:james-server-testing')
+  testCompile project(':javax-mail-extension')
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+  testCompile project(':protocols:protocols-managesieve')
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.assertj', name: 'assertj-guava', version:'3.2.0'
+    testCompile group: 'org.hamcrest', name: 'java-hamcrest', version:'2.0.0.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.21.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

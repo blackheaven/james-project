@@ -1,0 +1,33 @@
+
+description = 'Apache James :: Server :: Data :: LDAP Implementation'
+dependencies {
+  compile project(':james-server:james-server-data-api')
+  compile project(':james-server:james-server-lifecycle-api')
+  compile project(':james-server:james-server-util')
+    compile group: 'com.github.steveash.guavate', name: 'guavate', version:'1.0.0'
+    compile(group: 'commons-configuration', name: 'commons-configuration', version:'1.9') {
+exclude(module: 'dom4j')
+exclude(module: 'servletapi')
+exclude(module: 'xerces')
+exclude(module: 'commons-digester')
+exclude(module: 'commons-beanutils-core')
+exclude(module: 'commons-beanutils-bean-collections')
+exclude(module: 'commons-logging')
+    }
+    compile group: 'org.apache.directory.api', name: 'api-ldap-model', version:'1.0.2'
+    compile group: 'org.apache.geronimo.specs', name: 'geronimo-annotation_1.1_spec', version:'1.0.1'
+    compile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    compile group: 'org.slf4j', name: 'jcl-over-slf4j', version:'1.7.25'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+  testCompile project(':james-server:james-server-testing')
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    testCompile group: 'junit', name: 'junit', version:'4.12'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.21.0'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

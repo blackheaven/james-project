@@ -1,0 +1,20 @@
+group = 'org.apache.james.protocols'
+description = 'Apache James :: Protocols :: LMTP'
+dependencies {
+  compile project(':protocols:protocols-api')
+  compile project(':protocols:protocols-smtp')
+    compile group: 'javax.inject', name: 'javax.inject', version:'1'
+  testCompile project(':protocols:protocols-api')
+  testCompile project(':protocols:protocols-netty')
+  testCompile project(':protocols:protocols-smtp')
+    testCompile group: 'ch.qos.logback', name: 'logback-core', version:'1.2.3'
+    testCompile group: 'commons-net', name: 'commons-net', version:'3.6'
+    testCompile group: 'junit', name: 'junit', version:'4.12'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

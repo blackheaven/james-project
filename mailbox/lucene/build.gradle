@@ -1,0 +1,33 @@
+
+description = 'Apache James :: Mailbox :: Lucene Index'
+dependencies {
+  compile project(':apache-james-mailbox:apache-james-mailbox-api')
+  compile project(':apache-james-mailbox:apache-james-mailbox-store')
+    compile(group: 'org.apache.james', name: 'apache-mime4j-core', version:'0.8.3') {
+exclude(module: 'commons-logging')
+    }
+    compile group: 'org.apache.james', name: 'apache-mime4j-dom', version:'0.8.3'
+    compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.6.1') {
+exclude(module: 'activation')
+    }
+    compile group: 'org.apache.lucene', name: 'lucene-analyzers', version:'3.6.2'
+    compile group: 'org.apache.lucene', name: 'lucene-core', version:'3.6.2'
+    compile group: 'org.apache.lucene', name: 'lucene-smartcn', version:'3.6.2'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-api')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-event-memory')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-memory')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-memory')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-store')
+    testCompile(group: 'com.jayway.awaitility', name: 'awaitility', version:'1.6.5') {
+exclude(module: 'commons-logging')
+    }
+    testCompile group: 'junit', name: 'junit', version:'4.12'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

@@ -1,0 +1,17 @@
+
+description = 'Apache James MPT Imap Mailbox - JPA'
+dependencies {
+  testCompile project(':james-backends-common:apache-james-backends-jpa')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-event-memory')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-jpa')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-jpa')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-store')
+  testCompile project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-core')
+    testCompile group: 'org.apache.derby', name: 'derby', version:'10.14.2.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

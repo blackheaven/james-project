@@ -1,0 +1,14 @@
+
+description = 'Apache James :: Server :: Guice :: Smtp'
+dependencies {
+  compile project(':james-server:james-server-guice:james-server-guice-configuration')
+  compile project(':james-server:james-server-protocols-smtp')
+    compile group: 'com.google.inject', name: 'guice', version:'4.2.0'
+    compile group: 'com.google.inject.extensions', name: 'guice-multibindings', version:'4.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

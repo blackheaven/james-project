@@ -1,0 +1,45 @@
+
+description = 'Apache James :: Mailbox :: ElasticSearch'
+dependencies {
+  compile project(':james-backends-common:apache-james-backends-es')
+  compile project(':apache-james-mailbox:apache-james-mailbox-api')
+  compile project(':apache-james-mailbox:apache-james-mailbox-store')
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.9.6'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-guava', version:'2.9.6'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version:'2.9.6'
+    compile group: 'com.github.steveash.guavate', name: 'guavate', version:'1.0.0'
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+    compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.6.1') {
+exclude(module: 'activation')
+    }
+    compile group: 'javax.inject', name: 'javax.inject', version:'1'
+    compile group: 'org.elasticsearch', name: 'elasticsearch', version:'2.2.1'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+  testCompile project(':james-backends-common:apache-james-backends-es')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-api')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-event-memory')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-memory')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-memory')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-store')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-tika')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-tika')
+  testCompile project(':james-server:james-server-util')
+  testCompile project(':james-server:james-server-testing')
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    testCompile(group: 'com.jayway.awaitility', name: 'awaitility', version:'1.6.5') {
+exclude(module: 'commons-logging')
+    }
+    testCompile group: 'junit', name: 'junit', version:'4.12'
+    testCompile group: 'net.javacrumbs.json-unit', name: 'json-unit-assertj', version:'2.0.0.RC1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.elasticsearch', name: 'elasticsearch', version:'2.2.1'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version:'5.2.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.21.0'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

@@ -1,0 +1,16 @@
+
+description = 'Apache James MPT Imap Mailbox - Cyrus'
+dependencies {
+    compile group: 'org.awaitility', name: 'awaitility', version:'3.1.2'
+    compile(group: 'com.spotify', name: 'docker-client', version:'8.11.7') {
+exclude(module: 'commons-logging')
+    }
+    compile group: 'com.google.guava', name: 'guava', version:'20.0'
+  testCompile project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-core')
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

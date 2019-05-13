@@ -1,0 +1,13 @@
+
+description = 'Apache James :: Server :: Blob Memory - guice injection'
+dependencies {
+  compile project(':james-server:james-server-blob:blob-api')
+  compile project(':james-server:james-server-blob:blob-memory')
+  compile project(':james-server:james-server-guice:james-server-guice-common')
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

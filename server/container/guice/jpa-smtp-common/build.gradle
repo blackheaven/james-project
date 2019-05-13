@@ -1,0 +1,24 @@
+
+description = 'Apache James :: Server :: JPA + SMTP - common guice injection'
+dependencies {
+  compile project(':james-server:james-server-data-jpa')
+  compile project(':james-server:james-server-guice:james-server-guice-activemq')
+  compile project(':james-server:james-server-guice:james-server-guice-common')
+  compile project(':james-server:james-server-guice:james-server-guice-es-resporter')
+  compile project(':james-server:james-server-guice:james-server-guice-smtp')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin-data')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin-mailqueue')
+  compile project(':james-server:james-server-guice:james-server-guice-webadmin-mailrepository')
+  compile project(':james-server:james-server-guice:james-server-jpa-common-guice')
+    compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    compile(group: 'com.internetitem', name: 'logback-elasticsearch-appender', version:'1.6') {
+exclude(module: 'jackson-core')
+    }
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

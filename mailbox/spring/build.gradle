@@ -1,0 +1,45 @@
+
+description = 'Apache James :: Mailbox :: Spring'
+dependencies {
+  compile project(':apache-james-mailbox:apache-james-mailbox-api')
+  compile project(':apache-james-mailbox:apache-james-mailbox-event-memory')
+  compile project(':apache-james-mailbox:apache-james-mailbox-jpa')
+  compile project(':apache-james-mailbox:apache-james-mailbox-lucene')
+  compile project(':apache-james-mailbox:apache-james-mailbox-maildir')
+  compile project(':apache-james-mailbox:apache-james-mailbox-memory')
+  compile project(':apache-james-mailbox:apache-james-mailbox-store')
+  compile project(':apache-james-mailbox:apache-james-mailbox-tools-copier')
+  compile project(':apache-james-mailbox:apache-james-mailbox-tools-indexer')
+    compile(group: 'commons-dbcp', name: 'commons-dbcp', version:'1.4') {
+exclude(module: 'xercesImpl')
+    }
+    compile group: 'junit', name: 'junit', version:'4.12'
+    compile group: 'org.apache.derby', name: 'derby', version:'10.14.2.0'
+    compile(group: 'org.apache.hadoop', name: 'hadoop-core', version:'1.1.1') {
+exclude(module: 'commons-logging')
+    }
+    compile group: 'org.slf4j', name: 'jcl-over-slf4j', version:'1.7.25'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+    compile group: 'org.springframework', name: 'spring-beans', version:'3.2.18.RELEASE'
+    compile group: 'org.springframework', name: 'spring-context', version:'3.2.18.RELEASE'
+    compile(group: 'org.springframework', name: 'spring-core', version:'3.2.18.RELEASE') {
+exclude(module: 'commons-logging')
+    }
+    compile(group: 'org.springframework', name: 'spring-orm', version:'3.2.18.RELEASE') {
+exclude(module: 'toplink')
+exclude(module: 'toplink-essentials')
+exclude(module: 'hibernate')
+exclude(module: 'hibernate-entitymanager')
+exclude(module: 'spring-web')
+    }
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-api')
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    testCompile group: 'org.apache.hadoop', name: 'hadoop-test', version:'1.1.1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

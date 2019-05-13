@@ -1,0 +1,438 @@
+rootProject.name = 'james-project'
+include ':james-backends-common:apache-james-backends-cassandra'
+include ':james-backends-common:apache-james-backends-es'
+include ':james-backends-common:apache-james-backends-jpa'
+include ':james-backends-common:apache-james-backends-rabbitmq'
+include ':james-backends-common'
+include ':james-core'
+include ':event-sourcing:event-sourcing-core'
+include ':event-sourcing:event-sourcing-pojo'
+include ':event-sourcing:event-sourcing-event-store-api'
+include ':event-sourcing:event-sourcing-event-store-cassandra'
+include ':event-sourcing:event-sourcing-event-store-memory'
+include ':event-sourcing'
+include ':examples:custom-listeners'
+include ':examples:custom-mailets'
+include ':examples'
+include ':javax-mail-extension'
+include ':apache-james-mailbox:apache-james-mailbox-api'
+include ':apache-james-mailbox:backup'
+include ':apache-james-mailbox:apache-james-mailbox-caching'
+include ':apache-james-mailbox:apache-james-mailbox-cassandra'
+include ':apache-james-mailbox:apache-james-mailbox-elasticsearch'
+include ':apache-james-mailbox:apache-james-mailbox-event-cassandra'
+include ':apache-james-mailbox:apache-james-mailbox-event-memory'
+include ':apache-james-mailbox:apache-james-mailbox-event-rabbitmq'
+include ':apache-james-mailbox:apache-james-mailbox-event-json'
+include ':apache-james-mailbox:apache-james-mailbox-jpa'
+include ':apache-james-mailbox:apache-james-mailbox-lucene'
+include ':apache-james-mailbox:apache-james-mailbox-maildir'
+include ':apache-james-mailbox:apache-james-mailbox-memory'
+include ':apache-james-mailbox:apache-james-mailbox-deleted-messages-vault'
+include ':apache-james-mailbox:apache-james-mailbox-quota-mailing'
+include ':apache-james-mailbox:quota-mailing-cassandra'
+include ':apache-james-mailbox:quota-mailing-memory'
+include ':apache-james-mailbox:apache-james-mailbox-quota-search'
+include ':apache-james-mailbox:apache-james-mailbox-quota-search-elasticsearch'
+include ':apache-james-mailbox:apache-james-mailbox-quota-search-scanning'
+include ':apache-james-mailbox:apache-james-mailbox-spamassassin'
+include ':apache-james-mailbox:apache-james-mailbox-scanning-search'
+include ':apache-james-mailbox:apache-james-mailbox-spring'
+include ':apache-james-mailbox:apache-james-mailbox-store'
+include ':apache-james-mailbox:apache-james-mailbox-tika'
+include ':apache-james-mailbox:apache-james-mailbox-tools-copier'
+include ':apache-james-mailbox:apache-james-mailbox-tools-indexer'
+include ':apache-james-mailbox:apache-james-mailbvox-tools-jpa-migrator'
+include ':apache-james-mailbox:apache-james-mailbox-maildir-utils'
+include ':apache-james-mailbox:zookeeper-sequence-provider'
+include ':apache-james-mailbox'
+include ':apache-mailet:apache-mailet-ai'
+include ':apache-mailet:apache-mailet-api'
+include ':apache-mailet:apache-mailet-base'
+include ':apache-mailet:apache-mailet-crypto'
+include ':apache-mailet:apache-mailet-icalendar'
+include ':apache-mailet:mailetdocs-maven-plugin'
+include ':apache-mailet:apache-mailet-standard'
+include ':apache-mailet:apache-mailet-test'
+include ':apache-mailet'
+include ':james-mdn'
+include ':metrics:metrics-api'
+include ':metrics:metrics-dropwizard'
+include ':metrics:metrics-logger'
+include ':metrics:metrics-tests'
+include ':metrics'
+include ':apache-james-mpt:apache-james-mpt-all'
+include ':apache-james-mpt:apache-james-mpt-antlib'
+include ':apache-james-mpt:apache-james-mpt-app'
+include ':apache-james-mpt:apache-james-mpt-core'
+include ':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-cassandra'
+include ':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-core'
+include ':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-cyrus'
+include ':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-elasticsearch'
+include ':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-external-james'
+include ':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-inmemory'
+include ':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-jpa'
+include ':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-jpa-lucene'
+include ':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-maildir'
+include ':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-rabbitmq'
+include ':apache-james-mpt:apache-james-mpt-imapmailbox'
+include ':apache-james-mpt:apache-james-mpt-managesieve:apache-james-mpt-managesieve-cassandra'
+include ':apache-james-mpt:apache-james-mpt-managesieve:apache-james-mpt-managesieve-core'
+include ':apache-james-mpt:apache-james-mpt-managesieve:apache-james-mpt-managesieve-file'
+include ':apache-james-mpt:apache-james-mpt-managesieve'
+include ':apache-james-mpt:apache-james-mpt-smtp:apache-james-mpt-smtp-cassandra'
+include ':apache-james-mpt:apache-james-mpt-smtp:apache-james-mpt-smtp-cassandra-rabbitmq-object-storage'
+include ':apache-james-mpt:apache-james-mpt-smtp:apache-james-mpt-smtp-core'
+include ':apache-james-mpt:apache-james-mpt-smtp'
+include ':apache-james-mpt:mpt-maven-plugin'
+include ':apache-james-mpt'
+include ':protocols:protocols-api'
+include ':protocols:protocols-imap'
+include ':protocols:protocols-lmtp'
+include ':protocols:protocols-managesieve'
+include ':protocols:protocols-netty'
+include ':protocols:protocols-pop3'
+include ':protocols:protocols-smtp'
+include ':protocols'
+include ':james-server:james-server-app'
+include ':james-server:james-server-blob:blob-api'
+include ':james-server:james-server-blob:blob-cassandra'
+include ':james-server:james-server-blob:blob-export-api'
+include ':james-server:james-server-blob:blob-export-file'
+include ':james-server:james-server-blob:blob-memory'
+include ':james-server:james-server-blob:blob-objectstorage'
+include ':james-server:james-server-blob:blob-union'
+include ':james-server:james-server-blob:james-server-mail-store'
+include ':james-server:james-server-blob'
+include ':james-server:james-server-cli'
+include ':james-server:james-server-cli-integration'
+include ':james-server:james-server-core'
+include ':james-server:james-server-filesystem-api'
+include ':james-server:james-server-guice:blob-api-guice'
+include ':james-server:james-server-guice:blob-export-guice'
+include ':james-server:james-server-guice:blob-memory-guice'
+include ':james-server:james-server-guice:blob-objectstorage-guice'
+include ':james-server:james-server-guice:james-server-cassandra-guice'
+include ':james-server:james-server-guice:james-server-cassandra-ldap-guice'
+include ':james-server:james-server-guice:james-server-cassandra-rabbitmq-guice'
+include ':james-server:james-server-guice:james-server-cassandra-rabbitmq-ldap-guice'
+include ':james-server:james-server-guice:james-server-guice-configuration'
+include ':james-server:james-server-guice:james-server-guice-custom-mailets'
+include ':james-server:james-server-guice:james-server-guice-es-resporter'
+include ':james-server:james-server-guice:james-server-guice-common'
+include ':james-server:james-server-guice:james-server-guice-utils'
+include ':james-server:james-server-guice:james-server-guice-jmx'
+include ':james-server:james-server-guice:james-server-jpa-common-guice'
+include ':james-server:james-server-guice:james-server-jpa-guice'
+include ':james-server:james-server-guice:james-server-jpa-smtp-guice'
+include ':james-server:james-server-guice:james-server-jpa-smtp-common-guice'
+include ':james-server:james-server-guice:james-server-jpa-smtp-mariadb-guice'
+include ':james-server:james-server-guice:james-server-guice-mailbox'
+include ':james-server:james-server-guice:james-server-mailbox-plugin-deleted-messages-vault-guice'
+include ':james-server:james-server-guice:james-server-guice-mailbox-plugin-spamassassin'
+include ':james-server:james-server-guice:james-server-guice-mailet'
+include ':james-server:james-server-guice:james-server-memory-guice'
+include ':james-server:james-server-guice:james-server-onami'
+include ':james-server:james-server-guice:james-server-guice-imap'
+include ':james-server:james-server-guice:james-server-guice-jmap'
+include ':james-server:james-server-guice:james-server-guice-lmtp'
+include ':james-server:james-server-guice:james-server-guice-managedsieve'
+include ':james-server:james-server-guice:james-server-guice-netty'
+include ':james-server:james-server-guice:james-server-guice-pop'
+include ':james-server:james-server-guice:james-server-guice-smtp'
+include ':james-server:james-server-guice:james-server-guice-webadmin'
+include ':james-server:james-server-guice:james-server-guice-webadmin-cassandra'
+include ':james-server:james-server-guice:james-server-guice-webadmin-cassandra-data'
+include ':james-server:james-server-guice:james-server-guice-webadmin-data'
+include ':james-server:james-server-guice:james-server-guice-webadmin-mailbox'
+include ':james-server:james-server-guice:james-server-guice-webadmin-mailqueue'
+include ':james-server:james-server-guice:james-server-guice-webadmin-mailrepository'
+include ':james-server:james-server-guice:james-server-guice-webadmin-swagger'
+include ':james-server:james-server-guice:james-server-guice-activemq'
+include ':james-server:james-server-guice:james-server-guice-rabbitmq'
+include ':james-server:james-server-guice'
+include ':james-server:james-server-jetty'
+include ':james-server:james-server-lifecycle-api'
+include ':james-server:james-server-mailbox-adapter'
+include ':james-server:james-server-mailbox-jmx'
+include ':james-server:metrics-es-reporter'
+include ':james-server:james-server-spring'
+include ':james-server:james-server-util'
+include ':james-server:james-server-data-api'
+include ':james-server:james-server-data-cassandra'
+include ':james-server:james-server-data-file'
+include ':james-server:james-server-data-jdbc'
+include ':james-server:james-server-data-jmap'
+include ':james-server:james-server-data-jmap-cassandra'
+include ':james-server:james-server-data-jpa'
+include ':james-server:james-server-data-ldap'
+include ':james-server:james-server-data-library'
+include ':james-server:james-server-data-memory'
+include ':james-server:james-server-dnsservice-api'
+include ':james-server:james-server-dnsservice-dnsjava'
+include ':james-server:james-server-dnsservice-library'
+include ':james-server:james-server-dnsservice-test'
+include ':james-server:james-server-mailets-integration-testing'
+include ':james-server:james-server-mailetcontainer-api'
+include ':james-server:james-server-mailetcontainer-camel'
+include ':james-server:james-server-mailets'
+include ':james-server:james-server-deleted-messages-vault'
+include ':james-server:james-server-mailrepository-api'
+include ':james-server:james-server-mailrepository-memory'
+include ':james-server:james-server-mailrepository-cassandra'
+include ':james-server:james-server-fetchmail'
+include ':james-server:james-server-jmap'
+include ':james-server:jmap-integration-testing:cassandra-jmap-integration-testing'
+include ':james-server:jmap-integration-testing:james-server-jmap-integration-testing'
+include ':james-server:jmap-integration-testing:memory-jmap-integration-testing'
+include ':james-server:jmap-integration-testing:rabbitmq-jmap-integration-testing'
+include ':james-server:jmap-integration-testing'
+include ':james-server:james-server-jwt'
+include ':james-server:james-server-protocols-imap4'
+include ':james-server:james-server-protocols-library'
+include ':james-server:james-server-protocols-lmtp'
+include ':james-server:james-server-protocols-managesieve'
+include ':james-server:james-server-protocols-pop3'
+include ':james-server:james-server-protocols-smtp'
+include ':james-server:james-server-webadmin-integration-test'
+include ':james-server:james-server-webadmin-cassandra'
+include ':james-server:james-server-webadmin-cassandra-data'
+include ':james-server:james-server-webadmin-core'
+include ':james-server:james-server-webadmin-data'
+include ':james-server:james-server-webadmin-mailbox'
+include ':james-server:james-server-webadmin-mailbox-deleted-message-vault'
+include ':james-server:james-server-webadmin-mailqueue'
+include ':james-server:james-server-webadmin-mailrepository'
+include ':james-server:james-server-webadmin-swagger'
+include ':james-server-webadmin'
+include ':james-server:james-server-queue-activemq'
+include ':james-server:james-server-queue-api'
+include ':james-server:james-server-queue-file'
+include ':james-server:james-server-queue-jms'
+include ':james-server:james-server-queue-memory'
+include ':james-server:james-server-queue-rabbitmq'
+include ':james-server:james-server-task'
+include ':james-server:james-server-testing'
+include ':james-server'
+include ':third-party:apache-james-linshare'
+include ':third-party:apache-james-spamassassin'
+include ':third-party'
+
+project(':james-backends-common:apache-james-backends-cassandra').projectDir = "$rootDir/backends-common/cassandra" as File
+project(':james-backends-common:apache-james-backends-es').projectDir = "$rootDir/backends-common/elasticsearch" as File
+project(':james-backends-common:apache-james-backends-jpa').projectDir = "$rootDir/backends-common/jpa" as File
+project(':james-backends-common:apache-james-backends-rabbitmq').projectDir = "$rootDir/backends-common/rabbitmq" as File
+project(':james-backends-common').projectDir = "$rootDir/backends-common" as File
+project(':james-core').projectDir = "$rootDir/core" as File
+project(':event-sourcing:event-sourcing-core').projectDir = "$rootDir/event-sourcing/event-sourcing-core" as File
+project(':event-sourcing:event-sourcing-pojo').projectDir = "$rootDir/event-sourcing/event-sourcing-pojo" as File
+project(':event-sourcing:event-sourcing-event-store-api').projectDir = "$rootDir/event-sourcing/event-store-api" as File
+project(':event-sourcing:event-sourcing-event-store-cassandra').projectDir = "$rootDir/event-sourcing/event-store-cassandra" as File
+project(':event-sourcing:event-sourcing-event-store-memory').projectDir = "$rootDir/event-sourcing/event-store-memory" as File
+project(':event-sourcing').projectDir = "$rootDir/event-sourcing" as File
+project(':examples:custom-listeners').projectDir = "$rootDir/examples/custom-listeners" as File
+project(':examples:custom-mailets').projectDir = "$rootDir/examples/custom-mailets" as File
+project(':examples').projectDir = "$rootDir/examples" as File
+project(':javax-mail-extension').projectDir = "$rootDir/javax-mail-extension" as File
+project(':apache-james-mailbox:apache-james-mailbox-api').projectDir = "$rootDir/mailbox/api" as File
+project(':apache-james-mailbox:backup').projectDir = "$rootDir/mailbox/backup" as File
+project(':apache-james-mailbox:apache-james-mailbox-caching').projectDir = "$rootDir/mailbox/caching" as File
+project(':apache-james-mailbox:apache-james-mailbox-cassandra').projectDir = "$rootDir/mailbox/cassandra" as File
+project(':apache-james-mailbox:apache-james-mailbox-elasticsearch').projectDir = "$rootDir/mailbox/elasticsearch" as File
+project(':apache-james-mailbox:apache-james-mailbox-event-cassandra').projectDir = "$rootDir/mailbox/event/event-cassandra" as File
+project(':apache-james-mailbox:apache-james-mailbox-event-memory').projectDir = "$rootDir/mailbox/event/event-memory" as File
+project(':apache-james-mailbox:apache-james-mailbox-event-rabbitmq').projectDir = "$rootDir/mailbox/event/event-rabbitmq" as File
+project(':apache-james-mailbox:apache-james-mailbox-event-json').projectDir = "$rootDir/mailbox/event/json" as File
+project(':apache-james-mailbox:apache-james-mailbox-jpa').projectDir = "$rootDir/mailbox/jpa" as File
+project(':apache-james-mailbox:apache-james-mailbox-lucene').projectDir = "$rootDir/mailbox/lucene" as File
+project(':apache-james-mailbox:apache-james-mailbox-maildir').projectDir = "$rootDir/mailbox/maildir" as File
+project(':apache-james-mailbox:apache-james-mailbox-memory').projectDir = "$rootDir/mailbox/memory" as File
+project(':apache-james-mailbox:apache-james-mailbox-deleted-messages-vault').projectDir = "$rootDir/mailbox/plugin/deleted-messages-vault" as File
+project(':apache-james-mailbox:apache-james-mailbox-quota-mailing').projectDir = "$rootDir/mailbox/plugin/quota-mailing" as File
+project(':apache-james-mailbox:quota-mailing-cassandra').projectDir = "$rootDir/mailbox/plugin/quota-mailing-cassandra" as File
+project(':apache-james-mailbox:quota-mailing-memory').projectDir = "$rootDir/mailbox/plugin/quota-mailing-memory" as File
+project(':apache-james-mailbox:apache-james-mailbox-quota-search').projectDir = "$rootDir/mailbox/plugin/quota-search" as File
+project(':apache-james-mailbox:apache-james-mailbox-quota-search-elasticsearch').projectDir = "$rootDir/mailbox/plugin/quota-search-elasticsearch" as File
+project(':apache-james-mailbox:apache-james-mailbox-quota-search-scanning').projectDir = "$rootDir/mailbox/plugin/quota-search-scanning" as File
+project(':apache-james-mailbox:apache-james-mailbox-spamassassin').projectDir = "$rootDir/mailbox/plugin/spamassassin" as File
+project(':apache-james-mailbox:apache-james-mailbox-scanning-search').projectDir = "$rootDir/mailbox/scanning-search" as File
+project(':apache-james-mailbox:apache-james-mailbox-spring').projectDir = "$rootDir/mailbox/spring" as File
+project(':apache-james-mailbox:apache-james-mailbox-store').projectDir = "$rootDir/mailbox/store" as File
+project(':apache-james-mailbox:apache-james-mailbox-tika').projectDir = "$rootDir/mailbox/tika" as File
+project(':apache-james-mailbox:apache-james-mailbox-tools-copier').projectDir = "$rootDir/mailbox/tools/copier" as File
+project(':apache-james-mailbox:apache-james-mailbox-tools-indexer').projectDir = "$rootDir/mailbox/tools/indexer" as File
+project(':apache-james-mailbox:apache-james-mailbvox-tools-jpa-migrator').projectDir = "$rootDir/mailbox/tools/jpa-migrator" as File
+project(':apache-james-mailbox:apache-james-mailbox-maildir-utils').projectDir = "$rootDir/mailbox/tools/maildir-utils" as File
+project(':apache-james-mailbox:zookeeper-sequence-provider').projectDir = "$rootDir/mailbox/zoo-seq-provider" as File
+project(':apache-james-mailbox').projectDir = "$rootDir/mailbox" as File
+project(':apache-mailet:apache-mailet-ai').projectDir = "$rootDir/mailet/ai" as File
+project(':apache-mailet:apache-mailet-api').projectDir = "$rootDir/mailet/api" as File
+project(':apache-mailet:apache-mailet-base').projectDir = "$rootDir/mailet/base" as File
+project(':apache-mailet:apache-mailet-crypto').projectDir = "$rootDir/mailet/crypto" as File
+project(':apache-mailet:apache-mailet-icalendar').projectDir = "$rootDir/mailet/icalendar" as File
+project(':apache-mailet:mailetdocs-maven-plugin').projectDir = "$rootDir/mailet/mailetdocs-maven-plugin" as File
+project(':apache-mailet:apache-mailet-standard').projectDir = "$rootDir/mailet/standard" as File
+project(':apache-mailet:apache-mailet-test').projectDir = "$rootDir/mailet/test" as File
+project(':apache-mailet').projectDir = "$rootDir/mailet" as File
+project(':james-mdn').projectDir = "$rootDir/mdn" as File
+project(':metrics:metrics-api').projectDir = "$rootDir/metrics/metrics-api" as File
+project(':metrics:metrics-dropwizard').projectDir = "$rootDir/metrics/metrics-dropwizard" as File
+project(':metrics:metrics-logger').projectDir = "$rootDir/metrics/metrics-logger" as File
+project(':metrics:metrics-tests').projectDir = "$rootDir/metrics/metrics-tests" as File
+project(':metrics').projectDir = "$rootDir/metrics" as File
+project(':apache-james-mpt:apache-james-mpt-all').projectDir = "$rootDir/mpt/all" as File
+project(':apache-james-mpt:apache-james-mpt-antlib').projectDir = "$rootDir/mpt/antlib" as File
+project(':apache-james-mpt:apache-james-mpt-app').projectDir = "$rootDir/mpt/app" as File
+project(':apache-james-mpt:apache-james-mpt-core').projectDir = "$rootDir/mpt/core" as File
+project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-cassandra').projectDir = "$rootDir/mpt/impl/imap-mailbox/cassandra" as File
+project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-core').projectDir = "$rootDir/mpt/impl/imap-mailbox/core" as File
+project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-cyrus').projectDir = "$rootDir/mpt/impl/imap-mailbox/cyrus" as File
+project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-elasticsearch').projectDir = "$rootDir/mpt/impl/imap-mailbox/elasticsearch" as File
+project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-external-james').projectDir = "$rootDir/mpt/impl/imap-mailbox/external-james" as File
+project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-inmemory').projectDir = "$rootDir/mpt/impl/imap-mailbox/inmemory" as File
+project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-jpa').projectDir = "$rootDir/mpt/impl/imap-mailbox/jpa" as File
+project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-jpa-lucene').projectDir = "$rootDir/mpt/impl/imap-mailbox/lucenesearch" as File
+project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-maildir').projectDir = "$rootDir/mpt/impl/imap-mailbox/maildir" as File
+project(':apache-james-mpt:apache-james-mpt-imapmailbox:apache-james-mpt-imapmailbox-rabbitmq').projectDir = "$rootDir/mpt/impl/imap-mailbox/rabbitmq" as File
+project(':apache-james-mpt:apache-james-mpt-imapmailbox').projectDir = "$rootDir/mpt/impl/imap-mailbox" as File
+project(':apache-james-mpt:apache-james-mpt-managesieve:apache-james-mpt-managesieve-cassandra').projectDir = "$rootDir/mpt/impl/managesieve/cassandra" as File
+project(':apache-james-mpt:apache-james-mpt-managesieve:apache-james-mpt-managesieve-core').projectDir = "$rootDir/mpt/impl/managesieve/core" as File
+project(':apache-james-mpt:apache-james-mpt-managesieve:apache-james-mpt-managesieve-file').projectDir = "$rootDir/mpt/impl/managesieve/file" as File
+project(':apache-james-mpt:apache-james-mpt-managesieve').projectDir = "$rootDir/mpt/impl/managesieve" as File
+project(':apache-james-mpt:apache-james-mpt-smtp:apache-james-mpt-smtp-cassandra').projectDir = "$rootDir/mpt/impl/smtp/cassandra" as File
+project(':apache-james-mpt:apache-james-mpt-smtp:apache-james-mpt-smtp-cassandra-rabbitmq-object-storage').projectDir = "$rootDir/mpt/impl/smtp/cassandra-rabbitmq-object-storage" as File
+project(':apache-james-mpt:apache-james-mpt-smtp:apache-james-mpt-smtp-core').projectDir = "$rootDir/mpt/impl/smtp/core" as File
+project(':apache-james-mpt:apache-james-mpt-smtp').projectDir = "$rootDir/mpt/impl/smtp" as File
+project(':apache-james-mpt:mpt-maven-plugin').projectDir = "$rootDir/mpt/mavenplugin" as File
+project(':apache-james-mpt').projectDir = "$rootDir/mpt" as File
+project(':protocols:protocols-api').projectDir = "$rootDir/protocols/api" as File
+project(':protocols:protocols-imap').projectDir = "$rootDir/protocols/imap" as File
+project(':protocols:protocols-lmtp').projectDir = "$rootDir/protocols/lmtp" as File
+project(':protocols:protocols-managesieve').projectDir = "$rootDir/protocols/managesieve" as File
+project(':protocols:protocols-netty').projectDir = "$rootDir/protocols/netty" as File
+project(':protocols:protocols-pop3').projectDir = "$rootDir/protocols/pop3" as File
+project(':protocols:protocols-smtp').projectDir = "$rootDir/protocols/smtp" as File
+project(':protocols').projectDir = "$rootDir/protocols" as File
+project(':james-server:james-server-app').projectDir = "$rootDir/server/app" as File
+project(':james-server:james-server-blob:blob-api').projectDir = "$rootDir/server/blob/blob-api" as File
+project(':james-server:james-server-blob:blob-cassandra').projectDir = "$rootDir/server/blob/blob-cassandra" as File
+project(':james-server:james-server-blob:blob-export-api').projectDir = "$rootDir/server/blob/blob-export-api" as File
+project(':james-server:james-server-blob:blob-export-file').projectDir = "$rootDir/server/blob/blob-export-file" as File
+project(':james-server:james-server-blob:blob-memory').projectDir = "$rootDir/server/blob/blob-memory" as File
+project(':james-server:james-server-blob:blob-objectstorage').projectDir = "$rootDir/server/blob/blob-objectstorage" as File
+project(':james-server:james-server-blob:blob-union').projectDir = "$rootDir/server/blob/blob-union" as File
+project(':james-server:james-server-blob:james-server-mail-store').projectDir = "$rootDir/server/blob/mail-store" as File
+project(':james-server:james-server-blob').projectDir = "$rootDir/server/blob" as File
+project(':james-server:james-server-cli').projectDir = "$rootDir/server/container/cli" as File
+project(':james-server:james-server-cli-integration').projectDir = "$rootDir/server/container/cli-integration" as File
+project(':james-server:james-server-core').projectDir = "$rootDir/server/container/core" as File
+project(':james-server:james-server-filesystem-api').projectDir = "$rootDir/server/container/filesystem-api" as File
+project(':james-server:james-server-guice:blob-api-guice').projectDir = "$rootDir/server/container/guice/blob-api-guice" as File
+project(':james-server:james-server-guice:blob-export-guice').projectDir = "$rootDir/server/container/guice/blob-export-guice" as File
+project(':james-server:james-server-guice:blob-memory-guice').projectDir = "$rootDir/server/container/guice/blob-memory-guice" as File
+project(':james-server:james-server-guice:blob-objectstorage-guice').projectDir = "$rootDir/server/container/guice/blob-objectstorage-guice" as File
+project(':james-server:james-server-guice:james-server-cassandra-guice').projectDir = "$rootDir/server/container/guice/cassandra-guice" as File
+project(':james-server:james-server-guice:james-server-cassandra-ldap-guice').projectDir = "$rootDir/server/container/guice/cassandra-ldap-guice" as File
+project(':james-server:james-server-guice:james-server-cassandra-rabbitmq-guice').projectDir = "$rootDir/server/container/guice/cassandra-rabbitmq-guice" as File
+project(':james-server:james-server-guice:james-server-cassandra-rabbitmq-ldap-guice').projectDir = "$rootDir/server/container/guice/cassandra-rabbitmq-ldap-guice" as File
+project(':james-server:james-server-guice:james-server-guice-configuration').projectDir = "$rootDir/server/container/guice/configuration" as File
+project(':james-server:james-server-guice:james-server-guice-custom-mailets').projectDir = "$rootDir/server/container/guice/custom-mailets" as File
+project(':james-server:james-server-guice:james-server-guice-es-resporter').projectDir = "$rootDir/server/container/guice/es-metric-reporter" as File
+project(':james-server:james-server-guice:james-server-guice-common').projectDir = "$rootDir/server/container/guice/guice-common" as File
+project(':james-server:james-server-guice:james-server-guice-utils').projectDir = "$rootDir/server/container/guice/guice-utils" as File
+project(':james-server:james-server-guice:james-server-guice-jmx').projectDir = "$rootDir/server/container/guice/jmx" as File
+project(':james-server:james-server-guice:james-server-jpa-common-guice').projectDir = "$rootDir/server/container/guice/jpa-common-guice" as File
+project(':james-server:james-server-guice:james-server-jpa-guice').projectDir = "$rootDir/server/container/guice/jpa-guice" as File
+project(':james-server:james-server-guice:james-server-jpa-smtp-guice').projectDir = "$rootDir/server/container/guice/jpa-smtp" as File
+project(':james-server:james-server-guice:james-server-jpa-smtp-common-guice').projectDir = "$rootDir/server/container/guice/jpa-smtp-common" as File
+project(':james-server:james-server-guice:james-server-jpa-smtp-mariadb-guice').projectDir = "$rootDir/server/container/guice/jpa-smtp-mariadb" as File
+project(':james-server:james-server-guice:james-server-guice-mailbox').projectDir = "$rootDir/server/container/guice/mailbox" as File
+project(':james-server:james-server-guice:james-server-mailbox-plugin-deleted-messages-vault-guice').projectDir = "$rootDir/server/container/guice/mailbox-plugin-deleted-messages-vault-guice" as File
+project(':james-server:james-server-guice:james-server-guice-mailbox-plugin-spamassassin').projectDir = "$rootDir/server/container/guice/mailbox-plugin-spamassassin" as File
+project(':james-server:james-server-guice:james-server-guice-mailet').projectDir = "$rootDir/server/container/guice/mailet" as File
+project(':james-server:james-server-guice:james-server-memory-guice').projectDir = "$rootDir/server/container/guice/memory-guice" as File
+project(':james-server:james-server-guice:james-server-onami').projectDir = "$rootDir/server/container/guice/onami" as File
+project(':james-server:james-server-guice:james-server-guice-imap').projectDir = "$rootDir/server/container/guice/protocols/imap" as File
+project(':james-server:james-server-guice:james-server-guice-jmap').projectDir = "$rootDir/server/container/guice/protocols/jmap" as File
+project(':james-server:james-server-guice:james-server-guice-lmtp').projectDir = "$rootDir/server/container/guice/protocols/lmtp" as File
+project(':james-server:james-server-guice:james-server-guice-managedsieve').projectDir = "$rootDir/server/container/guice/protocols/managedsieve" as File
+project(':james-server:james-server-guice:james-server-guice-netty').projectDir = "$rootDir/server/container/guice/protocols/netty" as File
+project(':james-server:james-server-guice:james-server-guice-pop').projectDir = "$rootDir/server/container/guice/protocols/pop" as File
+project(':james-server:james-server-guice:james-server-guice-smtp').projectDir = "$rootDir/server/container/guice/protocols/smtp" as File
+project(':james-server:james-server-guice:james-server-guice-webadmin').projectDir = "$rootDir/server/container/guice/protocols/webadmin" as File
+project(':james-server:james-server-guice:james-server-guice-webadmin-cassandra').projectDir = "$rootDir/server/container/guice/protocols/webadmin-cassandra" as File
+project(':james-server:james-server-guice:james-server-guice-webadmin-cassandra-data').projectDir = "$rootDir/server/container/guice/protocols/webadmin-cassandra-data" as File
+project(':james-server:james-server-guice:james-server-guice-webadmin-data').projectDir = "$rootDir/server/container/guice/protocols/webadmin-data" as File
+project(':james-server:james-server-guice:james-server-guice-webadmin-mailbox').projectDir = "$rootDir/server/container/guice/protocols/webadmin-mailbox" as File
+project(':james-server:james-server-guice:james-server-guice-webadmin-mailqueue').projectDir = "$rootDir/server/container/guice/protocols/webadmin-mailqueue" as File
+project(':james-server:james-server-guice:james-server-guice-webadmin-mailrepository').projectDir = "$rootDir/server/container/guice/protocols/webadmin-mailrepository" as File
+project(':james-server:james-server-guice:james-server-guice-webadmin-swagger').projectDir = "$rootDir/server/container/guice/protocols/webadmin-swagger" as File
+project(':james-server:james-server-guice:james-server-guice-activemq').projectDir = "$rootDir/server/container/guice/activemq" as File
+project(':james-server:james-server-guice:james-server-guice-rabbitmq').projectDir = "$rootDir/server/container/guice/rabbitmq" as File
+project(':james-server:james-server-guice').projectDir = "$rootDir/server/container/guice" as File
+project(':james-server:james-server-jetty').projectDir = "$rootDir/server/container/jetty" as File
+project(':james-server:james-server-lifecycle-api').projectDir = "$rootDir/server/container/lifecycle-api" as File
+project(':james-server:james-server-mailbox-adapter').projectDir = "$rootDir/server/container/mailbox-adapter" as File
+project(':james-server:james-server-mailbox-jmx').projectDir = "$rootDir/server/container/mailbox-jmx" as File
+project(':james-server:metrics-es-reporter').projectDir = "$rootDir/server/container/metrics/metrics-es-reporter" as File
+project(':james-server:james-server-spring').projectDir = "$rootDir/server/container/spring" as File
+project(':james-server:james-server-util').projectDir = "$rootDir/server/container/util" as File
+project(':james-server:james-server-data-api').projectDir = "$rootDir/server/data/data-api" as File
+project(':james-server:james-server-data-cassandra').projectDir = "$rootDir/server/data/data-cassandra" as File
+project(':james-server:james-server-data-file').projectDir = "$rootDir/server/data/data-file" as File
+project(':james-server:james-server-data-jdbc').projectDir = "$rootDir/server/data/data-jdbc" as File
+project(':james-server:james-server-data-jmap').projectDir = "$rootDir/server/data/data-jmap" as File
+project(':james-server:james-server-data-jmap-cassandra').projectDir = "$rootDir/server/data/data-jmap-cassandra" as File
+project(':james-server:james-server-data-jpa').projectDir = "$rootDir/server/data/data-jpa" as File
+project(':james-server:james-server-data-ldap').projectDir = "$rootDir/server/data/data-ldap" as File
+project(':james-server:james-server-data-library').projectDir = "$rootDir/server/data/data-library" as File
+project(':james-server:james-server-data-memory').projectDir = "$rootDir/server/data/data-memory" as File
+project(':james-server:james-server-dnsservice-api').projectDir = "$rootDir/server/dns-service/dnsservice-api" as File
+project(':james-server:james-server-dnsservice-dnsjava').projectDir = "$rootDir/server/dns-service/dnsservice-dnsjava" as File
+project(':james-server:james-server-dnsservice-library').projectDir = "$rootDir/server/dns-service/dnsservice-library" as File
+project(':james-server:james-server-dnsservice-test').projectDir = "$rootDir/server/dns-service/dnsservice-test" as File
+project(':james-server:james-server-mailets-integration-testing').projectDir = "$rootDir/server/mailet/integration-testing" as File
+project(':james-server:james-server-mailetcontainer-api').projectDir = "$rootDir/server/mailet/mailetcontainer-api" as File
+project(':james-server:james-server-mailetcontainer-camel').projectDir = "$rootDir/server/mailet/mailetcontainer-camel" as File
+project(':james-server:james-server-mailets').projectDir = "$rootDir/server/mailet/mailets" as File
+project(':james-server:james-server-deleted-messages-vault').projectDir = "$rootDir/server/mailrepository/deleted-messages-vault-repository" as File
+project(':james-server:james-server-mailrepository-api').projectDir = "$rootDir/server/mailrepository/mailrepository-api" as File
+project(':james-server:james-server-mailrepository-memory').projectDir = "$rootDir/server/mailrepository/mailrepository-memory" as File
+project(':james-server:james-server-mailrepository-cassandra').projectDir = "$rootDir/server/mailrepository/mailrepository-cassandra" as File
+project(':james-server:james-server-fetchmail').projectDir = "$rootDir/server/protocols/fetchmail" as File
+project(':james-server:james-server-jmap').projectDir = "$rootDir/server/protocols/jmap" as File
+project(':james-server:jmap-integration-testing:cassandra-jmap-integration-testing').projectDir = "$rootDir/server/protocols/jmap-integration-testing/cassandra-jmap-integration-testing" as File
+project(':james-server:jmap-integration-testing:james-server-jmap-integration-testing').projectDir = "$rootDir/server/protocols/jmap-integration-testing/jmap-integration-testing-common" as File
+project(':james-server:jmap-integration-testing:memory-jmap-integration-testing').projectDir = "$rootDir/server/protocols/jmap-integration-testing/memory-jmap-integration-testing" as File
+project(':james-server:jmap-integration-testing:rabbitmq-jmap-integration-testing').projectDir = "$rootDir/server/protocols/jmap-integration-testing/rabbitmq-jmap-integration-testing" as File
+project(':james-server:jmap-integration-testing').projectDir = "$rootDir/server/protocols/jmap-integration-testing" as File
+project(':james-server:james-server-jwt').projectDir = "$rootDir/server/protocols/jwt" as File
+project(':james-server:james-server-protocols-imap4').projectDir = "$rootDir/server/protocols/protocols-imap4" as File
+project(':james-server:james-server-protocols-library').projectDir = "$rootDir/server/protocols/protocols-library" as File
+project(':james-server:james-server-protocols-lmtp').projectDir = "$rootDir/server/protocols/protocols-lmtp" as File
+project(':james-server:james-server-protocols-managesieve').projectDir = "$rootDir/server/protocols/protocols-managesieve" as File
+project(':james-server:james-server-protocols-pop3').projectDir = "$rootDir/server/protocols/protocols-pop3" as File
+project(':james-server:james-server-protocols-smtp').projectDir = "$rootDir/server/protocols/protocols-smtp" as File
+project(':james-server:james-server-webadmin-integration-test').projectDir = "$rootDir/server/protocols/webadmin-integration-test" as File
+project(':james-server:james-server-webadmin-cassandra').projectDir = "$rootDir/server/protocols/webadmin/webadmin-cassandra" as File
+project(':james-server:james-server-webadmin-cassandra-data').projectDir = "$rootDir/server/protocols/webadmin/webadmin-cassandra-data" as File
+project(':james-server:james-server-webadmin-core').projectDir = "$rootDir/server/protocols/webadmin/webadmin-core" as File
+project(':james-server:james-server-webadmin-data').projectDir = "$rootDir/server/protocols/webadmin/webadmin-data" as File
+project(':james-server:james-server-webadmin-mailbox').projectDir = "$rootDir/server/protocols/webadmin/webadmin-mailbox" as File
+project(':james-server:james-server-webadmin-mailbox-deleted-message-vault').projectDir = "$rootDir/server/protocols/webadmin/webadmin-mailbox-deleted-message-vault" as File
+project(':james-server:james-server-webadmin-mailqueue').projectDir = "$rootDir/server/protocols/webadmin/webadmin-mailqueue" as File
+project(':james-server:james-server-webadmin-mailrepository').projectDir = "$rootDir/server/protocols/webadmin/webadmin-mailrepository" as File
+project(':james-server:james-server-webadmin-swagger').projectDir = "$rootDir/server/protocols/webadmin/webadmin-swagger" as File
+project(':james-server-webadmin').projectDir = "$rootDir/server/protocols/webadmin" as File
+project(':james-server:james-server-queue-activemq').projectDir = "$rootDir/server/queue/queue-activemq" as File
+project(':james-server:james-server-queue-api').projectDir = "$rootDir/server/queue/queue-api" as File
+project(':james-server:james-server-queue-file').projectDir = "$rootDir/server/queue/queue-file" as File
+project(':james-server:james-server-queue-jms').projectDir = "$rootDir/server/queue/queue-jms" as File
+project(':james-server:james-server-queue-memory').projectDir = "$rootDir/server/queue/queue-memory" as File
+project(':james-server:james-server-queue-rabbitmq').projectDir = "$rootDir/server/queue/queue-rabbitmq" as File
+project(':james-server:james-server-task').projectDir = "$rootDir/server/task" as File
+project(':james-server:james-server-testing').projectDir = "$rootDir/server/testing" as File
+project(':james-server').projectDir = "$rootDir/server" as File
+project(':third-party:apache-james-linshare').projectDir = "$rootDir/third-party/linshare" as File
+project(':third-party:apache-james-spamassassin').projectDir = "$rootDir/third-party/spamassassin" as File
+project(':third-party').projectDir = "$rootDir/third-party" as File

@@ -1,0 +1,15 @@
+
+description = 'Apache James :: AI Mailets'
+dependencies {
+  compile project(':apache-mailet:apache-mailet-api')
+  compile project(':apache-mailet:apache-mailet-base')
+    compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.6.1') {
+exclude(module: 'activation')
+    }
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

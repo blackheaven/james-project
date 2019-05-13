@@ -1,0 +1,42 @@
+
+description = 'Apache James :: Server :: JMAP :: RabbitMQ + Object Store + Cassandra Integration testing'
+dependencies {
+  compile project(':apache-james-mailbox:backup')
+  testCompile project(':james-backends-common:apache-james-backends-cassandra')
+  testCompile project(':james-backends-common:apache-james-backends-es')
+  testCompile project(':james-backends-common:apache-james-backends-rabbitmq')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-api')
+  testCompile project(':apache-james-mailbox:apache-james-mailbox-scanning-search')
+  testCompile project(':third-party:apache-james-spamassassin')
+  testCompile project(':james-server:james-server-blob:blob-objectstorage')
+  testCompile project(':james-server:james-server-guice:blob-objectstorage-guice')
+  testCompile project(':james-server:james-server-dnsservice-test')
+  testCompile project(':james-server:james-server-guice:james-server-cassandra-guice')
+  testCompile project(':james-server:james-server-guice:james-server-cassandra-rabbitmq-guice')
+  testCompile project(':james-server:james-server-guice:james-server-cassandra-rabbitmq-guice')
+  testCompile project(':james-server:jmap-integration-testing:james-server-jmap-integration-testing')
+  testCompile project(':james-server:james-server-guice:james-server-guice-common')
+  testCompile project(':james-server:james-server-guice:james-server-guice-jmap')
+  testCompile project(':james-server:james-server-testing')
+    testCompile group: 'io.cucumber', name: 'cucumber-guice', version:'2.4.0'
+    testCompile group: 'io.cucumber', name: 'cucumber-java', version:'2.4.0'
+    testCompile group: 'io.cucumber', name: 'cucumber-junit', version:'2.4.0'
+    testCompile(group: 'io.rest-assured', name: 'rest-assured', version:'3.1.0') {
+exclude(module: 'commons-logging')
+    }
+    testCompile(group: 'org.apache.pdfbox', name: 'pdfbox', version:'2.0.12') {
+exclude(module: 'commons-logging')
+    }
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.hamcrest', name: 'java-hamcrest', version:'2.0.0.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version:'1.11.1'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests

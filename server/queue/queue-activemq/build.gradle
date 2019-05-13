@@ -1,0 +1,47 @@
+
+description = 'Apache James :: Server :: Mail Queue :: ActiveMQ'
+dependencies {
+  compile project(':apache-mailet:apache-mailet-api')
+  compile project(':james-server:james-server-core')
+  compile project(':james-server:james-server-filesystem-api')
+  compile project(':james-server:james-server-queue-api')
+  compile project(':james-server:james-server-queue-jms')
+    compile group: 'com.google.guava', name: 'guava', version:'25.1-jre'
+    compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.6.1') {
+exclude(module: 'activation')
+    }
+    compile group: 'javax.inject', name: 'javax.inject', version:'1'
+    compile(group: 'org.apache.activemq', name: 'activemq-broker', version:'5.15.5') {
+exclude(module: 'spring-osgi-core')
+exclude(module: 'icu4j')
+exclude(module: 'org.osgi.core')
+    }
+    compile group: 'org.apache.activemq', name: 'activemq-kahadb-store', version:'5.15.5'
+    compile(group: 'org.apache.activemq', name: 'artemis-jms-client', version:'2.6.2') {
+exclude(module: 'commons-logging')
+    }
+    compile group: 'org.apache.geronimo.specs', name: 'geronimo-annotation_1.1_spec', version:'1.0.1'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+  testCompile project(':apache-mailet:apache-mailet-base')
+  testCompile project(':james-server:james-server-queue-api')
+  testCompile project(':james-server:james-server-queue-jms')
+  testCompile project(':james-server:james-server-testing')
+  testCompile project(':javax-mail-extension')
+  testCompile project(':metrics:metrics-tests')
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    testCompile(group: 'com.jayway.awaitility', name: 'awaitility', version:'1.6.5') {
+exclude(module: 'commons-logging')
+    }
+    testCompile group: 'org.apache.commons', name: 'commons-text', version:'1.4'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.10.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
+    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
+    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.21.0'
+}
+
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+artifacts.archives packageTests
