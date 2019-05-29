@@ -48,7 +48,7 @@ You need to have a Cassandra, ElasticSearch and RabbitMQ instance running. You c
 
 ```bash
 $ docker run -d --port 9042:9042 --name=cassandra cassandra:3.11.3
-$ docker run -d --port 9200:9200 --port 9300:9300 --name=elasticsearch elasticsearch:2.4.6
+$ docker run -d --port 9200:9200 --port 9300:9300 --name=elasticsearch elasticsearch:6.7.2
 $ docker run -d --port 5672:5672 --port 15672:15672 --name=rabbitmq rabbitmq:3.7.7-management
 $ docker run -d --port 5000:5000 --port 8080:8080 --port 35357:35357 --name=swift linagora/openstack-keystone-swift:pike
 ```

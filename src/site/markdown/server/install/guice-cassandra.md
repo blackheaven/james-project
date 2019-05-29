@@ -46,7 +46,7 @@ You need to have a Cassandra and an ElasticSearch instance running. You can eith
 
 ```bash
 $ docker run -d --port 9042:9042 --name=cassandra cassandra:3.11.3
-$ docker run -d --port 9200:9200 --port 9300:9300 --name=elasticsearch elasticsearch:2.4.6
+$ docker run -d --port 9200:9200 --port 9300:9300 --name=elasticsearch elasticsearch:6.7.2
 ```
 
 Once everything is set up, you just have to run the jar with:
