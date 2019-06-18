@@ -35,7 +35,6 @@ import com.rabbitmq.client.Connection;
 
 import reactor.core.publisher.Mono;
 import reactor.rabbitmq.ChannelPool;
-import reactor.rabbitmq.ChannelPoolFactory;
 import reactor.rabbitmq.ChannelPoolOptions;
 import reactor.rabbitmq.RabbitFlux;
 import reactor.rabbitmq.Sender;
@@ -82,7 +81,7 @@ public class RabbitMQEventBus implements EventBus, Startable {
 
     public void start() {
         if (!isRunning && !isStopping) {
-            this.channelPool = ChannelPoolFactory.createChannelPool(
+            this.channelPool = ResilientChannelPool.createChannelPool(
                     connectionMono,
                     new ChannelPoolOptions().maxCacheSize(MAX_CHANNELS_NUMBER)
             );
