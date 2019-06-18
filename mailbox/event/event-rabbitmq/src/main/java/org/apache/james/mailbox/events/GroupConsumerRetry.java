@@ -26,6 +26,7 @@ import static org.apache.james.mailbox.events.GroupRegistration.RETRY_COUNT;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT;
 
 import java.nio.charset.StandardCharsets;
+import javax.inject.Provider;
 
 import org.apache.james.event.json.EventSerializer;
 import org.apache.james.util.MDCStructuredLogger;
@@ -43,6 +44,7 @@ import reactor.core.publisher.Mono;
 import reactor.rabbitmq.BindingSpecification;
 import reactor.rabbitmq.ExchangeSpecification;
 import reactor.rabbitmq.OutboundMessage;
+import reactor.rabbitmq.ResourceManagementOptions;
 import reactor.rabbitmq.Sender;
 
 class GroupConsumerRetry {
@@ -74,26 +76,28 @@ class GroupConsumerRetry {
     private final EventDeadLetters eventDeadLetters;
     private final Group group;
     private final EventSerializer eventSerializer;
+    private final Provider<ResourceManagementOptions> resourceManagement;
 
     GroupConsumerRetry(Sender sender, Group group, RetryBackoffConfiguration retryBackoff,
-                       EventDeadLetters eventDeadLetters, EventSerializer eventSerializer) {
+                       EventDeadLetters eventDeadLetters, EventSerializer eventSerializer, Provider<ResourceManagementOptions> resourceManagement) {
         this.sender = sender;
         this.retryExchangeName = RetryExchangeName.of(group);
         this.retryBackoff = retryBackoff;
         this.eventDeadLetters = eventDeadLetters;
         this.group = group;
         this.eventSerializer = eventSerializer;
+        this.resourceManagement = resourceManagement;
     }
 
     Mono<Void> createRetryExchange(GroupRegistration.WorkQueueName queueName) {
         return Flux.concat(
             sender.declareExchange(ExchangeSpecification.exchange(retryExchangeName.asString())
                 .durable(DURABLE)
-                .type(DIRECT_EXCHANGE)),
+                .type(DIRECT_EXCHANGE), resourceManagement.get()),
             sender.bind(BindingSpecification.binding()
                 .exchange(retryExchangeName.asString())
                 .queue(queueName.asString())
-                .routingKey(EMPTY_ROUTING_KEY)))
+                .routingKey(EMPTY_ROUTING_KEY), resourceManagement.get()))
             .then();
     }
 

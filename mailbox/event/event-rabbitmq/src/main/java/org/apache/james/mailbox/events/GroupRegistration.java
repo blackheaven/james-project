@@ -30,6 +30,7 @@ import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT_EXC
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
+import javax.inject.Provider;
 
 import org.apache.james.event.json.EventSerializer;
 import org.apache.james.util.MDCBuilder;
@@ -50,6 +51,7 @@ import reactor.rabbitmq.QueueSpecification;
 import reactor.rabbitmq.RabbitFlux;
 import reactor.rabbitmq.Receiver;
 import reactor.rabbitmq.ReceiverOptions;
+import reactor.rabbitmq.ResourceManagementOptions;
 import reactor.rabbitmq.Sender;
 
 class GroupRegistration implements Registration {
@@ -86,11 +88,12 @@ class GroupRegistration implements Registration {
     private final Group group;
     private final MailboxListenerExecutor mailboxListenerExecutor;
     private Optional<Disposable> receiverSubscriber;
+    private final Provider<ResourceManagementOptions> resourceManagement;
 
     GroupRegistration(Mono<Connection> connectionSupplier, Sender sender, EventSerializer eventSerializer,
                       MailboxListener mailboxListener, Group group, RetryBackoffConfiguration retryBackoff,
                       EventDeadLetters eventDeadLetters,
-                      Runnable unregisterGroup, MailboxListenerExecutor mailboxListenerExecutor) {
+                      Runnable unregisterGroup, MailboxListenerExecutor mailboxListenerExecutor, Provider<ResourceManagementOptions> resourceManagement) {
         this.eventSerializer = eventSerializer;
         this.mailboxListener = mailboxListener;
         this.queueName = WorkQueueName.of(group);
@@ -99,9 +102,10 @@ class GroupRegistration implements Registration {
         this.mailboxListenerExecutor = mailboxListenerExecutor;
         this.receiverSubscriber = Optional.empty();
         this.unregisterGroup = unregisterGroup;
-        this.retryHandler = new GroupConsumerRetry(sender, group, retryBackoff, eventDeadLetters, eventSerializer);
+        this.retryHandler = new GroupConsumerRetry(sender, group, retryBackoff, eventDeadLetters, eventSerializer, resourceManagement);
         this.delayGenerator = WaitDelayGenerator.of(retryBackoff);
         this.group = group;
+        this.resourceManagement = resourceManagement;
     }
 
     GroupRegistration start() {
@@ -118,11 +122,11 @@ class GroupRegistration implements Registration {
                 .durable(DURABLE)
                 .exclusive(!EXCLUSIVE)
                 .autoDelete(!AUTO_DELETE)
-                .arguments(NO_ARGUMENTS)),
+                .arguments(NO_ARGUMENTS), resourceManagement.get()),
             sender.bind(BindingSpecification.binding()
                 .exchange(MAILBOX_EVENT_EXCHANGE_NAME)
                 .queue(queueName.asString())
-                .routingKey(EMPTY_ROUTING_KEY)))
+                .routingKey(EMPTY_ROUTING_KEY), resourceManagement.get()))
             .then();
     }
 

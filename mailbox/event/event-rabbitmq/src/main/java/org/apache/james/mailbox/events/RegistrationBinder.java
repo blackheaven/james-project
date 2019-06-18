@@ -21,26 +21,31 @@ package org.apache.james.mailbox.events;
 
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT_EXCHANGE_NAME;
 
+import javax.inject.Provider;
+
 import reactor.core.publisher.Mono;
 import reactor.rabbitmq.BindingSpecification;
+import reactor.rabbitmq.ResourceManagementOptions;
 import reactor.rabbitmq.Sender;
 
 class RegistrationBinder {
     private final Sender sender;
     private final RegistrationQueueName registrationQueue;
+    private final Provider<ResourceManagementOptions> resourceManagement;
 
-    RegistrationBinder(Sender sender, RegistrationQueueName registrationQueue) {
+    RegistrationBinder(Sender sender, RegistrationQueueName registrationQueue, Provider<ResourceManagementOptions> resourceManagement) {
         this.sender = sender;
         this.registrationQueue = registrationQueue;
+        this.resourceManagement = resourceManagement;
     }
 
     Mono<Void> bind(RegistrationKey key) {
-        return sender.bind(bindingSpecification(key))
+        return sender.bind(bindingSpecification(key), resourceManagement.get())
             .then();
     }
 
     Mono<Void> unbind(RegistrationKey key) {
-        return sender.unbind(bindingSpecification(key))
+        return sender.unbind(bindingSpecification(key), resourceManagement.get())
             .then();
     }
 

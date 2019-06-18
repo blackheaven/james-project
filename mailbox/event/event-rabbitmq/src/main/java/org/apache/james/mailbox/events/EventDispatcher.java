@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+import javax.inject.Provider;
 
 import org.apache.james.event.json.EventSerializer;
 import org.apache.james.mailbox.events.RoutingKeyConverter.RoutingKey;
@@ -47,6 +48,7 @@ import reactor.core.publisher.MonoProcessor;
 import reactor.core.scheduler.Schedulers;
 import reactor.rabbitmq.ExchangeSpecification;
 import reactor.rabbitmq.OutboundMessage;
+import reactor.rabbitmq.ResourceManagementOptions;
 import reactor.rabbitmq.Sender;
 import reactor.util.function.Tuples;
 
@@ -58,9 +60,10 @@ class EventDispatcher {
     private final LocalListenerRegistry localListenerRegistry;
     private final AMQP.BasicProperties basicProperties;
     private final MailboxListenerExecutor mailboxListenerExecutor;
+    private final Provider<ResourceManagementOptions> resourceManagement;
     final AtomicInteger dispatchCount = new AtomicInteger();
 
-    EventDispatcher(EventBusId eventBusId, EventSerializer eventSerializer, Sender sender, LocalListenerRegistry localListenerRegistry, MailboxListenerExecutor mailboxListenerExecutor) {
+    EventDispatcher(EventBusId eventBusId, EventSerializer eventSerializer, Sender sender, LocalListenerRegistry localListenerRegistry, MailboxListenerExecutor mailboxListenerExecutor, Provider<ResourceManagementOptions> resourceManagement) {
         this.eventSerializer = eventSerializer;
         this.sender = sender;
         this.localListenerRegistry = localListenerRegistry;
@@ -68,12 +71,13 @@ class EventDispatcher {
             .headers(ImmutableMap.of(EVENT_BUS_ID, eventBusId.asString()))
             .build();
         this.mailboxListenerExecutor = mailboxListenerExecutor;
+        this.resourceManagement = resourceManagement;
     }
 
     void start() {
         sender.declareExchange(ExchangeSpecification.exchange(MAILBOX_EVENT_EXCHANGE_NAME)
             .durable(DURABLE)
-            .type(DIRECT_EXCHANGE))
+            .type(DIRECT_EXCHANGE), resourceManagement.get())
             .block();
     }
 

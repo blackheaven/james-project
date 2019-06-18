@@ -64,6 +64,7 @@ public class SimpleConnectionPool implements AutoCloseable {
         Connection previous = connectionReference.get();
         Connection current = Optional.ofNullable(previous)
             .filter(Connection::isOpen)
+            .filter(channel -> channel.getChannelMax() > 0)
             .orElseGet(connectionFactory::create);
         boolean updated = connectionReference.compareAndSet(previous, current);
         if (updated) {

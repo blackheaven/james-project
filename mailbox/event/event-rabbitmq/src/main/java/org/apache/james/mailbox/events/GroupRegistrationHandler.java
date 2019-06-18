@@ -22,12 +22,14 @@ package org.apache.james.mailbox.events;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.inject.Provider;
 
 import org.apache.james.event.json.EventSerializer;
 
 import com.rabbitmq.client.Connection;
 
 import reactor.core.publisher.Mono;
+import reactor.rabbitmq.ResourceManagementOptions;
 import reactor.rabbitmq.Sender;
 
 class GroupRegistrationHandler {
@@ -38,10 +40,12 @@ class GroupRegistrationHandler {
     private final RetryBackoffConfiguration retryBackoff;
     private final EventDeadLetters eventDeadLetters;
     private final MailboxListenerExecutor mailboxListenerExecutor;
+    private final Provider<ResourceManagementOptions> resourceManagement;
 
     GroupRegistrationHandler(EventSerializer eventSerializer, Sender sender, Mono<Connection> connectionMono,
                              RetryBackoffConfiguration retryBackoff,
-                             EventDeadLetters eventDeadLetters, MailboxListenerExecutor mailboxListenerExecutor) {
+                             EventDeadLetters eventDeadLetters, MailboxListenerExecutor mailboxListenerExecutor,
+                             Provider<ResourceManagementOptions> resourceManagement) {
         this.eventSerializer = eventSerializer;
         this.sender = sender;
         this.connectionMono = connectionMono;
@@ -49,6 +53,7 @@ class GroupRegistrationHandler {
         this.eventDeadLetters = eventDeadLetters;
         this.mailboxListenerExecutor = mailboxListenerExecutor;
         this.groupRegistrations = new ConcurrentHashMap<>();
+        this.resourceManagement = resourceManagement;
     }
 
     GroupRegistration retrieveGroupRegistration(Group group) {
@@ -81,6 +86,7 @@ class GroupRegistrationHandler {
             retryBackoff,
             eventDeadLetters,
             () -> groupRegistrations.remove(group),
-            mailboxListenerExecutor);
+            mailboxListenerExecutor,
+            resourceManagement);
     }
 }

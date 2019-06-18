@@ -27,6 +27,7 @@ import static org.apache.james.mailbox.events.RabbitMQEventBus.EVENT_BUS_ID;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import javax.inject.Provider;
 
 import org.apache.james.event.json.EventSerializer;
 import org.apache.james.util.MDCBuilder;
@@ -48,6 +49,7 @@ import reactor.rabbitmq.QueueSpecification;
 import reactor.rabbitmq.RabbitFlux;
 import reactor.rabbitmq.Receiver;
 import reactor.rabbitmq.ReceiverOptions;
+import reactor.rabbitmq.ResourceManagementOptions;
 import reactor.rabbitmq.Sender;
 
 class KeyRegistrationHandler {
@@ -62,9 +64,10 @@ class KeyRegistrationHandler {
     private final RegistrationQueueName registrationQueue;
     private final RegistrationBinder registrationBinder;
     private final MailboxListenerExecutor mailboxListenerExecutor;
+    private final Provider<ResourceManagementOptions> resourceManagement;
     private Optional<Disposable> receiverSubscriber;
 
-    KeyRegistrationHandler(EventBusId eventBusId, EventSerializer eventSerializer, Sender sender, Mono<Connection> connectionMono, RoutingKeyConverter routingKeyConverter, LocalListenerRegistry localListenerRegistry, MailboxListenerExecutor mailboxListenerExecutor) {
+    KeyRegistrationHandler(EventBusId eventBusId, EventSerializer eventSerializer, Sender sender, Mono<Connection> connectionMono, RoutingKeyConverter routingKeyConverter, LocalListenerRegistry localListenerRegistry, MailboxListenerExecutor mailboxListenerExecutor, Provider<ResourceManagementOptions> resourceManagement) {
         this.eventBusId = eventBusId;
         this.eventSerializer = eventSerializer;
         this.sender = sender;
@@ -73,7 +76,8 @@ class KeyRegistrationHandler {
         this.receiver = RabbitFlux.createReceiver(new ReceiverOptions().connectionMono(connectionMono));
         this.mailboxListenerExecutor = mailboxListenerExecutor;
         this.registrationQueue = new RegistrationQueueName();
-        this.registrationBinder = new RegistrationBinder(sender, registrationQueue);
+        this.registrationBinder = new RegistrationBinder(sender, registrationQueue, resourceManagement);
+        this.resourceManagement = resourceManagement;
     }
 
     void start() {
@@ -81,7 +85,7 @@ class KeyRegistrationHandler {
             .durable(DURABLE)
             .exclusive(!EXCLUSIVE)
             .autoDelete(!AUTO_DELETE)
-            .arguments(NO_ARGUMENTS))
+            .arguments(NO_ARGUMENTS), resourceManagement.get())
             .map(AMQP.Queue.DeclareOk::getQueue)
             .doOnSuccess(registrationQueue::initialize)
             .block();
@@ -96,7 +100,7 @@ class KeyRegistrationHandler {
         receiverSubscriber.filter(subscriber -> !subscriber.isDisposed())
             .ifPresent(Disposable::dispose);
         receiver.close();
-        sender.delete(QueueSpecification.queue(registrationQueue.asString())).block();
+        sender.delete(QueueSpecification.queue(registrationQueue.asString()), resourceManagement.get()).block();
     }
 
     Registration register(MailboxListener listener, RegistrationKey key) {

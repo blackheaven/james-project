@@ -23,13 +23,13 @@ import java.util.Set;
 
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.apache.james.backend.rabbitmq.SimpleConnectionPool;
 import org.apache.james.event.json.EventSerializer;
 import org.apache.james.lifecycle.api.Startable;
 import org.apache.james.metrics.api.MetricFactory;
 
-import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Preconditions;
 import com.rabbitmq.client.Connection;
 
@@ -37,6 +37,7 @@ import reactor.core.publisher.Mono;
 import reactor.rabbitmq.ChannelPool;
 import reactor.rabbitmq.ChannelPoolOptions;
 import reactor.rabbitmq.RabbitFlux;
+import reactor.rabbitmq.ResourceManagementOptions;
 import reactor.rabbitmq.Sender;
 import reactor.rabbitmq.SenderOptions;
 
@@ -85,12 +86,15 @@ public class RabbitMQEventBus implements EventBus, Startable {
                     connectionMono,
                     new ChannelPoolOptions().maxCacheSize(MAX_CHANNELS_NUMBER)
             );
-            sender = RabbitFlux.createSender(new SenderOptions().connectionMono(connectionMono).channelPool(channelPool)
-                .resourceManagementChannelMono(connectionMono.map(Throwing.function(Connection::createChannel))));
+            sender = RabbitFlux.createSender(new SenderOptions()
+                .connectionMono(connectionMono)
+                .channelPool(channelPool)
+                .resourceManagementChannelMono(Mono.error(() -> new RuntimeException("should not be used"))));
             LocalListenerRegistry localListenerRegistry = new LocalListenerRegistry();
-            keyRegistrationHandler = new KeyRegistrationHandler(eventBusId, eventSerializer, sender, connectionMono, routingKeyConverter, localListenerRegistry, mailboxListenerExecutor);
-            groupRegistrationHandler = new GroupRegistrationHandler(eventSerializer, sender, connectionMono, retryBackoff, eventDeadLetters, mailboxListenerExecutor);
-            eventDispatcher = new EventDispatcher(eventBusId, eventSerializer, sender, localListenerRegistry, mailboxListenerExecutor);
+            Provider<ResourceManagementOptions> resourceManagement = () -> new ResourceManagementOptions().channelMono(Mono.defer(() -> channelPool.getChannelMono()));
+            keyRegistrationHandler = new KeyRegistrationHandler(eventBusId, eventSerializer, sender, connectionMono, routingKeyConverter, localListenerRegistry, mailboxListenerExecutor, resourceManagement);
+            groupRegistrationHandler = new GroupRegistrationHandler(eventSerializer, sender, connectionMono, retryBackoff, eventDeadLetters, mailboxListenerExecutor, resourceManagement);
+            eventDispatcher = new EventDispatcher(eventBusId, eventSerializer, sender, localListenerRegistry, mailboxListenerExecutor, resourceManagement);
 
             eventDispatcher.start();
             keyRegistrationHandler.start();
