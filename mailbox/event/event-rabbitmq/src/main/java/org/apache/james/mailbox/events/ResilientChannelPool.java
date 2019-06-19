@@ -25,12 +25,18 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.BiConsumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
+import reactor.core.Exceptions;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
 import reactor.core.scheduler.Scheduler;
@@ -40,9 +46,10 @@ import reactor.rabbitmq.ChannelPoolOptions;
 import reactor.rabbitmq.RabbitFluxException;
 
 public class ResilientChannelPool implements ChannelPool {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResilientChannelPool.class);
     private static final int DEFAULT_CHANNEL_POOL_SIZE = 5;
     private static final int NUM_RETRIES = 100;
-    private static final Duration INITIAL_DELAY = Duration.ofMillis(100);
+    private static final Duration RETRY_DELAY = Duration.ofMillis(20);
 
     private final Mono<? extends Connection> connectionMono;
     private final BlockingQueue<Channel> channelsQueue;
@@ -71,10 +78,21 @@ public class ResilientChannelPool implements ChannelPool {
             if (channel == null) {
                 channel = createChannel(connection);
             }
+            if (channel == null) {
+                LOGGER.error("channel is null on " + Thread.currentThread().getName());
+            }
             return Mono.justOrEmpty(channel);
         })
                 .single()
-                .retryBackoff(NUM_RETRIES, INITIAL_DELAY)
+                .retryWhen(companion -> companion
+                    .zipWith(Flux.range(0, NUM_RETRIES), (error, index) -> {
+                        if (!(error instanceof NoSuchElementException) || index == NUM_RETRIES) {
+                            throw Exceptions.propagate(error);
+                        }
+
+                        LOGGER.warn("channel retry number " + index);
+                        return Mono.delay(RETRY_DELAY);
+                }))
                 .subscribeOn(subscriptionScheduler);
     }
 

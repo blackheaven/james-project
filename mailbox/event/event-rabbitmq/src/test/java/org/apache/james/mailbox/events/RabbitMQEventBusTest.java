@@ -490,7 +490,6 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             }
 
             @Test
-            @Disabled
             void dispatchShouldWorkAfterNetworkIssuesForOldKeyRegistration() {
                 eventBus.start();
                 MailboxListener listener = newListener();
@@ -509,7 +508,6 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             }
 
             @Test
-            @Disabled
             void dispatchShouldWorkAfterNetworkIssuesForNewKeyRegistration() {
                 eventBus.start();
                 MailboxListener listener = newListener();
