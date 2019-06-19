@@ -28,11 +28,14 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.fge.lambdas.Throwing;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import reactor.core.Exceptions;
@@ -54,6 +57,7 @@ public class ResilientChannelPool implements ChannelPool {
     private final Mono<? extends Connection> connectionMono;
     private final BlockingQueue<Channel> channelsQueue;
     private final Scheduler subscriptionScheduler;
+    private final AtomicBoolean isOpen;
 
     public static ChannelPool createChannelPool(Mono<? extends Connection> connectionMono) {
         return createChannelPool(connectionMono, new ChannelPoolOptions());
@@ -70,49 +74,84 @@ public class ResilientChannelPool implements ChannelPool {
         this.connectionMono = connectionMono;
         this.subscriptionScheduler = channelPoolOptions.getSubscriptionScheduler() == null ?
                 Schedulers.newElastic("sender-channel-pool") : channelPoolOptions.getSubscriptionScheduler();
+
+        isOpen = new AtomicBoolean(true);
+
+        IntStream.rangeClosed(1, channelsQueueCapacity)
+            .forEach(ignored -> addChannel());
+        System.out.println("ResilientChannelPool.size " + channelsQueue.size());
     }
 
     public Mono<? extends Channel> getChannelMono() {
-        return connectionMono.flatMap(connection -> {
-            Channel channel = channelsQueue.poll();
-            if (channel == null) {
-                channel = createChannel(connection);
-            }
-            if (channel == null) {
-                LOGGER.error("channel is null on " + Thread.currentThread().getName());
-            }
-            return Mono.justOrEmpty(channel);
-        })
-                .single()
-                .retryWhen(companion -> companion
-                    .zipWith(Flux.range(0, NUM_RETRIES), (error, index) -> {
-                        if (!(error instanceof NoSuchElementException) || index == NUM_RETRIES) {
-                            throw Exceptions.propagate(error);
-                        }
-
-                        LOGGER.warn("channel retry number " + index);
-                        return Mono.delay(RETRY_DELAY);
-                }))
-                .subscribeOn(subscriptionScheduler);
+        return Mono.defer(Throwing.supplier(() -> {
+            Mono<Channel> l = Mono.just(channelsQueue.take());
+            System.out.println("take one channel");
+            return l;
+        }).sneakyThrow())
+            .publishOn(subscriptionScheduler);
     }
 
     @Override
     public BiConsumer<SignalType, Channel> getChannelCloseHandler() {
-        return (signalType, channel) -> {
-            if (!channel.isOpen()) {
-                return;
-            }
-            boolean offer = signalType == SignalType.ON_COMPLETE && channelsQueue.offer(channel);
-            if (!offer) {
+        return Throwing.<SignalType, Channel>biConsumer((signalType, channel) -> {
+            System.out.println("channel put back");
+            LOGGER.debug("channel put back");
+            if (channel.isOpen() && isOpen.get()) {
+                channelsQueue.put(channel);
+            } else {
+                System.out.println("Channel closed");
                 SENDER_CHANNEL_CLOSE_HANDLER_INSTANCE.accept(signalType, channel);
+                addChannel();
             }
-        };
+        }).sneakyThrow();
+    }
+
+    private void addChannel() {
+        if (!isOpen.get()) {
+            System.out.println("add channel shortcut closed");
+            return;
+        }
+        System.out.println("add channel");
+        LOGGER.debug("add channel");
+        Channel newChannel = connectionMono.flatMap(connection -> {
+            Channel channel =  createChannel(connection);
+            if (channel == null) {
+                System.out.println("channel is null on " + Thread.currentThread().getName());
+                LOGGER.error("channel is null on " + Thread.currentThread().getName());
+            }
+            return Mono.justOrEmpty(channel);
+        })
+        .single()
+        .retryWhen(companion -> companion
+        .zipWith(Flux.range(0, NUM_RETRIES), (error, index) -> {
+            if (!(error instanceof NoSuchElementException) || index == NUM_RETRIES) {
+                throw Exceptions.propagate(error);
+            }
+
+            System.out.println("channel retry number " + index);
+            LOGGER.warn("channel retry number " + index);
+            return Mono.delay(RETRY_DELAY);
+        }))
+        .subscribeOn(Schedulers.elastic())
+        .block();
+
+        try {
+            channelsQueue.put(newChannel);
+            System.out.println("channel added");
+            LOGGER.debug("channel added");
+        } catch (InterruptedException e) {
+            System.out.println("channel not added");
+            LOGGER.debug("channel not added");
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void close() {
+        isOpen.set(false);
         List<Channel> channels = new ArrayList<>();
         channelsQueue.drainTo(channels);
+        System.out.println("closing " + channels.size() + " channels");
         channels.forEach(channel -> {
             SENDER_CHANNEL_CLOSE_HANDLER_INSTANCE.accept(SignalType.ON_COMPLETE, channel);
         });

@@ -31,6 +31,7 @@ import org.apache.james.lifecycle.api.Startable;
 import org.apache.james.metrics.api.MetricFactory;
 
 import com.google.common.base.Preconditions;
+import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 
 import reactor.core.publisher.Mono;
@@ -42,7 +43,7 @@ import reactor.rabbitmq.Sender;
 import reactor.rabbitmq.SenderOptions;
 
 public class RabbitMQEventBus implements EventBus, Startable {
-    private static final int MAX_CHANNELS_NUMBER = 5;
+    private static final int MAX_CHANNELS_NUMBER = 10;
     private static final String NOT_RUNNING_ERROR_MESSAGE = "Event Bus is not running";
     static final String MAILBOX_EVENT = "mailboxEvent";
     static final String MAILBOX_EVENT_EXCHANGE_NAME = MAILBOX_EVENT + "-exchange";
@@ -91,7 +92,10 @@ public class RabbitMQEventBus implements EventBus, Startable {
                 .channelPool(channelPool)
                 .resourceManagementChannelMono(Mono.error(() -> new RuntimeException("should not be used"))));
             LocalListenerRegistry localListenerRegistry = new LocalListenerRegistry();
-            Provider<ResourceManagementOptions> resourceManagement = () -> new ResourceManagementOptions().channelMono(Mono.defer(() -> channelPool.getChannelMono()));
+            Provider<ResourceManagementOptions> resourceManagement = () -> new ResourceManagementOptions().channelMono(Mono.defer(() -> {
+                Channel channel = channelPool.getChannelMono().block();
+                return Mono.just(channel).doFinally(signalType -> channelPool.getChannelCloseHandler().accept(signalType, channel));
+            }));
             keyRegistrationHandler = new KeyRegistrationHandler(eventBusId, eventSerializer, sender, connectionMono, routingKeyConverter, localListenerRegistry, mailboxListenerExecutor, resourceManagement);
             groupRegistrationHandler = new GroupRegistrationHandler(eventSerializer, sender, connectionMono, retryBackoff, eventDeadLetters, mailboxListenerExecutor, resourceManagement);
             eventDispatcher = new EventDispatcher(eventBusId, eventSerializer, sender, localListenerRegistry, mailboxListenerExecutor, resourceManagement);

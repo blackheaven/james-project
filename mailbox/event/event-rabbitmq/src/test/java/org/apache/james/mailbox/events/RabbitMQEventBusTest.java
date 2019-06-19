@@ -104,6 +104,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
 
     @BeforeEach
     void setUp() {
+        System.out.println("root setUp");
         memoryEventDeadLetters = new MemoryEventDeadLetters();
 
         TestId.Factory mailboxIdFactory = new TestId.Factory();
@@ -346,6 +347,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
 
                 @BeforeEach
                 void beforeEach() {
+                    System.out.println("SingleEventBus beforeEach");
                     rabbitMQEventBusWithNetWorkIssue = newEventBus(rabbitMQNetWorkIssueExtension.getRabbitConnectionPool());
                 }
 
