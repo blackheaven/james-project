@@ -21,6 +21,9 @@ package org.apache.james;
 
 import static org.awaitility.Duration.ONE_HUNDRED_MILLISECONDS;
 
+import javax.mail.Flags;
+
+import org.apache.commons.net.imap.IMAPClient;
 import org.apache.james.core.Domain;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
@@ -29,8 +32,13 @@ import org.apache.james.utils.IMAPMessageReader;
 import org.apache.james.utils.SMTPMessageSender;
 import org.apache.james.utils.SpoolerProbe;
 import org.awaitility.Awaitility;
+import org.awaitility.Duration;
 import org.awaitility.core.ConditionFactory;
 import org.junit.jupiter.api.Test;
+
+import com.github.fge.lambdas.Throwing;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 interface MailsShouldBeWellReceived {
 
@@ -41,6 +49,7 @@ interface MailsShouldBeWellReceived {
     ConditionFactory CALMLY_AWAIT = Awaitility
         .with().pollInterval(ONE_HUNDRED_MILLISECONDS)
         .and().pollDelay(ONE_HUNDRED_MILLISECONDS)
+        .atMost(Duration.TEN_MINUTES)
         .await();
 
     @Test
@@ -63,4 +72,39 @@ interface MailsShouldBeWellReceived {
                 .awaitMessage(CALMLY_AWAIT);
         }
     }
+
+    @Test
+    default void hugeMailLoadShouldBeWellReceived(GuiceJamesServer server) throws Exception {
+        int mailNumber = 1000;
+
+        server.getProbe(DataProbeImpl.class).fluent()
+            .addDomain(DOMAIN);
+
+
+        Flux
+            .range(0, mailNumber)
+            .parallel(1000)
+            .runOn(Schedulers.elastic())
+            .map(Throwing.function(userNum -> {
+                System.out.println("start for user" + userNum);
+                String user = "james_user" + userNum + "@" + DOMAIN;
+                String password = PASSWORD + userNum;
+                try (IMAPMessageReader reader = new IMAPMessageReader()) {
+                    server.getProbe(DataProbeImpl.class).fluent().addUser(user, password);
+
+                    reader.connect(JAMES_SERVER_HOST, server.getProbe(ImapGuiceProbe.class).getImapPort());
+                    reader.login(user, password)
+                        .select(IMAPMessageReader.INBOX)
+                        .append(IMAPMessageReader.INBOX, new Flags(), "message")
+                        .awaitMessage(CALMLY_AWAIT);
+                    System.out.println("end for user" + userNum);
+                }
+                return user;
+            }).sneakyThrow())
+            .sequential()
+            .then()
+            .block();
+
+    }
+
 }

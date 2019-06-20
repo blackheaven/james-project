@@ -26,6 +26,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import javax.mail.Flags;
+
 import org.apache.commons.net.imap.IMAPClient;
 import org.awaitility.core.ConditionFactory;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -74,6 +76,11 @@ public class IMAPMessageReader extends ExternalResource implements Closeable, Af
 
     public IMAPMessageReader delete(String mailbox) throws IOException {
         imapClient.delete(mailbox);
+        return this;
+    }
+
+    public IMAPMessageReader append(String mailbox, Flags flags, String message) throws IOException {
+        imapClient.append(mailbox, flags.toString(), null, message);
         return this;
     }
 
