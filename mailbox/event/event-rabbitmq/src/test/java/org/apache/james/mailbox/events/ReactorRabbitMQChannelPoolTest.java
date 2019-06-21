@@ -70,14 +70,14 @@ class ReactorRabbitMQChannelPoolTest implements ChannelPoolContract {
     // Pool wait timeout is an expected exception
     @Test
     void concurrentRequestOnChannelMonoLeadToPoolWaitTimeoutException() {
-        Mono<? extends Channel> channelMono = getChannelPool(100).getChannelMono();
+        Mono<? extends Channel> channelMono = getChannelPool(99).getChannelMono();
 
         ConcurrentLinkedQueue<Channel> listChannels = new ConcurrentLinkedQueue<>();
         assertThatThrownBy(() ->
             ConcurrentTestRunner.builder()
                 .operation((threadNumber, step) -> listChannels.add(channelMono.block()))
                 .threadCount(10)
-                .operationCount(11)
+                .operationCount(10)
                 .runSuccessfullyWithin(Duration.ofSeconds(30)))
             .isInstanceOf(ExecutionException.class)
             .hasMessageContaining("java.util.NoSuchElementException: Timeout waiting for idle object");
