@@ -50,7 +50,7 @@ public class ObjectStorageBlobsDAOBuilder {
         private final ContainerName containerName;
         private final BlobId.Factory blobIdFactory;
         private Optional<PayloadCodec> payloadCodec;
-        private Optional<PutBlobFunction> putBlob;
+        private Optional<BlobPutter> putBlob;
 
         public ReadyToBuild(Supplier<BlobStore> supplier, BlobId.Factory blobIdFactory, ContainerName containerName) {
             this.blobIdFactory = blobIdFactory;
@@ -70,7 +70,7 @@ public class ObjectStorageBlobsDAOBuilder {
             return this;
         }
 
-        public ReadyToBuild putBlob(Optional<PutBlobFunction> putBlob) {
+        public ReadyToBuild putBlob(Optional<BlobPutter> putBlob) {
             this.putBlob = putBlob;
             return this;
         }
@@ -84,12 +84,12 @@ public class ObjectStorageBlobsDAOBuilder {
             return new ObjectStorageBlobsDAO(containerName,
                 blobIdFactory,
                 blobStore,
-                putBlob.orElse(defaultPutBlob(blobStore)),
+                putBlob.orElseGet(() -> defaultPutBlob(blobStore)),
                 payloadCodec.orElse(PayloadCodec.DEFAULT_CODEC));
         }
 
-        private PutBlobFunction defaultPutBlob(BlobStore blobStore) {
-            return (blob) -> blobStore.putBlob(containerName.value(), blob);
+        private BlobPutter defaultPutBlob(BlobStore blobStore) {
+            return new StreamCompatibleBlobPutter(blobStore, containerName);
         }
 
         @VisibleForTesting

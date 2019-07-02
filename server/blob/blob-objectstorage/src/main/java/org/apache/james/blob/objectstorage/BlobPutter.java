@@ -19,6 +19,9 @@
 
 package org.apache.james.blob.objectstorage;
 
+import java.util.function.Supplier;
+
+import org.apache.james.blob.api.BlobId;
 import org.jclouds.blobstore.domain.Blob;
 
 /**
@@ -30,8 +33,10 @@ import org.jclouds.blobstore.domain.Blob;
  * whereas you don't need one by using the S3 client.
  *
  */
-@FunctionalInterface
-public interface PutBlobFunction {
 
-    void putBlob(Blob blob);
+public interface BlobPutter {
+
+    void putDirectly(Blob blob);
+
+    BlobId putAndComputeId(Blob initialBlob, Supplier<BlobId> blobIdSupplier);
 }
