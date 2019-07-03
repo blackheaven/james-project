@@ -50,13 +50,8 @@ pipeline {
                 stage('Start James') {
                     steps {
                         script {
-                            if (fileExists('/srv/bench-running-docker')) {
-                                echo 'Last build failed, cleaning provisionning'
-                                sh 'sudo btrfs subvolume delete /srv/bench-running-docker'
-                            }
-                            sh "cd /srv && sudo btrfs subvolume snapshot bench-snapshot bench-running-docker"
-                            sh 'docker run -d --name=cassandra -p 9042:9042 -v /srv/bench-running-docker/cassandra:/var/lib/cassandra cassandra:3.11.3'
-                            sh 'docker run -d --name=elasticsearch -p 9200:9200 -v /srv/bench-running-docker/elasticsearch:/usr/share/elasticsearch/data/elasticsearch  --env "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.3.2'
+                            sh 'docker run -d --name=cassandra -p 9042:9042 cassandra:3.11.3'
+                            sh 'docker run -d --name=elasticsearch -p 9200:9200 --env "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.3.2'
                             sh 'docker run -d --name=tika logicalspark/docker-tikaserver:1.19.1'
                             sh 'docker run -d --name=s3 scality/s3server:6018536a'
                             sh 'docker run -d --name=rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3.7.7-management'
@@ -96,7 +91,6 @@ pipeline {
             node('target') {
                 script {
                     sh 'docker rm -f cassandra rabbitmq elasticsearch tika s3 james_run || true'
-                    sh 'sudo btrfs subvolume delete /srv/bench-running-docker'
                 }
             }
         }
