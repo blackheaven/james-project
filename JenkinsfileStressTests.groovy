@@ -50,10 +50,10 @@ pipeline {
                             sh 'docker run -d --name=cassandra -p 9042:9042 -v /srv/bench-running-docker/cassandra:/var/lib/cassandra cassandra:3.11.3'
                             sh 'docker run -d --name=elasticsearch -p 9200:9200 -v /srv/bench-running-docker/elasticsearch:/usr/share/elasticsearch/data/elasticsearch  --env "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.3.2'
                             sh 'docker run -d --name=tika logicalspark/docker-tikaserver:1.19.1'
-                            sh 'docker run -d --name=swift -p 8080:8080 -v /srv/bench-running-docker/swift:/srv/1/node/sdb1 jeantil/openstack-keystone-swift:pike'
+                            sh 'docker run -d --name=s3 scality/s3server:6018536a'
                             sh 'docker run -d --name=rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3.7.7-management'
 
-                            sh 'docker run -d --hostname HOSTNAME -p 25:25 -p 1080:80 -p 8000:8000 -p 110:110 -p 143:143 -p 465:465 -p 587:587 -p 993:993 --link cassandra:cassandra --link rabbitmq:rabbitmq --link elasticsearch:elasticsearch --link tika:tika --link swift:swift --name james_run -t james_run'
+                            sh 'docker run -d --hostname HOSTNAME -p 25:25 -p 1080:80 -p 8000:8000 -p 110:110 -p 143:143 -p 465:465 -p 587:587 -p 993:993 --link cassandra:cassandra --link rabbitmq:rabbitmq --link elasticsearch:elasticsearch --link tika:tika --link s3:s3 --name james_run -t james_run'
                             timeout(time: 20, unit: 'MINUTES') {
                                 retry(200) {
                                     sleep 5
@@ -86,7 +86,7 @@ pipeline {
         always {
             node('target') {
                 script {
-                    sh 'docker rm -f cassandra rabbitmq elasticsearch tika swift james_run || true'
+                    sh 'docker rm -f cassandra rabbitmq elasticsearch tika s3 james_run || true'
                     sh 'sudo btrfs subvolume delete /srv/bench-running-docker'
                 }
             }
