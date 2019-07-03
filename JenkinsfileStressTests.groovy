@@ -66,6 +66,7 @@ pipeline {
                                 retry(200) {
                                     sleep 5
                                     def jamesCliWithOptions = 'java -jar /root/james-cli.jar -h 127.0.0.1 -p 9999'
+                                    sh "docker logs james_run"
                                     sh "docker exec james_run ${jamesCliWithOptions} listusers"
                                 }
                             }
