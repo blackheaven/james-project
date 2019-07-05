@@ -118,11 +118,7 @@ public class ObjectStorageBlobsDAO implements BlobStore {
     private Mono<BlobId> savingStrategySelection(BucketName bucketName, InputStream data) {
         InputStream bufferedData = new BufferedInputStream(data, BUFFERED_SIZE + 1);
         try {
-            bufferedData.mark(0);
-            bufferedData.skip(BUFFERED_SIZE);
-            boolean isItABigStream = bufferedData.read() != -1;
-            bufferedData.reset();
-            if (isItABigStream) {
+            if (isItABigStream(bufferedData)) {
                 return saveBigStream(bucketName, bufferedData);
             } else {
                 return save(bucketName, IOUtils.toByteArray(bufferedData));
@@ -130,6 +126,14 @@ public class ObjectStorageBlobsDAO implements BlobStore {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private boolean isItABigStream(InputStream bufferedData) throws IOException {
+        bufferedData.mark(0);
+        bufferedData.skip(BUFFERED_SIZE);
+        boolean isItABigStream = bufferedData.read() != -1;
+        bufferedData.reset();
+        return isItABigStream;
     }
 
     private Mono<BlobId> saveBigStream(BucketName bucketName, InputStream data) {
