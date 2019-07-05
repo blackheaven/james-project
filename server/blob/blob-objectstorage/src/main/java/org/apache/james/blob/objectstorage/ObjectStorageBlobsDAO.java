@@ -112,10 +112,10 @@ public class ObjectStorageBlobsDAO implements BlobStore {
     public Mono<BlobId> save(BucketName bucketName, InputStream data) {
         Preconditions.checkNotNull(data);
 
-        return Mono.defer(() -> savingSrategySelection(bucketName, data));
+        return Mono.defer(() -> savingStrategySelection(bucketName, data));
     }
 
-    private Mono<BlobId> savingSrategySelection(BucketName bucketName, InputStream data) {
+    private Mono<BlobId> savingStrategySelection(BucketName bucketName, InputStream data) {
         InputStream bufferedData = new BufferedInputStream(data, BUFFERED_SIZE + 1);
         try {
             bufferedData.mark(0);
