@@ -530,6 +530,7 @@
         <module>event-sourcing</module>
         <module>examples</module>
         <module>javax-mail-extension</module>
+        <module>json</module>
         <module>mailbox</module>
         <module>mailet</module>
         <module>mdn</module>
@@ -1239,6 +1240,11 @@
             </dependency>
             <dependency>
                 <groupId>${james.groupId}</groupId>
+                <artifactId>james-json</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${james.groupId}</groupId>
                 <artifactId>james-server-blob</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1693,6 +1699,17 @@
             <dependency>
                 <groupId>${james.groupId}</groupId>
                 <artifactId>james-server-task</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${james.groupId}</groupId>
+                <artifactId>james-server-task</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${james.groupId}</groupId>
+                <artifactId>james-server-task-json</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

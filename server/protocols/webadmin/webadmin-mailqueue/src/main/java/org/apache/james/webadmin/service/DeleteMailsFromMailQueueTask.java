@@ -20,14 +20,20 @@
 package org.apache.james.webadmin.service;
 
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.james.core.MailAddress;
+import org.apache.james.json.DTOModule;
 import org.apache.james.queue.api.MailQueue;
+import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.ManageableMailQueue;
+import org.apache.james.server.task.json.dto.TaskDTO;
+import org.apache.james.server.task.json.dto.TaskDTOModule;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Booleans;
@@ -80,7 +86,76 @@ public class DeleteMailsFromMailQueueTask implements Task {
         }
     }
 
+    private static class DeleteMailsFromFailQueueTaskDTO implements TaskDTO {
+
+        private final String type;
+        private final String queue;
+        private final String sender;
+        private final String name;
+        private final String recipient;
+
+        public DeleteMailsFromFailQueueTaskDTO(@JsonProperty("type") String type,
+                                               @JsonProperty("queue") String queue,
+                                               @JsonProperty("sender") String sender,
+                                               @JsonProperty("name") String name,
+                                               @JsonProperty("recipient") String recipient) {
+            this.type = type;
+            this.queue = queue;
+            this.sender = sender;
+            this.name = name;
+            this.recipient = recipient;
+        }
+
+        public static DeleteMailsFromFailQueueTaskDTO toDTO(DeleteMailsFromMailQueueTask domainObject, String typeName) {
+            return new DeleteMailsFromFailQueueTaskDTO(
+                typeName,
+                domainObject.queue.getName(),
+                domainObject.maybeSender.map(MailAddress::asString).orElse(null),
+                domainObject.maybeName.orElse(null),
+                domainObject.maybeRecipient.map(MailAddress::asString).orElse(null)
+            );
+        }
+
+        public DeleteMailsFromMailQueueTask fromDTO(MailQueueFactory<ManageableMailQueue> mailQueueFactory) {
+            return new DeleteMailsFromMailQueueTask(
+                    mailQueueFactory.getQueue(queue).orElseThrow(() -> new RuntimeException("Unable to retrieve '" + queue + "' queue")),
+                    Optional.ofNullable(sender).map(Throwing.<String, MailAddress>function(MailAddress::new).sneakyThrow()),
+                    Optional.ofNullable(name),
+                    Optional.ofNullable(recipient).map(Throwing.<String, MailAddress>function(MailAddress::new).sneakyThrow())
+            );
+        }
+
+        @Override
+        public String getType() {
+            return type;
+        }
+
+        public String getQueue() {
+            return queue;
+        }
+
+        public String getSender() {
+            return sender;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getRecipient() {
+            return recipient;
+        }
+    }
+
     public static final String TYPE = "deleteMailsFromMailQueue";
+    public static final Function<MailQueueFactory<ManageableMailQueue>, TaskDTOModule> MODULE = (mailQueueFactory) ->
+        DTOModule
+            .forDomainObject(DeleteMailsFromMailQueueTask.class)
+            .convertToDTO(DeleteMailsFromFailQueueTaskDTO.class)
+            .toDomainObjectConverter(dto -> dto.fromDTO(mailQueueFactory))
+            .toDTOConverter(DeleteMailsFromFailQueueTaskDTO::toDTO)
+            .typeName(TYPE)
+            .withFactory(TaskDTOModule::new);
 
     private final ManageableMailQueue queue;
     private final Optional<MailAddress> maybeSender;

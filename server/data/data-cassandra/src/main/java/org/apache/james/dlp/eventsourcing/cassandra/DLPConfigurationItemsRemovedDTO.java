@@ -83,7 +83,6 @@ class DLPConfigurationItemsRemovedDTO implements EventDTO {
     }
 
     @JsonIgnore
-    @Override
     public ConfigurationItemsRemoved toEvent() {
         return new ConfigurationItemsRemoved(
             DLPAggregateId.parse(aggregateId),

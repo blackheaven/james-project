@@ -22,7 +22,6 @@ package org.apache.james.queue.rabbitmq.view.cassandra.configuration;
 import java.time.Duration;
 import java.util.Objects;
 
-import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.EventId;
 import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTO;
 
@@ -75,8 +74,7 @@ class ConfigurationChangedDTO implements EventDTO {
     }
 
     @JsonIgnore
-    @Override
-    public Event toEvent() {
+    public ConfigurationChanged toEvent() {
         return new ConfigurationChanged(
             () -> aggregateKey,
             EventId.fromSerialized(eventId),

@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
+import org.apache.mailbox.tools.indexer.dto.SingleMailboxReindexingTaskDTO;
 
 public class SingleMailboxReindexingTask implements Task {
 
@@ -41,6 +42,23 @@ public class SingleMailboxReindexingTask implements Task {
 
         public String getMailboxId() {
             return mailboxId.serialize();
+        }
+    }
+
+    public static class Factory {
+
+        private final ReIndexerPerformer reIndexerPerformer;
+        private final MailboxId.Factory mailboxIdFactory;
+
+        @Inject
+        public Factory(ReIndexerPerformer reIndexerPerformer, MailboxId.Factory mailboxIdFactory) {
+            this.reIndexerPerformer = reIndexerPerformer;
+            this.mailboxIdFactory = mailboxIdFactory;
+        }
+
+        public SingleMailboxReindexingTask create(SingleMailboxReindexingTaskDTO dto) {
+            MailboxId mailboxId = mailboxIdFactory.fromString(dto.getMailboxId());
+            return new SingleMailboxReindexingTask(reIndexerPerformer, mailboxId);
         }
     }
 
@@ -71,8 +89,13 @@ public class SingleMailboxReindexingTask implements Task {
         return MAILBOX_RE_INDEXING;
     }
 
+    public MailboxId getMailboxId() {
+        return mailboxId;
+    }
+
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
         return Optional.of(additionalInformation);
     }
+
 }

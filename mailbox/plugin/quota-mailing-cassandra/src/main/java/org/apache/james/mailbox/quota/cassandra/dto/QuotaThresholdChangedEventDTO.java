@@ -96,7 +96,6 @@ class QuotaThresholdChangedEventDTO implements EventDTO {
     }
 
     @JsonIgnore
-    @Override
     public QuotaThresholdChangedEvent toEvent() {
         return new QuotaThresholdChangedEvent(
             EventId.fromSerialized(eventId),
