@@ -63,8 +63,7 @@ public class TestEventDTO implements EventDTO {
     }
 
     @JsonIgnore
-    @Override
-    public Event toEvent() {
+    public TestEvent toEvent() {
         return new TestEvent(
             EventId.fromSerialized(eventId),
             TestAggregateId.testId(aggregate),

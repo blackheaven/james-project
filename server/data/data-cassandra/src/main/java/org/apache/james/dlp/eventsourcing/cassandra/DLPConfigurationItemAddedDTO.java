@@ -83,7 +83,6 @@ class DLPConfigurationItemAddedDTO implements EventDTO {
     }
 
     @JsonIgnore
-    @Override
     public ConfigurationItemsAdded toEvent() {
         return new ConfigurationItemsAdded(
             DLPAggregateId.parse(aggregateId),

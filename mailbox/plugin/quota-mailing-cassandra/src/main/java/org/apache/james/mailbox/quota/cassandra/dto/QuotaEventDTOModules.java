@@ -28,7 +28,9 @@ public interface QuotaEventDTOModules {
         EventDTOModule
             .forEvent(QuotaThresholdChangedEvent.class)
             .convertToDTO(QuotaThresholdChangedEventDTO.class)
-            .convertWith(QuotaThresholdChangedEventDTO::from)
-            .typeName("quota-threshold-change");
+            .toDomainObjectConverter(QuotaThresholdChangedEventDTO::toEvent)
+            .toDTOConverter(QuotaThresholdChangedEventDTO::from)
+            .typeName("quota-threshold-change")
+            .withFactory(EventDTOModule::new);
 
 }

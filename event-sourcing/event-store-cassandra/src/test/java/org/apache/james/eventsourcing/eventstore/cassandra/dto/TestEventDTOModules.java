@@ -23,25 +23,29 @@ import org.apache.james.eventsourcing.TestEvent;
 
 public interface TestEventDTOModules {
 
-    EventDTOModule<TestEvent, TestEventDTO> TEST_TYPE =
-        EventDTOModule
+
+    EventDTOModule TEST_TYPE = EventDTOModule
             .forEvent(TestEvent.class)
             .convertToDTO(TestEventDTO.class)
-            .convertWith((event, typeName) -> new TestEventDTO(
+            .toDomainObjectConverter(TestEventDTO::toEvent)
+            .toDTOConverter((event, typeName) -> new TestEventDTO(
                 typeName,
                 event.getData(),
                 event.eventId().serialize(),
                 event.getAggregateId().getId()))
-            .typeName("TestType");
+            .typeName("TestType")
+            .withFactory(EventDTOModule::new);
 
-    EventDTOModule<OtherEvent, OtherTestEventDTO> OTHER_TEST_TYPE =
+    EventDTOModule OTHER_TEST_TYPE =
         EventDTOModule
             .forEvent(OtherEvent.class)
             .convertToDTO(OtherTestEventDTO.class)
-            .convertWith(((event, typeName) -> new OtherTestEventDTO(
+            .toDomainObjectConverter(OtherTestEventDTO::toEvent)
+            .toDTOConverter((event, typeName) -> new OtherTestEventDTO(
                 typeName,
                 event.getPayload(),
                 event.eventId().serialize(),
-                event.getAggregateId().getId())))
-            .typeName("other-type");
+                event.getAggregateId().getId()))
+            .typeName("other-type")
+            .withFactory(EventDTOModule::new);
 }
