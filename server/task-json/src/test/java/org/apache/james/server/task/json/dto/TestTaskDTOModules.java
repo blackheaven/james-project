@@ -16,26 +16,20 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.server.task.json;
 
-import org.apache.james.task.Task;
+package org.apache.james.server.task.json.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import org.apache.james.server.task.json.TestTask;
 
-public class TaskSerializer {
+public interface TestTaskDTOModules {
 
-    private ObjectMapper objectMapper;
+    TaskDTOModule TEST_TYPE = TaskDTOModule
+        .forTask(TestTask.class)
+        .convertToDTO(TestTaskDTO.class)
+        .convertWith((task, typeName) -> new TestTaskDTO(
+            typeName,
+            task.getParameter()))
+        .typeName("testTask")
+        .withFactory(TaskDTOModule::new);
 
-    public TaskSerializer() {
-        this.objectMapper = new ObjectMapper();
-    }
-
-    public JsonNode serialize(Task task) {
-        return JsonNodeFactory.instance.objectNode()
-            .put("type", task.type())
-            .set("parameters", objectMapper.valueToTree(task.parameters()));
-
-    }
 }

@@ -16,17 +16,18 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.server.task.json;
+package org.apache.james.server.task.json.dto;
 
-public class UnsupportedTypeException extends RuntimeException {
-    private final String type;
+import org.apache.james.json.DTOModule;
+import org.apache.james.task.Task;
 
-  public UnsupportedTypeException(String type) {
-      this.type = type;
-  }
+public class TaskDTOModule<T extends Task, U extends TaskDTO<T>> extends DTOModule<T, U> {
 
-    @Override
-    public String getMessage() {
-        return "The type " + type + " is not registered when trying to deserialise it";
+    public static <TaskTypeT extends Task> Builder<TaskTypeT> forTask(Class<TaskTypeT> taskType) {
+        return new Builder<>(taskType);
+    }
+
+    public TaskDTOModule(DTOConverter<T, U> converter, Class<T> domainObjectType, Class<U> dtoType, String typeName) {
+        super(converter, domainObjectType, dtoType, typeName);
     }
 }
