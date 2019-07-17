@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 
 import net.javacrumbs.jsonunit.assertj.JsonAssertions;
 
-
 class TaskSerializerTest {
 
     static final String TASK_AS_STRING = "{" +
