@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 
 class TaskDeserializerTest {
 
-
     static final String TASK_AS_STRING = "{" +
         "\"type\": \"testTask\"," +
         "\"parameter\": 1" +
