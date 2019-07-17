@@ -98,8 +98,6 @@ public class DTOModule<T, U extends DTO> {
                 }
             }
         }
-
-
     }
 
     private final DTOConverter<T, U> converter;
