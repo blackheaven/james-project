@@ -38,9 +38,7 @@ import reactor.core.publisher.Mono;
 
 class SerialTaskManagerWorkerTest {
 
-
     private final SerialTaskManagerWorker worker = new SerialTaskManagerWorker();
-
 
     private final Task successfulTask = new CompletedTask();
     private final Task failedTask = new FailedTask();
