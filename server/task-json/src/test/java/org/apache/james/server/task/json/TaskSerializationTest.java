@@ -14,23 +14,22 @@ import org.apache.james.task.CompletedTask;
 import org.apache.james.task.FailedTask;
 import org.apache.james.task.Task;
 import org.apache.james.task.ThrowingTask;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class TaskSerializationTest {
+class TaskSerializationTest {
 
-    public static final String SERIALIZED_FAILED_TASK = "{\"type\": \"failed-task\"}";
+    private static final String SERIALIZED_FAILED_TASK = "{\"type\": \"failed-task\"}";
     private TaskDTOModule failedTaskModule = DTOModule
-            .forDomainObject(FailedTask.class)
-            .convertToDTO(FailedTaskDTO.class)
-            .toDomainObjectConverter(dto -> new FailedTask())
-            .toDTOConverter((task, typeName) -> new FailedTaskDTO(typeName))
-            .typeName("failed-task")
-            .withFactory(TaskDTOModule::new);
+        .forDomainObject(FailedTask.class)
+        .convertToDTO(FailedTaskDTO.class)
+        .toDomainObjectConverter(dto -> new FailedTask())
+        .toDTOConverter((task, typeName) -> new FailedTaskDTO(typeName))
+        .typeName("failed-task")
+        .withFactory(TaskDTOModule::new);
 
-    public static final String SERIALIZED_COMPLETED_TASK = "{\"type\": \"completed-task\"}";
+    private static final String SERIALIZED_COMPLETED_TASK = "{\"type\": \"completed-task\"}";
     private TaskDTOModule completedTaskModule = DTOModule
         .forDomainObject(CompletedTask.class)
         .convertToDTO(CompletedTaskDTO.class)
@@ -39,18 +38,14 @@ public class TaskSerializationTest {
         .typeName("completed-task")
         .withFactory(TaskDTOModule::new);
 
-    public static final String SERIALIZED_THROWING_TASK = "{\"type\": \"throwing-task\"}";
+    private static final String SERIALIZED_THROWING_TASK = "{\"type\": \"throwing-task\"}";
     private TaskDTOModule throwingTaskModule = DTOModule
-            .forDomainObject(ThrowingTask.class)
-            .convertToDTO(ThrowingTaskDTO.class)
-            .toDomainObjectConverter(dto -> new ThrowingTask())
-            .toDTOConverter((task, typeName) -> new ThrowingTaskDTO(typeName))
-            .typeName("throwing-task")
-            .withFactory(TaskDTOModule::new);
-    
-    @BeforeEach
-    void setUp() {
-    }
+        .forDomainObject(ThrowingTask.class)
+        .convertToDTO(ThrowingTaskDTO.class)
+        .toDomainObjectConverter(dto -> new ThrowingTask())
+        .toDTOConverter((task, typeName) -> new ThrowingTaskDTO(typeName))
+        .typeName("throwing-task")
+        .withFactory(TaskDTOModule::new);
 
     @Test
     void failedTaskShouldSerialize() throws JsonProcessingException {
