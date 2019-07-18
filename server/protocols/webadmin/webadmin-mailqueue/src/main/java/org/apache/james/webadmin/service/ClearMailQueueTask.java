@@ -20,14 +20,22 @@
 package org.apache.james.webadmin.service;
 
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.apache.james.json.DTOModule;
 import org.apache.james.queue.api.MailQueue;
+import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.ManageableMailQueue;
+import org.apache.james.server.task.json.dto.TaskDTO;
+import org.apache.james.server.task.json.dto.TaskDTOModule;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ClearMailQueueTask implements Task {
 
@@ -55,8 +63,44 @@ public class ClearMailQueueTask implements Task {
         }
     }
 
+    private static class ClearMailQueueTaskDTO implements TaskDTO {
+
+        private final String type;
+        private final String queue;
+
+        public ClearMailQueueTaskDTO(@JsonProperty("type") String type, @JsonProperty("queue") String queue) {
+            this.type = type;
+            this.queue = queue;
+        }
+
+        public static ClearMailQueueTaskDTO toDTO(ClearMailQueueTask domainObject, String typeName) {
+            return new ClearMailQueueTaskDTO(typeName, domainObject.queue.getName());
+        }
+
+        public ClearMailQueueTask fromDTO(MailQueueFactory<ManageableMailQueue> mailQueueFactory) {
+            return new ClearMailQueueTask(mailQueueFactory.getQueue(queue).orElseThrow(() -> new RuntimeException("Unable to retrieve '" + queue + "' queue")));
+        }
+
+        @Override
+        public String getType() {
+            return type;
+        }
+
+        public String getQueue() {
+            return queue;
+        }
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ClearMailQueueTask.class);
     public static final String TYPE = "clearMailQueue";
+    public static final Function<MailQueueFactory<ManageableMailQueue>, TaskDTOModule> MODULE = (mailQueueFactory) ->
+        DTOModule
+            .forDomainObject(ClearMailQueueTask.class)
+            .convertToDTO(ClearMailQueueTaskDTO.class)
+            .toDomainObjectConverter(dto -> dto.fromDTO(mailQueueFactory))
+            .toDTOConverter(ClearMailQueueTaskDTO::toDTO)
+            .typeName(TYPE)
+            .withFactory(TaskDTOModule::new);
 
     private final ManageableMailQueue queue;
     private final AdditionalInformation additionalInformation;
