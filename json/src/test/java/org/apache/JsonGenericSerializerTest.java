@@ -63,7 +63,7 @@ class JsonGenericSerializerTest {
     }
 
     @Test
-    void shouldThrowWhenDeserializeEventWithDuplicateType() {
+    void shouldThrowWhenDeserializeEventWithDuplicatedTypes() {
         assertThatThrownBy(() -> JsonGenericSerializer.of(
                 TestModules.FIRST_TYPE,
                 TestModules.SECOND_TYPE)
