@@ -40,7 +40,6 @@ public class JsonEventSerializer {
         }
     }
 
-
     public static class UnknownEventException extends RuntimeException {
         public UnknownEventException(JsonGenericSerializer.UnknownTypeException original) {
             super(original);
