@@ -88,7 +88,7 @@ class JsonEventSerializerTest {
 
 
     @Test
-    void deserializeShouldThrowWhenEventWithDuplicateTypes() {
+    void deserializeShouldThrowWhenEventWithDuplicatedTypes() {
         assertThatThrownBy(() -> new JsonEventSerializer(
                 TestEventDTOModules.TEST_TYPE,
                 TestEventDTOModules.OTHER_TEST_TYPE)
