@@ -86,6 +86,12 @@ public class DeleteMailsFromMailQueueTask implements Task {
         }
     }
 
+    public static class UnknownSerializedQueue extends RuntimeException {
+        public UnknownSerializedQueue(String queueName) {
+            super("Unable to retrieve '" + queueName + "' queue");
+        }
+    }
+
     private static class DeleteMailsFromFailQueueTaskDTO implements TaskDTO {
 
         private final String type;
@@ -118,7 +124,7 @@ public class DeleteMailsFromMailQueueTask implements Task {
 
         public DeleteMailsFromMailQueueTask fromDTO(MailQueueFactory<ManageableMailQueue> mailQueueFactory) {
             return new DeleteMailsFromMailQueueTask(
-                    mailQueueFactory.getQueue(queue).orElseThrow(() -> new RuntimeException("Unable to retrieve '" + queue + "' queue")),
+                    mailQueueFactory.getQueue(queue).orElseThrow(() -> new UnknownSerializedQueue(queue)),
                     Optional.ofNullable(sender).map(Throwing.<String, MailAddress>function(MailAddress::new).sneakyThrow()),
                     Optional.ofNullable(name),
                     Optional.ofNullable(recipient).map(Throwing.<String, MailAddress>function(MailAddress::new).sneakyThrow())

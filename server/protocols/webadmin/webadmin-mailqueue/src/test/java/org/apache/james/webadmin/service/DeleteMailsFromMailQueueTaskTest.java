@@ -18,6 +18,7 @@
 package org.apache.james.webadmin.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -30,6 +31,8 @@ import org.apache.james.core.MailAddress;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.api.ManageableMailQueue;
 import org.apache.james.server.task.json.JsonTaskSerializer;
+
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -79,5 +82,16 @@ class DeleteMailsFromMailQueueTaskTest {
             Arguments.of(Optional.empty(), Optional.of("name"), Optional.empty(), "{\"type\": \"deleteMailsFromMailQueue\", \"queue\": \"anyQueue\", \"name\": \"name\"}"),
             Arguments.of(Optional.empty(), Optional.empty(), Optional.of(new MailAddress("d@e.f")), "{\"type\": \"deleteMailsFromMailQueue\", \"queue\": \"anyQueue\", \"recipient\": \"d@e.f\"}")
         );
+    }
+
+    @Test
+    void taskShouldThrowWhenDeserializeAnUnknownQueue() throws Exception {
+        MailQueueFactory<ManageableMailQueue> mailQueueFactory = mock(MailQueueFactory.class);
+        when(mailQueueFactory.getQueue(anyString())).thenReturn(Optional.empty());
+        JsonTaskSerializer testee = new JsonTaskSerializer(DeleteMailsFromMailQueueTask.MODULE.apply(mailQueueFactory));
+
+        String serializedJson = "{\"type\": \"deleteMailsFromMailQueue\", \"queue\": \"anyQueue\", \"sender\": \"a@b.c\"}";
+        assertThatThrownBy(() -> testee.deserialize(serializedJson))
+            .isInstanceOf(DeleteMailsFromMailQueueTask.UnknownSerializedQueue.class);
     }
 }
