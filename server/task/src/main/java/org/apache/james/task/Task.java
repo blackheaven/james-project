@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,6 +96,7 @@ public interface Task {
     default String type() {
         return UNKNOWN;
     }
+
     default Optional<TaskExecutionDetails.AdditionalInformation> details() {
         return Optional.empty();
     }
