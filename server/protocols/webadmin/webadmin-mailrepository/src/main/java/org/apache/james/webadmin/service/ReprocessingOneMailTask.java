@@ -20,14 +20,19 @@
 package org.apache.james.webadmin.service;
 
 import java.util.Optional;
-
+import java.util.function.Function;
 import javax.mail.MessagingException;
 
+import org.apache.james.json.DTOModule;
 import org.apache.james.mailrepository.api.MailKey;
 import org.apache.james.mailrepository.api.MailRepositoryPath;
 import org.apache.james.mailrepository.api.MailRepositoryStore;
+import org.apache.james.server.task.json.dto.TaskDTO;
+import org.apache.james.server.task.json.dto.TaskDTOModule;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ReprocessingOneMailTask implements Task {
 
@@ -62,6 +67,99 @@ public class ReprocessingOneMailTask implements Task {
             return repositoryPath.asString();
         }
     }
+
+    public static class UrlEncodingFailureSerializationException extends RuntimeException {
+
+        public UrlEncodingFailureSerializationException(MailRepositoryPath mailRepositoryPath) {
+            super("Unable to serialize: '" + mailRepositoryPath + "' can not de url encoded");
+        }
+    }
+
+    public static class InvalidMailRepositoryPathDeserializationException extends RuntimeException {
+
+        public InvalidMailRepositoryPathDeserializationException(String mailRepositoryPath) {
+            super("Unable to deserialize: '" + mailRepositoryPath + "' can not de url decoded");
+        }
+    }
+
+    private static class ReprocessingOneMailTaskDTO implements TaskDTO {
+
+        public static ReprocessingOneMailTaskDTO toDTO(ReprocessingOneMailTask domainObject, String typeName) {
+            try {
+                return new ReprocessingOneMailTaskDTO(
+                        typeName,
+                        domainObject.repositoryPath.urlEncoded(),
+                        domainObject.targetQueue,
+                        domainObject.mailKey.asString(),
+                        domainObject.targetProcessor.orElse(null)
+                );
+            } catch (Exception e) {
+                throw new UrlEncodingFailureSerializationException(domainObject.repositoryPath);
+            }
+        }
+
+        private final String type;
+        private final String repositoryPath;
+        private final String targetQueue;
+        private final String mailKey;
+        private final String targetProcessor;
+
+        public ReprocessingOneMailTaskDTO(@JsonProperty("type") String type,
+                                          @JsonProperty("repositoryPath") String repositoryPath,
+                                          @JsonProperty("targetQueue") String targetQueue,
+                                          @JsonProperty("mailKey") String mailKey,
+                                          @JsonProperty("targetProcessor") String targetProcessor) {
+            this.type = type;
+            this.repositoryPath = repositoryPath;
+            this.mailKey = mailKey;
+            this.targetQueue = targetQueue;
+            this.targetProcessor = targetProcessor;
+        }
+
+        public ReprocessingOneMailTask fromDTO(ReprocessingService reprocessingService) {
+            try {
+                return new ReprocessingOneMailTask(
+                    reprocessingService,
+                    MailRepositoryPath.fromEncoded(repositoryPath),
+                    targetQueue,
+                    new MailKey(mailKey),
+                    Optional.ofNullable(targetProcessor)
+                );
+            } catch (Exception e) {
+                throw new InvalidMailRepositoryPathDeserializationException(repositoryPath);
+            }
+        }
+
+        @Override
+        public String getType() {
+            return type;
+        }
+
+        public String getRepositoryPath() {
+            return repositoryPath;
+        }
+
+        public String getMailKey() {
+            return mailKey;
+        }
+
+        public String getTargetQueue() {
+            return targetQueue;
+        }
+
+        public String getTargetProcessor() {
+            return targetProcessor;
+        }
+    }
+
+    public static final Function<ReprocessingService, TaskDTOModule> MODULE = (reprocessingService) ->
+        DTOModule
+            .forDomainObject(ReprocessingOneMailTask.class)
+            .convertToDTO(ReprocessingOneMailTaskDTO.class)
+            .toDomainObjectConverter(dto -> dto.fromDTO(reprocessingService))
+            .toDTOConverter(ReprocessingOneMailTaskDTO::toDTO)
+            .typeName(TYPE)
+            .withFactory(TaskDTOModule::new);
 
     private final ReprocessingService reprocessingService;
     private final MailRepositoryPath repositoryPath;
