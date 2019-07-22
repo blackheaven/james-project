@@ -23,7 +23,13 @@ import java.util.concurrent.ConcurrentLinkedDeque
 import org.apache.james.eventsourcing.Subscriber
 import org.apache.james.task.TaskId
 
-class RecentTasksProjection() {
+trait RecentTasksProjection {
+  def list(): List[TaskId]
+
+  def asSubscriber: Subscriber
+}
+
+class MemoryRecentTasksProjection() extends RecentTasksProjection {
 
   import scala.jdk.CollectionConverters._
 

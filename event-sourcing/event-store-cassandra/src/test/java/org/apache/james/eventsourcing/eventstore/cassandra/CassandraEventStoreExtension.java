@@ -21,6 +21,7 @@ package org.apache.james.eventsourcing.eventstore.cassandra;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.james.backends.cassandra.CassandraClusterExtension;
 import org.apache.james.eventsourcing.eventstore.EventStore;
@@ -37,13 +38,19 @@ import org.junit.jupiter.api.extension.ParameterResolver;
 import com.google.common.collect.ImmutableSet;
 
 public class CassandraEventStoreExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
-    @SuppressWarnings("rawtypes")
-    private final Set<EventDTOModule> modules;
-    private CassandraClusterExtension cassandra;
+    private final CassandraClusterExtension cassandra;
+    private final Supplier<JsonEventSerializer> serializerSupplier;
     private EventStoreDao eventStoreDao;
 
     public CassandraEventStoreExtension(@SuppressWarnings("rawtypes") EventDTOModule... modules) {
-        this.modules = Arrays.stream(modules).collect(ImmutableSet.toImmutableSet());
+        @SuppressWarnings("rawtypes")
+        Set<EventDTOModule> savedModules = Arrays.stream(modules).collect(ImmutableSet.toImmutableSet());
+        serializerSupplier = () -> new JsonGenericEventSerializer(savedModules);
+        this.cassandra = new CassandraClusterExtension(CassandraEventStoreModule.MODULE);
+    }
+
+    public CassandraEventStoreExtension(Supplier<JsonEventSerializer> serializerSupplier) {
+        this.serializerSupplier = serializerSupplier;
         this.cassandra = new CassandraClusterExtension(CassandraEventStoreModule.MODULE);
     }
 
@@ -59,9 +66,7 @@ public class CassandraEventStoreExtension implements BeforeAllCallback, AfterAll
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        JsonEventSerializer jsonEventSerializer = new JsonGenericEventSerializer(modules);
-
-        eventStoreDao = new EventStoreDao(cassandra.getCassandraCluster().getConf(), jsonEventSerializer);
+        eventStoreDao = new EventStoreDao(cassandra.getCassandraCluster().getConf(), serializerSupplier.get());
     }
 
     @Override

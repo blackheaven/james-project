@@ -44,21 +44,21 @@ class JsonEventSerializerTest {
 
     @Test
     void shouldDeserializeKnownEvent() throws Exception {
-        assertThat(new JsonEventSerializer(TestEventDTOModules.TEST_TYPE)
+        assertThat(new JsonGenericEventSerializer(TestEventDTOModules.TEST_TYPE)
             .deserialize(TEST_EVENT_JSON))
             .isEqualTo(TEST_EVENT);
     }
 
     @Test
     void shouldThrowWhenDeserializeUnknownEvent() {
-        assertThatThrownBy(() -> new JsonEventSerializer()
+        assertThatThrownBy(() -> new JsonGenericEventSerializer()
             .deserialize(TEST_EVENT_JSON))
-            .isInstanceOf(JsonEventSerializer.UnknownEventException.class);
+            .isInstanceOf(JsonGenericEventSerializer.UnknownEventException.class);
     }
 
     @Test
     void serializeShouldHandleAllKnownEvents() throws Exception {
-        JsonEventSerializer jsonEventSerializer = new JsonEventSerializer(
+        JsonGenericEventSerializer jsonEventSerializer = new JsonGenericEventSerializer(
             TestEventDTOModules.TEST_TYPE,
             TestEventDTOModules.OTHER_TEST_TYPE);
 
@@ -73,7 +73,7 @@ class JsonEventSerializerTest {
 
     @Test
     void deserializeShouldHandleAllKnownEvents() throws Exception {
-        JsonEventSerializer jsonEventSerializer = new JsonEventSerializer(
+        JsonGenericEventSerializer jsonEventSerializer = new JsonGenericEventSerializer(
             TestEventDTOModules.TEST_TYPE,
             TestEventDTOModules.OTHER_TEST_TYPE);
 
@@ -89,34 +89,34 @@ class JsonEventSerializerTest {
 
     @Test
     void deserializeShouldThrowWhenEventWithDuplicatedTypes() {
-        assertThatThrownBy(() -> new JsonEventSerializer(
+        assertThatThrownBy(() -> new JsonGenericEventSerializer(
                 TestEventDTOModules.TEST_TYPE,
                 TestEventDTOModules.OTHER_TEST_TYPE)
             .deserialize(DUPLICATE_TYPE_EVENT_JSON))
-            .isInstanceOf(JsonEventSerializer.InvalidEventException.class);
+            .isInstanceOf(JsonGenericEventSerializer.InvalidEventException.class);
     }
 
     @Test
     void deserializeShouldThrowWhenEventWithMissingType() {
-        assertThatThrownBy(() -> new JsonEventSerializer(
+        assertThatThrownBy(() -> new JsonGenericEventSerializer(
                 TestEventDTOModules.TEST_TYPE,
                 TestEventDTOModules.OTHER_TEST_TYPE)
             .deserialize(MISSING_TYPE_EVENT_JSON))
-            .isInstanceOf(JsonEventSerializer.InvalidEventException.class);
+            .isInstanceOf(JsonGenericEventSerializer.InvalidEventException.class);
     }
 
     @Test
     void shouldSerializeKnownEvent() throws Exception {
-        assertThatJson(new JsonEventSerializer(TestEventDTOModules.TEST_TYPE)
+        assertThatJson(new JsonGenericEventSerializer(TestEventDTOModules.TEST_TYPE)
             .serialize(TEST_EVENT))
             .isEqualTo(TEST_EVENT_JSON);
     }
 
     @Test
     void shouldThrowWhenSerializeUnknownEvent() {
-        assertThatThrownBy(() -> new JsonEventSerializer()
+        assertThatThrownBy(() -> new JsonGenericEventSerializer()
             .serialize(TEST_EVENT))
-            .isInstanceOf(JsonEventSerializer.UnknownEventException.class);
+            .isInstanceOf(JsonGenericEventSerializer.UnknownEventException.class);
     }
 
 

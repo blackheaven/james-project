@@ -23,7 +23,12 @@ import java.util.concurrent.ConcurrentHashMap
 import org.apache.james.eventsourcing.Subscriber
 import org.apache.james.task.{TaskExecutionDetails, TaskId}
 
-class TaskExecutionDetailsProjection() {
+trait TaskExecutionDetailsProjection {
+  val asSubscriber: Subscriber
+  def load(taskId: TaskId): Option[TaskExecutionDetails]
+}
+
+class MemoryTaskExecutionDetailsProjection() extends TaskExecutionDetailsProjection {
   private[this] val projections = new ConcurrentHashMap[TaskId, TaskExecutionDetails]
 
   val asSubscriber: Subscriber = {
