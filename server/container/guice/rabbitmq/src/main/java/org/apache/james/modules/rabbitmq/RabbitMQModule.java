@@ -29,6 +29,8 @@ import org.apache.james.backend.rabbitmq.RabbitMQChannelPool;
 import org.apache.james.backend.rabbitmq.RabbitMQConfiguration;
 import org.apache.james.backend.rabbitmq.SimpleChannelPool;
 import org.apache.james.backends.cassandra.components.CassandraModule;
+import org.apache.james.eventsourcing.eventstore.cassandra.JsonEventSerializer;
+import org.apache.james.eventsourcing.eventstore.cassandra.JsonGenericEventSerializer;
 import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTOModule;
 import org.apache.james.queue.api.MailQueueFactory;
 import org.apache.james.queue.rabbitmq.RabbitMQMailQueueFactory;
@@ -77,6 +79,8 @@ public class RabbitMQModule extends AbstractModule {
         bind(EventsourcingConfigurationManagement.class).in(Scopes.SINGLETON);
         @SuppressWarnings("rawtypes")
         Multibinder<EventDTOModule> eventDTOModuleBinder = Multibinder.newSetBinder(binder(), EventDTOModule.class);
+        bind(JsonGenericEventSerializer.class).in(Scopes.SINGLETON);
+        bind(JsonEventSerializer.class).to(JsonGenericEventSerializer.class);
         eventDTOModuleBinder.addBinding().toInstance(CassandraMailQueueViewConfigurationModule.MAIL_QUEUE_VIEW_CONFIGURATION);
     }
 

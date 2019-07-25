@@ -22,6 +22,8 @@ package org.apache.james.modules.eventstore;
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.eventsourcing.eventstore.EventStore;
 import org.apache.james.eventsourcing.eventstore.cassandra.CassandraEventStore;
+import org.apache.james.eventsourcing.eventstore.cassandra.JsonEventSerializer;
+import org.apache.james.eventsourcing.eventstore.cassandra.JsonGenericEventSerializer;
 import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTOModule;
 
 import com.google.inject.AbstractModule;
@@ -40,5 +42,7 @@ public class CassandraEventStoreModule extends AbstractModule {
             .toInstance(org.apache.james.eventsourcing.eventstore.cassandra.CassandraEventStoreModule.MODULE);
 
         Multibinder.newSetBinder(binder(), EventDTOModule.class);
+        bind(JsonGenericEventSerializer.class).in(Scopes.SINGLETON);
+        bind(JsonEventSerializer.class).to(JsonGenericEventSerializer.class);
     }
 }

@@ -20,6 +20,8 @@
 package org.apache.james.modules.data;
 
 import org.apache.james.backends.cassandra.components.CassandraModule;
+import org.apache.james.eventsourcing.eventstore.cassandra.JsonEventSerializer;
+import org.apache.james.eventsourcing.eventstore.cassandra.JsonGenericEventSerializer;
 import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTOModule;
 import org.apache.james.jmap.api.access.AccessTokenRepository;
 import org.apache.james.jmap.api.filtering.FilteringManagement;
@@ -61,6 +63,9 @@ public class CassandraJmapModule extends AbstractModule {
 
         @SuppressWarnings("rawtypes")
         Multibinder<EventDTOModule> eventDTOModuleBinder = Multibinder.newSetBinder(binder(), EventDTOModule.class);
+        bind(JsonGenericEventSerializer.class).in(Scopes.SINGLETON);
+        bind(JsonEventSerializer.class).to(JsonGenericEventSerializer.class);
+
         eventDTOModuleBinder.addBinding().toInstance(FilteringRuleSetDefineDTOModules.FILTERING_RULE_SET_DEFINED);
     }
 }

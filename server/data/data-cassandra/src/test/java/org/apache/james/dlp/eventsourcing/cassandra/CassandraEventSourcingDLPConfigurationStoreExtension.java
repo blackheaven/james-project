@@ -27,6 +27,7 @@ import org.apache.james.eventsourcing.eventstore.cassandra.CassandraEventStore;
 import org.apache.james.eventsourcing.eventstore.cassandra.CassandraEventStoreModule;
 import org.apache.james.eventsourcing.eventstore.cassandra.EventStoreDao;
 import org.apache.james.eventsourcing.eventstore.cassandra.JsonEventSerializer;
+import org.apache.james.eventsourcing.eventstore.cassandra.JsonGenericEventSerializer;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -72,7 +73,7 @@ public class CassandraEventSourcingDLPConfigurationStoreExtension implements Bef
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        JsonEventSerializer jsonEventSerializer = new JsonEventSerializer(
+        JsonEventSerializer jsonEventSerializer = new JsonGenericEventSerializer(
             ImmutableSet.of(
                 DLPConfigurationModules.DLP_CONFIGURATION_STORE,
                 DLPConfigurationModules.DLP_CONFIGURATION_CLEAR));

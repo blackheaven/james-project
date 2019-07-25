@@ -19,10 +19,13 @@
 
 package org.apache.james.modules.mailbox;
 
+import org.apache.james.eventsourcing.eventstore.cassandra.JsonEventSerializer;
+import org.apache.james.eventsourcing.eventstore.cassandra.JsonGenericEventSerializer;
 import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTOModule;
 import org.apache.james.mailbox.quota.cassandra.dto.QuotaEventDTOModules;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 
 public class CassandraQuotaMailingModule extends AbstractModule {
@@ -31,5 +34,7 @@ public class CassandraQuotaMailingModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), EventDTOModule.class)
             .addBinding()
             .toInstance(QuotaEventDTOModules.QUOTA_THRESHOLD_CHANGE);
+        bind(JsonGenericEventSerializer.class).in(Scopes.SINGLETON);
+        bind(JsonEventSerializer.class).to(JsonGenericEventSerializer.class);
     }
 }

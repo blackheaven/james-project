@@ -59,7 +59,7 @@ public class CassandraEventStoreExtension implements BeforeAllCallback, AfterAll
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        JsonEventSerializer jsonEventSerializer = new JsonEventSerializer(modules);
+        JsonEventSerializer jsonEventSerializer = new JsonGenericEventSerializer(modules);
 
         eventStoreDao = new EventStoreDao(cassandra.getCassandraCluster().getConf(), jsonEventSerializer);
     }

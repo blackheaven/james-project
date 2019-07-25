@@ -20,27 +20,46 @@
 package org.apache.james.eventsourcing.eventstore.cassandra;
 
 import java.io.IOException;
+import java.util.Set;
+import javax.inject.Inject;
 
 import org.apache.james.eventsourcing.Event;
+import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTO;
+import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTOModule;
 import org.apache.james.json.JsonGenericSerializer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableSet;
 
-public interface JsonEventSerializer {
+public class JsonGenericEventSerializer implements JsonEventSerializer {
 
-    class InvalidEventException extends RuntimeException {
-        public InvalidEventException(JsonGenericSerializer.InvalidTypeException original) {
-            super(original);
+    private JsonGenericSerializer<Event, EventDTO> jsonGenericSerializer;
+
+    @Inject
+    public JsonGenericEventSerializer(Set<EventDTOModule> modules) {
+        jsonGenericSerializer = new JsonGenericSerializer(modules);
+    }
+
+    public JsonGenericEventSerializer(@SuppressWarnings("rawtypes") EventDTOModule... modules) {
+        this(ImmutableSet.copyOf(modules));
+    }
+
+    public String serialize(Event event) throws JsonProcessingException {
+        try {
+            return jsonGenericSerializer.serialize(event);
+        } catch (JsonGenericSerializer.UnknownTypeException e) {
+            throw new UnknownEventException(e);
         }
     }
 
-    class UnknownEventException extends RuntimeException {
-        public UnknownEventException(JsonGenericSerializer.UnknownTypeException original) {
-            super(original);
+    public Event deserialize(String value) throws IOException {
+        try {
+            return jsonGenericSerializer.deserialize(value);
+        } catch (JsonGenericSerializer.UnknownTypeException e) {
+            throw new UnknownEventException(e);
+        } catch (JsonGenericSerializer.InvalidTypeException e) {
+            throw new InvalidEventException(e);
         }
     }
 
-    String serialize(Event event) throws JsonProcessingException;
-
-    Event deserialize(String value) throws IOException;
 }

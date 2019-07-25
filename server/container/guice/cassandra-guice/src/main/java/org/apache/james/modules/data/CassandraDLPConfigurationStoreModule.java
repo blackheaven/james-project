@@ -22,6 +22,8 @@ package org.apache.james.modules.data;
 import org.apache.james.dlp.api.DLPConfigurationStore;
 import org.apache.james.dlp.eventsourcing.EventSourcingDLPConfigurationStore;
 import org.apache.james.dlp.eventsourcing.cassandra.DLPConfigurationModules;
+import org.apache.james.eventsourcing.eventstore.cassandra.JsonEventSerializer;
+import org.apache.james.eventsourcing.eventstore.cassandra.JsonGenericEventSerializer;
 import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTOModule;
 
 import com.google.inject.AbstractModule;
@@ -37,6 +39,8 @@ public class CassandraDLPConfigurationStoreModule extends AbstractModule {
 
         @SuppressWarnings("rawtypes")
         Multibinder<EventDTOModule> eventDTOModuleBinder = Multibinder.newSetBinder(binder(), EventDTOModule.class);
+        bind(JsonGenericEventSerializer.class).in(Scopes.SINGLETON);
+        bind(JsonEventSerializer.class).to(JsonGenericEventSerializer.class);
 
         eventDTOModuleBinder.addBinding().toInstance(DLPConfigurationModules.DLP_CONFIGURATION_STORE);
         eventDTOModuleBinder.addBinding().toInstance(DLPConfigurationModules.DLP_CONFIGURATION_CLEAR);
