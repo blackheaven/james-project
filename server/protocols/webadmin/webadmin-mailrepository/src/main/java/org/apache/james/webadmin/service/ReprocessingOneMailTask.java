@@ -71,7 +71,7 @@ public class ReprocessingOneMailTask implements Task {
     public static class UrlEncodingFailureSerializationException extends RuntimeException {
 
         public UrlEncodingFailureSerializationException(MailRepositoryPath mailRepositoryPath) {
-            super("Unable to serialize: '" + mailRepositoryPath + "' can not de url encoded");
+            super("Unable to serialize: '" + mailRepositoryPath.asString() + "' can not de url encoded");
         }
     }
 
@@ -91,7 +91,7 @@ public class ReprocessingOneMailTask implements Task {
                         domainObject.repositoryPath.urlEncoded(),
                         domainObject.targetQueue,
                         domainObject.mailKey.asString(),
-                        domainObject.targetProcessor.orElse(null)
+                        domainObject.targetProcessor
                 );
             } catch (Exception e) {
                 throw new UrlEncodingFailureSerializationException(domainObject.repositoryPath);
@@ -102,13 +102,13 @@ public class ReprocessingOneMailTask implements Task {
         private final String repositoryPath;
         private final String targetQueue;
         private final String mailKey;
-        private final String targetProcessor;
+        private final Optional<String> targetProcessor;
 
         public ReprocessingOneMailTaskDTO(@JsonProperty("type") String type,
                                           @JsonProperty("repositoryPath") String repositoryPath,
                                           @JsonProperty("targetQueue") String targetQueue,
                                           @JsonProperty("mailKey") String mailKey,
-                                          @JsonProperty("targetProcessor") String targetProcessor) {
+                                          @JsonProperty("targetProcessor") Optional<String> targetProcessor) {
             this.type = type;
             this.repositoryPath = repositoryPath;
             this.mailKey = mailKey;
@@ -123,7 +123,7 @@ public class ReprocessingOneMailTask implements Task {
                     MailRepositoryPath.fromEncoded(repositoryPath),
                     targetQueue,
                     new MailKey(mailKey),
-                    Optional.ofNullable(targetProcessor)
+                    targetProcessor
                 );
             } catch (Exception e) {
                 throw new InvalidMailRepositoryPathDeserializationException(repositoryPath);
@@ -147,7 +147,7 @@ public class ReprocessingOneMailTask implements Task {
             return targetQueue;
         }
 
-        public String getTargetProcessor() {
+        public Optional<String> getTargetProcessor() {
             return targetProcessor;
         }
     }
