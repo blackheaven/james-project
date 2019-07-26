@@ -68,7 +68,7 @@ public class ClearMailRepositoryTask implements Task {
     public static class UrlEncodingFailureSerializationException extends RuntimeException {
 
         public UrlEncodingFailureSerializationException(MailRepositoryPath mailRepositoryPath) {
-            super("Unable to serialize: '" + mailRepositoryPath + "' can not be url encoded");
+            super("Unable to serialize: '" + mailRepositoryPath.asString() + "' can not be url encoded");
         }
     }
 
