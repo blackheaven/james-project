@@ -19,6 +19,7 @@
 
 package org.apache.james.webadmin.service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.mail.MessagingException;
@@ -117,14 +118,18 @@ public class ReprocessingOneMailTask implements Task {
         }
 
         public ReprocessingOneMailTask fromDTO(ReprocessingService reprocessingService) {
+            return new ReprocessingOneMailTask(
+                reprocessingService,
+                getMailRepositoryPath(),
+                targetQueue,
+                new MailKey(mailKey),
+                targetProcessor
+            );
+        }
+
+        private MailRepositoryPath getMailRepositoryPath() {
             try {
-                return new ReprocessingOneMailTask(
-                    reprocessingService,
-                    MailRepositoryPath.fromEncoded(repositoryPath),
-                    targetQueue,
-                    new MailKey(mailKey),
-                    targetProcessor
-                );
+                return MailRepositoryPath.fromEncoded(repositoryPath);
             } catch (Exception e) {
                 throw new InvalidMailRepositoryPathDeserializationException(repositoryPath);
             }
