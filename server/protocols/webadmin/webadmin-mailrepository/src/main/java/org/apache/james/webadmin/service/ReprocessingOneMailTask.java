@@ -19,7 +19,6 @@
 
 package org.apache.james.webadmin.service;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.mail.MessagingException;
@@ -72,14 +71,14 @@ public class ReprocessingOneMailTask implements Task {
     public static class UrlEncodingFailureSerializationException extends RuntimeException {
 
         public UrlEncodingFailureSerializationException(MailRepositoryPath mailRepositoryPath) {
-            super("Unable to serialize: '" + mailRepositoryPath.asString() + "' can not de url encoded");
+            super("Unable to serialize: '" + mailRepositoryPath.asString() + "' can not be url encoded");
         }
     }
 
     public static class InvalidMailRepositoryPathDeserializationException extends RuntimeException {
 
         public InvalidMailRepositoryPathDeserializationException(String mailRepositoryPath) {
-            super("Unable to deserialize: '" + mailRepositoryPath + "' can not de url decoded");
+            super("Unable to deserialize: '" + mailRepositoryPath + "' can not be url decoded");
         }
     }
 
@@ -88,11 +87,11 @@ public class ReprocessingOneMailTask implements Task {
         public static ReprocessingOneMailTaskDTO toDTO(ReprocessingOneMailTask domainObject, String typeName) {
             try {
                 return new ReprocessingOneMailTaskDTO(
-                        typeName,
-                        domainObject.repositoryPath.urlEncoded(),
-                        domainObject.targetQueue,
-                        domainObject.mailKey.asString(),
-                        domainObject.targetProcessor
+                    typeName,
+                    domainObject.repositoryPath.urlEncoded(),
+                    domainObject.targetQueue,
+                    domainObject.mailKey.asString(),
+                    domainObject.targetProcessor
                 );
             } catch (Exception e) {
                 throw new UrlEncodingFailureSerializationException(domainObject.repositoryPath);
