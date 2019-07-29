@@ -115,7 +115,7 @@ public class ClearMailRepositoryTask implements Task {
         }
     }
 
-    public static final Function<List<MailRepository>, TaskDTOModule> MODULE = (mailRepositories) ->
+    public static final Function<List<MailRepository>, TaskDTOModule<ClearMailRepositoryTask, ClearMailRepositoryTaskDTO>> MODULE = (mailRepositories) ->
         DTOModule
             .forDomainObject(ClearMailRepositoryTask.class)
             .convertToDTO(ClearMailRepositoryTaskDTO.class)
