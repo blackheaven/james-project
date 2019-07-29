@@ -99,7 +99,7 @@ public class ClearMailQueueTask implements Task {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClearMailQueueTask.class);
     public static final String TYPE = "clear-mail-queue";
-    public static final Function<MailQueueFactory<ManageableMailQueue>, TaskDTOModule> MODULE = (mailQueueFactory) ->
+    public static final Function<MailQueueFactory<ManageableMailQueue>, TaskDTOModule<ClearMailQueueTask, ClearMailQueueTaskDTO>> MODULE = (mailQueueFactory) ->
         DTOModule
             .forDomainObject(ClearMailQueueTask.class)
             .convertToDTO(ClearMailQueueTaskDTO.class)
