@@ -154,7 +154,7 @@ public class DeleteMailsFromMailQueueTask implements Task {
     }
 
     public static final String TYPE = "delete-mails-from-mail-queue";
-    public static final Function<MailQueueFactory<ManageableMailQueue>, TaskDTOModule> MODULE = (mailQueueFactory) ->
+    public static final Function<MailQueueFactory<ManageableMailQueue>, TaskDTOModule<DeleteMailsFromMailQueueTask,DeleteMailsFromMailQueueTaskDTO>> MODULE = (mailQueueFactory) ->
         DTOModule
             .forDomainObject(DeleteMailsFromMailQueueTask.class)
             .convertToDTO(DeleteMailsFromMailQueueTaskDTO.class)
