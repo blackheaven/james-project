@@ -159,7 +159,7 @@ public class MailboxMergingTask implements Task {
         }
     }
 
-    public static final Function<MailboxMergingTaskRunner, TaskDTOModule> MODULE = (taskRunner) ->
+    public static final Function<MailboxMergingTaskRunner, TaskDTOModule<MailboxMergingTask, MailboxMergingTaskDTO>> MODULE = (taskRunner) ->
         DTOModule
             .forDomainObject(MailboxMergingTask.class)
             .convertToDTO(MailboxMergingTaskDTO.class)
