@@ -156,7 +156,7 @@ public class ReprocessingOneMailTask implements Task {
         }
     }
 
-    public static final Function<ReprocessingService, TaskDTOModule> MODULE = (reprocessingService) ->
+    public static final Function<ReprocessingService, TaskDTOModule<ReprocessingOneMailTask, ReprocessingOneMailTaskDTO>> MODULE = (reprocessingService) ->
         DTOModule
             .forDomainObject(ReprocessingOneMailTask.class)
             .convertToDTO(ReprocessingOneMailTaskDTO.class)
