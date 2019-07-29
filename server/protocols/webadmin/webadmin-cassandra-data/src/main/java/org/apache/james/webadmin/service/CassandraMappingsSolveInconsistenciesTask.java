@@ -52,7 +52,7 @@ public class CassandraMappingsSolveInconsistenciesTask implements Task {
         }
     }
 
-    public static final BiFunction<MappingsSourcesMigration, CassandraMappingsSourcesDAO, TaskDTOModule> MODULE = (mappingsSourcesMigration, cassandraMappingsSourcesDAO) ->
+    public static final BiFunction<MappingsSourcesMigration, CassandraMappingsSourcesDAO, TaskDTOModule<CassandraMappingsSolveInconsistenciesTask, CassandraMappingsSolveInconsistenciesTaskDTO>> MODULE = (mappingsSourcesMigration, cassandraMappingsSourcesDAO) ->
         DTOModule
             .forDomainObject(CassandraMappingsSolveInconsistenciesTask.class)
             .convertToDTO(CassandraMappingsSolveInconsistenciesTaskDTO.class)
