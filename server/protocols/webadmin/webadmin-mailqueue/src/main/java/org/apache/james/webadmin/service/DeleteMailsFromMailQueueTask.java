@@ -92,10 +92,10 @@ public class DeleteMailsFromMailQueueTask implements Task {
         }
     }
 
-    private static class DeleteMailsFromFailQueueTaskDTO implements TaskDTO {
+    private static class DeleteMailsFromMailQueueTaskDTO implements TaskDTO {
 
-        public static DeleteMailsFromFailQueueTaskDTO toDTO(DeleteMailsFromMailQueueTask domainObject, String typeName) {
-            return new DeleteMailsFromFailQueueTaskDTO(
+        public static DeleteMailsFromMailQueueTaskDTO toDTO(DeleteMailsFromMailQueueTask domainObject, String typeName) {
+            return new DeleteMailsFromMailQueueTaskDTO(
                 typeName,
                 domainObject.queue.getName(),
                 domainObject.maybeSender.map(MailAddress::asString),
@@ -110,7 +110,7 @@ public class DeleteMailsFromMailQueueTask implements Task {
         private final Optional<String> name;
         private final Optional<String> recipient;
 
-        public DeleteMailsFromFailQueueTaskDTO(@JsonProperty("type") String type,
+        public DeleteMailsFromMailQueueTaskDTO(@JsonProperty("type") String type,
                                                @JsonProperty("queue") String queue,
                                                @JsonProperty("sender") Optional<String> sender,
                                                @JsonProperty("name") Optional<String> name,
@@ -157,9 +157,9 @@ public class DeleteMailsFromMailQueueTask implements Task {
     public static final Function<MailQueueFactory<ManageableMailQueue>, TaskDTOModule> MODULE = (mailQueueFactory) ->
         DTOModule
             .forDomainObject(DeleteMailsFromMailQueueTask.class)
-            .convertToDTO(DeleteMailsFromFailQueueTaskDTO.class)
+            .convertToDTO(DeleteMailsFromMailQueueTaskDTO.class)
             .toDomainObjectConverter(dto -> dto.fromDTO(mailQueueFactory))
-            .toDTOConverter(DeleteMailsFromFailQueueTaskDTO::toDTO)
+            .toDTOConverter(DeleteMailsFromMailQueueTaskDTO::toDTO)
             .typeName(TYPE)
             .withFactory(TaskDTOModule::new);
 
