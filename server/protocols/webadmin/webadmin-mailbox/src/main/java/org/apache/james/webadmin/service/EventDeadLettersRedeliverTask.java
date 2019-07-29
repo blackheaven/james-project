@@ -84,7 +84,7 @@ public class EventDeadLettersRedeliverTask implements Task {
         }
     }
 
-    public static final BiFunction<EventDeadLettersRedeliverService, EventRetriever, TaskDTOModule> MODULE = (service, eventRetriever) ->
+    public static final BiFunction<EventDeadLettersRedeliverService, EventRetriever, TaskDTOModule<EventDeadLettersRedeliverTask, EventDeadLettersRedeliverTaskDTO>> MODULE = (service, eventRetriever) ->
         DTOModule
             .forDomainObject(EventDeadLettersRedeliverTask.class)
             .convertToDTO(EventDeadLettersRedeliverTaskDTO.class)
