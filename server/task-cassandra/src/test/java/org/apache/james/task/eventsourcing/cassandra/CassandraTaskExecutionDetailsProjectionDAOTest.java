@@ -21,6 +21,7 @@ package org.apache.james.task.eventsourcing.cassandra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -42,12 +43,19 @@ class CassandraTaskExecutionDetailsProjectionDAOTest {
     private static final TaskId TASK_ID = TaskId.fromString("2c7f4081-aa30-11e9-bf6c-2d3b9e84aafd");
     private static final TaskId TASK_ID_2 = TaskId.fromString("2c7f4081-aa30-11e9-bf6c-2d3b9e84aafe");
 
-    private static TaskExecutionDetails TASK_EXECUTION_DETAILS =  new TaskExecutionDetails(TASK_ID, "type", Optional.empty(),
-            TaskManager.Status.COMPLETED, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
-    private static TaskExecutionDetails TASK_EXECUTION_DETAILS_2 =  new TaskExecutionDetails(TASK_ID_2, "type", Optional.empty(),
-            TaskManager.Status.COMPLETED, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
-    private static TaskExecutionDetails TASK_EXECUTION_DETAILS_UPDATED =  new TaskExecutionDetails(TASK_ID, "type", Optional.empty(),
-            TaskManager.Status.FAILED, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+    private static final Optional<TaskExecutionDetails.AdditionalInformation> ADDITIONAL_INFORMATION = Optional.empty();
+    private static final Optional<ZonedDateTime> SUBMIT_DATE = Optional.empty();
+    private static final Optional<ZonedDateTime> STARTED_DATE = Optional.empty();
+    private static final Optional<ZonedDateTime> COMPLETED_DATE = Optional.empty();
+    private static final Optional<ZonedDateTime> CANCELLED_DATE = Optional.empty();
+    private static final Optional<ZonedDateTime> FAILED_DATE = Optional.empty();
+
+    private static final TaskExecutionDetails TASK_EXECUTION_DETAILS =  new TaskExecutionDetails(TASK_ID, "type", ADDITIONAL_INFORMATION,
+        TaskManager.Status.COMPLETED, SUBMIT_DATE, STARTED_DATE, COMPLETED_DATE, CANCELLED_DATE, FAILED_DATE);
+    private static final TaskExecutionDetails TASK_EXECUTION_DETAILS_2 =  new TaskExecutionDetails(TASK_ID_2, "type", ADDITIONAL_INFORMATION,
+        TaskManager.Status.COMPLETED, STARTED_DATE, STARTED_DATE, COMPLETED_DATE, CANCELLED_DATE, FAILED_DATE);
+    private static final TaskExecutionDetails TASK_EXECUTION_DETAILS_UPDATED =  new TaskExecutionDetails(TASK_ID, "type", ADDITIONAL_INFORMATION,
+        TaskManager.Status.FAILED, STARTED_DATE, STARTED_DATE, COMPLETED_DATE, CANCELLED_DATE, FAILED_DATE);
 
     @RegisterExtension
     static CassandraClusterExtension cassandraCluster = new CassandraClusterExtension(
