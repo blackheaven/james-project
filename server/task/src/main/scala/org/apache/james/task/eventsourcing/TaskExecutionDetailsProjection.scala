@@ -49,9 +49,9 @@ trait TaskExecutionDetailsProjection {
 }
 
 class MemoryTaskExecutionDetailsProjection() extends TaskExecutionDetailsProjection {
-  private[this] val projections = new ConcurrentHashMap[TaskId, TaskExecutionDetails]
+  private[this] val details = new ConcurrentHashMap[TaskId, TaskExecutionDetails]
 
-  override def load(taskId: TaskId): Option[TaskExecutionDetails] = Option(projections.get(taskId))
+  override def load(taskId: TaskId): Option[TaskExecutionDetails] = Option(this.details.get(taskId))
 
-  override def update(taskId: TaskId, details: TaskExecutionDetails): Unit = projections.put(taskId, details)
+  override def update(taskId: TaskId, details: TaskExecutionDetails): Unit = this.details.put(taskId, details)
 }
