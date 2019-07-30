@@ -40,6 +40,7 @@ class CassandraTaskExecutionDetailsProjectionDAO(session: Session, typesProvider
 
   private val insertStatement = session.prepare(insertInto(TABLE_NAME)
     .value(TASK_ID, bindMarker(TASK_ID))
+    .value(ADDITIONAL_INFORMATION, bindMarker(ADDITIONAL_INFORMATION))
     .value(TYPE, bindMarker(TYPE))
     .value(STATUS, bindMarker(STATUS))
     .value(SUBMITTED_DATE, bindMarker(SUBMITTED_DATE))
