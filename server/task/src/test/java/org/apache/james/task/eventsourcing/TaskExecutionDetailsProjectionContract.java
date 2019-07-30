@@ -56,7 +56,7 @@ public interface TaskExecutionDetailsProjectionContract {
         testee.update(TASK_EXECUTION_DETAILS_WITH_ADDITIONAL_INFORMATION());
 
         Optional<TaskExecutionDetails> taskExecutionDetails = OptionConverters.toJava(testee.load(TASK_ID()));
-        assertThat(taskExecutionDetails).isEqualTo(TASK_EXECUTION_DETAILS_WITH_ADDITIONAL_INFORMATION());
+        assertThat(taskExecutionDetails).contains(TASK_EXECUTION_DETAILS_WITH_ADDITIONAL_INFORMATION());
     }
 
     @Test
