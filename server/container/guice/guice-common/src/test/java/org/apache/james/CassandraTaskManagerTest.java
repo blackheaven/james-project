@@ -54,7 +54,7 @@ class CassandraTaskManagerTest {
     static CassandraEventStoreExtension eventStoreExtension = new CassandraEventStoreExtension(MODULES.stream().toArray(EventDTOModule[]::new));
 
     @Test
-    void whenTwoBlobStoresShareTheSameCassandraEventStoreEventsAreShared(EventStore eventStore) {
+    void givenOneEventStoreTwoEventTaskManagersShareTheSameEvents(EventStore eventStore) {
         RecentTasksProjection recentTasksProjection = new MemoryRecentTasksProjection();
         TaskExecutionDetailsProjection executionDetailsProjection = new MemoryTaskExecutionDetailsProjection();
         TaskManager taskManager1 = new EventSourcingTaskManager(eventStore, executionDetailsProjection, recentTasksProjection);
