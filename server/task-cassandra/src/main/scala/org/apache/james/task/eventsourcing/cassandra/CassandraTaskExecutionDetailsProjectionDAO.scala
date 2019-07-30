@@ -33,7 +33,7 @@ import com.datastax.driver.core.{Row, Session}
 import reactor.core.publisher.{Flux, Mono}
 
 @Inject
-class CassandraTaskExecutionDetailsProjectionDAO(val session: Session, val typesProvider: CassandraTypesProvider) {
+class CassandraTaskExecutionDetailsProjectionDAO(session: Session, typesProvider: CassandraTypesProvider) {
 
   private val cassandraAsyncExecutor = new CassandraAsyncExecutor(session)
   private val dateType = typesProvider.getDefinedUserType(CassandraZonedDateTimeModule.ZONED_DATE_TIME)
