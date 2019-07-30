@@ -104,7 +104,7 @@ class CassandraTaskExecutionDetailsProjectionTest {
     }
 
     @Test
-    void listShouldReturnLastRecord() {
+    void listDetailsShouldReturnLastUpdatedRecords() {
         testee.update(TASK_EXECUTION_DETAILS);
         testee.update(TASK_EXECUTION_DETAILS_UPDATED);
 
