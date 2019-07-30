@@ -40,7 +40,7 @@ class MemoryRecentTasksProjection() extends RecentTasksProjection {
 
   private val tasks = new ConcurrentLinkedDeque[TaskId]
 
-  def list(): List[TaskId] = tasks.asScala.toList
+  override def list(): List[TaskId] = tasks.asScala.toList
 
   override def add(taskId: TaskId): Unit = tasks.add(taskId)
 }
