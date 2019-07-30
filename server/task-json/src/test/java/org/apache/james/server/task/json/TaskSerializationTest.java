@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class TaskSerializationTest {
+class TaskSerializationTest {
 
     private static final String SERIALIZED_FAILED_TASK = "{\"type\": \"failed-task\"}";
     private static final String SERIALIZED_COMPLETED_TASK = "{\"type\": \"completed-task\"}";
