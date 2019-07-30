@@ -64,11 +64,12 @@ class CassandraTaskExecutionDetailsProjectionDAO(session: Session, typesProvider
       .setUDTValue(CANCELED_DATE, CassandraZonedDateTimeModule.toUDT(dateType, details.getCanceledDate).orElse(null))
       .setUDTValue(FAILED_DATE, CassandraZonedDateTimeModule.toUDT(dateType, details.getStartedDate).orElse(null)))
 
-  def readDetails(taskId: TaskId): Mono[TaskExecutionDetails] = cassandraAsyncExecutor.executeSingleRow(
-    selectStatement.bind().setUUID(TASK_ID, taskId.getValue))
-      .map(readRow)
+  def readDetails(taskId: TaskId): Mono[TaskExecutionDetails] = cassandraAsyncExecutor
+    .executeSingleRow(selectStatement.bind().setUUID(TASK_ID, taskId.getValue))
+    .map(readRow)
 
-  def listDetails(): Flux[TaskExecutionDetails] = cassandraAsyncExecutor.executeRows(listStatement.bind())
+  def listDetails(): Flux[TaskExecutionDetails] = cassandraAsyncExecutor
+    .executeRows(listStatement.bind())
     .map(readRow)
 
   private def readRow(row: Row): TaskExecutionDetails = new TaskExecutionDetails(
