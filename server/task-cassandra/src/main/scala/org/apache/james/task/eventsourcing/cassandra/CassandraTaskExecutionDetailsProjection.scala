@@ -28,9 +28,12 @@ import org.apache.james.task.eventsourcing.TaskExecutionDetailsProjection
 @Inject
 class CassandraTaskExecutionDetailsProjection(cassandraTaskExecutionDetailsProjectionDAO: CassandraTaskExecutionDetailsProjectionDAO) extends TaskExecutionDetailsProjection {
 
-  override def load(taskId: TaskId): Option[TaskExecutionDetails] = cassandraTaskExecutionDetailsProjectionDAO.readDetails(taskId).blockOptional().asScala
+  override def load(taskId: TaskId): Option[TaskExecutionDetails] =
+    cassandraTaskExecutionDetailsProjectionDAO.readDetails(taskId).blockOptional().asScala
 
-  override def list: List[TaskExecutionDetails] = cassandraTaskExecutionDetailsProjectionDAO.listDetails().collectList().block().asScala.toList
+  override def list: List[TaskExecutionDetails] =
+    cassandraTaskExecutionDetailsProjectionDAO.listDetails().collectList().block().asScala.toList
 
-  override def update(details: TaskExecutionDetails): Unit = cassandraTaskExecutionDetailsProjectionDAO.saveDetails(details).block()
+  override def update(details: TaskExecutionDetails): Unit =
+    cassandraTaskExecutionDetailsProjectionDAO.saveDetails(details).block()
 }
