@@ -43,7 +43,7 @@ public class CassandraEventStoreExtension implements BeforeAllCallback, AfterAll
     private EventStoreDao eventStoreDao;
 
     public CassandraEventStoreExtension(@SuppressWarnings("rawtypes") EventDTOModule... modules) {
-        this(new CassandraClusterExtension(CassandraEventStoreModule.MODULE), Arrays.stream(modules).collect(ImmutableSet.toImmutableSet()));
+        this(new CassandraClusterExtension(CassandraEventStoreModule.MODULE), ImmutableSet.copyOf(modules));
     }
 
     public CassandraEventStoreExtension(CassandraClusterExtension cassandra, Set<EventDTOModule> module) {
