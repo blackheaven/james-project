@@ -20,9 +20,11 @@
 package org.apache.james.task
 
 import java.time.ZonedDateTime
-import java.util.Optional
+import java.util.{Objects, Optional}
 
 import org.apache.james.task.TaskManager.Status._
+
+import com.google.common.base.MoreObjects
 
 object TaskExecutionDetails {
 
@@ -31,15 +33,15 @@ object TaskExecutionDetails {
   def from(task: Task, id: TaskId) = new TaskExecutionDetails(id, task.`type`, () => task.details, WAITING, submitDate = Optional.of(ZonedDateTime.now))
 }
 
-case class TaskExecutionDetails(taskId: TaskId,
-                                `type`: String,
-                                additionalInformation: () => Optional[TaskExecutionDetails.AdditionalInformation],
-                                status: TaskManager.Status,
-                                submitDate: Optional[ZonedDateTime] = Optional.empty(),
-                                startedDate: Optional[ZonedDateTime] = Optional.empty(),
-                                completedDate: Optional[ZonedDateTime] = Optional.empty(),
-                                canceledDate: Optional[ZonedDateTime] = Optional.empty(),
-                                failedDate: Optional[ZonedDateTime] = Optional.empty()) {
+class TaskExecutionDetails(val taskId: TaskId,
+                           private val `type`: String,
+                           private val additionalInformation: () => Optional[TaskExecutionDetails.AdditionalInformation],
+                           private val status: TaskManager.Status,
+                           private val submitDate: Optional[ZonedDateTime] = Optional.empty(),
+                           private val startedDate: Optional[ZonedDateTime] = Optional.empty(),
+                           private val completedDate: Optional[ZonedDateTime] = Optional.empty(),
+                           private val canceledDate: Optional[ZonedDateTime] = Optional.empty(),
+                           private val failedDate: Optional[ZonedDateTime] = Optional.empty()) {
   def getTaskId: TaskId = taskId
 
   def getType: String = `type`
@@ -88,6 +90,39 @@ case class TaskExecutionDetails(taskId: TaskId,
     case WAITING => cancel
     case _ => this
   }
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[TaskExecutionDetails]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: TaskExecutionDetails =>
+      (that canEqual this) &&
+        Objects.equals(taskId, that.taskId) &&
+        Objects.equals(`type`, that.`type`) &&
+        Objects.equals(additionalInformation(), that.additionalInformation()) &&
+        Objects.equals(status, that.status) &&
+        Objects.equals(submitDate, that.submitDate) &&
+        Objects.equals(startedDate, that.startedDate) &&
+        Objects.equals(completedDate, that.completedDate) &&
+        Objects.equals(canceledDate, that.canceledDate) &&
+        Objects.equals(failedDate, that.failedDate)
+    case _ => false
+  }
+
+  override def hashCode(): Int =
+    Objects.hash(taskId, `type`, additionalInformation(), status, submitDate, startedDate, completedDate, canceledDate, failedDate)
+
+  override def toString: String =
+    MoreObjects.toStringHelper(this)
+      .add("taskId", taskId)
+      .add("type", `type`)
+      .add("", additionalInformation())
+      .add("", status)
+      .add("", submitDate)
+      .add("", startedDate)
+      .add("", completedDate)
+      .add("", canceledDate)
+      .add("", failedDate)
+      .toString
 
   private def start = new TaskExecutionDetails(taskId, `type`, additionalInformation, IN_PROGRESS,
     submitDate = submitDate,
