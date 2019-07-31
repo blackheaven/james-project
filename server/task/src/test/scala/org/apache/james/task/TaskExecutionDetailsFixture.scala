@@ -32,7 +32,7 @@ object TaskExecutionDetailsFixture {
   val TASK_EXECUTION_DETAILS_UPDATED = new TaskExecutionDetails(TASK_ID, "type", ADDITIONAL_INFORMATION, TaskManager.Status.FAILED)
 
 
-  val ADDITIONAL_INFORMATION_2: Optional[AdditionalInformation] = Optional.of(new CustomAdditionalInformation("hello"))
+  val ADDITIONAL_INFORMATION_2: () => Optional[AdditionalInformation] = () => Optional.of(new CustomAdditionalInformation("hello"))
   val TASK_EXECUTION_DETAILS_WITH_ADDITIONAL_INFORMATION = new TaskExecutionDetails(TASK_ID, "type", ADDITIONAL_INFORMATION_2, TaskManager.Status.COMPLETED)
 }
 
