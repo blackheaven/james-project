@@ -81,5 +81,5 @@ class CassandraTaskExecutionDetailsProjectionDAO(session: Session, typesProvider
     completedDate = CassandraZonedDateTimeModule.fromUDT(row.getUDTValue(COMPLETED_DATE)),
     canceledDate = CassandraZonedDateTimeModule.fromUDT(row.getUDTValue(CANCELED_DATE)),
     failedDate = CassandraZonedDateTimeModule.fromUDT(row.getUDTValue(FAILED_DATE)),
-    additionalInformation = Optional.empty())
+    additionalInformation = Optional.empty)
 }
