@@ -31,7 +31,8 @@ object TaskExecutionDetails {
   def from(task: Task, id: TaskId) = new TaskExecutionDetails(id, task.`type`, task.details, WAITING, submitDate = Optional.of(ZonedDateTime.now))
 }
 
-case class TaskExecutionDetails(taskId: TaskId, `type`: String,
+case class TaskExecutionDetails(taskId: TaskId,
+                                `type`: String,
                                 additionalInformation: Optional[TaskExecutionDetails.AdditionalInformation],
                                 status: TaskManager.Status,
                                 submitDate: Optional[ZonedDateTime] = Optional.empty(),
@@ -98,7 +99,7 @@ case class TaskExecutionDetails(taskId: TaskId, `type`: String,
   private def fail = new TaskExecutionDetails(taskId, `type`, additionalInformation, TaskManager.Status.FAILED,
     submitDate = submitDate,
     startedDate = startedDate,
-    Optional.of(ZonedDateTime.now))
+    failedDate = Optional.of(ZonedDateTime.now))
   private def requestCancel = new TaskExecutionDetails(taskId, `type`, additionalInformation, TaskManager.Status.CANCEL_REQUESTED,
     submitDate = submitDate,
     startedDate = startedDate,
