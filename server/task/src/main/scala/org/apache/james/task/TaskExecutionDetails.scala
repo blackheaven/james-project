@@ -28,12 +28,12 @@ object TaskExecutionDetails {
 
   trait AdditionalInformation {}
 
-  def from(task: Task, id: TaskId) = new TaskExecutionDetails(id, task.`type`, task.details, WAITING, submitDate = Optional.of(ZonedDateTime.now))
+  def from(task: Task, id: TaskId) = new TaskExecutionDetails(id, task.`type`, task.details _, WAITING, submitDate = Optional.of(ZonedDateTime.now))
 }
 
 case class TaskExecutionDetails(taskId: TaskId,
                                 `type`: String,
-                                additionalInformation: Optional[TaskExecutionDetails.AdditionalInformation],
+                                additionalInformation: () => Optional[TaskExecutionDetails.AdditionalInformation],
                                 status: TaskManager.Status,
                                 submitDate: Optional[ZonedDateTime] = Optional.empty(),
                                 startedDate: Optional[ZonedDateTime] = Optional.empty(),
@@ -46,7 +46,7 @@ case class TaskExecutionDetails(taskId: TaskId,
 
   def getStatus: TaskManager.Status = status
 
-  def getAdditionalInformation: Optional[TaskExecutionDetails.AdditionalInformation] = additionalInformation
+  def getAdditionalInformation: Optional[TaskExecutionDetails.AdditionalInformation] = additionalInformation()
 
   def getSubmitDate: Optional[ZonedDateTime] = submitDate
 
