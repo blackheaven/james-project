@@ -20,10 +20,18 @@ package org.apache.james.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 
 class ReactorUtilsTest {
 
@@ -67,6 +75,36 @@ class ReactorUtilsTest {
             public Integer getCounter() {
                 return counter;
             }
+        }
+    }
+
+    @Nested
+    class ToInputStream {
+        @Test
+        void shouldConsumeNothingWhenNoBytesAreRead() {
+            AtomicInteger generateElements = new AtomicInteger(0);
+            Flux<byte[]> source = Flux.from(Mono.fromCallable(() -> new byte[]{(byte) generateElements.getAndIncrement()}))
+                .limitRate(2)
+                .subscribeOn(Schedulers.elastic());
+
+            ReactorUtils.toInputStream(source);
+
+            assertThat(generateElements.get()).isEqualTo(0);
+        }
+
+        @Test
+        void shouldConsumeOnlyTheReadBytesAndThePrefetch() throws IOException, InterruptedException {
+            AtomicInteger generateElements = new AtomicInteger(0);
+            Flux<byte[]> source = Flux.range(0, 10)
+                .publishOn(Schedulers.elastic(), 2)
+                .concatMap(ignored -> Mono.delay(Duration.ofMillis(100)).then(Mono.defer(() -> Mono.just(new byte[]{(byte) generateElements.getAndIncrement()}))), 1);
+
+            InputStream inputStream = ReactorUtils.toInputStream(source);
+            byte[] readBytes = new byte[5];
+            inputStream.read(readBytes, 0, readBytes.length);
+
+            assertThat(readBytes).contains(0, 1, 2, 3, 4);
+            assertThat(generateElements.get()).isEqualTo(5);
         }
     }
 }
