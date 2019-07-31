@@ -28,7 +28,7 @@ object TaskExecutionDetails {
 
   trait AdditionalInformation {}
 
-  def from(task: Task, id: TaskId) = new TaskExecutionDetails(id, task.`type`, task.details _, WAITING, submitDate = Optional.of(ZonedDateTime.now))
+  def from(task: Task, id: TaskId) = new TaskExecutionDetails(id, task.`type`, () => task.details, WAITING, submitDate = Optional.of(ZonedDateTime.now))
 }
 
 case class TaskExecutionDetails(taskId: TaskId,
