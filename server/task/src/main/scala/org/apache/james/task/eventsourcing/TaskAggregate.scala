@@ -37,22 +37,22 @@ class TaskAggregate private(val aggregateId: TaskAggregateId, private val histor
     .status
 
 
-  def create(task: Task): util.List[Event] = {
+  def create(task: Task, hostname: Hostname): util.List[Event] = {
     if (currentStatus.isEmpty) {
-      createEventWithId(Created(aggregateId, _, task))
+      createEventWithId(Created(aggregateId, _, task, hostname))
     } else Nil.asJava
   }
 
-  private[eventsourcing] def start(): util.List[Event] = {
+  private[eventsourcing] def start(hostname: Hostname): util.List[Event] = {
     currentStatus match {
-      case Some(Status.WAITING) => createEventWithId(Started(aggregateId, _))
+      case Some(Status.WAITING) => createEventWithId(Started(aggregateId, _, hostname))
       case _ => Nil.asJava
     }
   }
 
-  def requestCancel(): util.List[Event] = {
+  def requestCancel(hostname: Hostname): util.List[Event] = {
     currentStatus match {
-      case Some(status) if !status.isFinished => createEventWithId(CancelRequested(aggregateId, _))
+      case Some(status) if !status.isFinished => createEventWithId(CancelRequested(aggregateId, _, hostname))
       case _ => Nil.asJava
     }
   }

@@ -33,27 +33,29 @@ sealed abstract class TaskCommandHandler[T <: TaskCommand] extends CommandHandle
   }
 }
 
-class CreateCommandHandler(private val loadHistory: TaskAggregateId => History) extends TaskCommandHandler[Create] {
+class CreateCommandHandler(private val loadHistory: TaskAggregateId => History, hostname: Hostname) extends TaskCommandHandler[Create] {
   override def handledClass: Class[Create] = classOf[Create]
 
   override def handle(command: Create): util.List[_ <: Event] = {
-    loadAggregate(loadHistory, command.id).create(command.task)
+    loadAggregate(loadHistory, command.id).create(command.task, hostname)
   }
 }
 
-class StartCommandHandler(private val loadHistory: TaskAggregateId => History) extends TaskCommandHandler[Start] {
+class StartCommandHandler(private val loadHistory: TaskAggregateId => History,
+                          private val hostname: Hostname) extends TaskCommandHandler[Start] {
   override def handledClass: Class[Start] = classOf[Start]
 
   override def handle(command: Start): util.List[_ <: Event] = {
-    loadAggregate(loadHistory, command.id).start()
+    loadAggregate(loadHistory, command.id).start(hostname)
   }
 }
 
-class RequestCancelCommandHandler(private val loadHistory: TaskAggregateId => History) extends TaskCommandHandler[RequestCancel] {
+class RequestCancelCommandHandler(private val loadHistory: TaskAggregateId => History,
+                                  private val hostname: Hostname) extends TaskCommandHandler[RequestCancel] {
   override def handledClass: Class[RequestCancel] = classOf[RequestCancel]
 
   override def handle(command: RequestCancel): util.List[_ <: Event] = {
-    loadAggregate(loadHistory, command.id).requestCancel()
+    loadAggregate(loadHistory, command.id).requestCancel(hostname)
   }
 }
 

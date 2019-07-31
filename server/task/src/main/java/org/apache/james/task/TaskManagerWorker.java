@@ -25,18 +25,20 @@ import reactor.core.publisher.Mono;
 public interface TaskManagerWorker extends Closeable {
 
     interface Listener {
-        void started();
+        void started(TaskId taskId);
 
-        void completed(Task.Result result);
+        void completed(TaskId taskId, Task.Result result);
 
-        void failed(Throwable t);
+        void failed(TaskId taskId, Throwable t);
 
-        void failed();
+        void failed(TaskId taskId);
 
-        void cancelled();
+        void cancelled(TaskId taskId);
     }
 
-    Mono<Task.Result> executeTask(TaskWithId taskWithId, Listener listener);
+    Mono<Task.Result> executeTask(TaskWithId taskWithId);
 
     void cancelTask(TaskId taskId);
+
+    void fail(TaskId taskId, Throwable reason);
 }
