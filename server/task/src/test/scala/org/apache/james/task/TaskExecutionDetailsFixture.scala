@@ -25,7 +25,7 @@ import org.apache.james.task.TaskExecutionDetails.AdditionalInformation
 object TaskExecutionDetailsFixture {
   val TASK_ID = TaskId.fromString("2c7f4081-aa30-11e9-bf6c-2d3b9e84aafd")
   val TASK_ID_2 = TaskId.fromString("2c7f4081-aa30-11e9-bf6c-2d3b9e84aafe")
-  val ADDITIONAL_INFORMATION: Optional[AdditionalInformation] = Optional.empty()
+  val ADDITIONAL_INFORMATION: () => Optional[AdditionalInformation] = Optional.empty
 
   val TASK_EXECUTION_DETAILS = new TaskExecutionDetails(TASK_ID, "type", ADDITIONAL_INFORMATION, TaskManager.Status.COMPLETED)
   val TASK_EXECUTION_DETAILS_2 = new TaskExecutionDetails(TASK_ID_2, "type", ADDITIONAL_INFORMATION, TaskManager.Status.COMPLETED)
