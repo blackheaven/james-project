@@ -62,7 +62,12 @@ git checkout $SHA1
 if [ "$SKIPTESTS" = "skipTests" ]; then
    mvn package -DskipTests ${MVN_ADDITIONAL_ARG_LINE}
 else
+   wget -O async-profiler.tar.gz https://github.com/jvm-profiling-tools/async-profiler/releases/download/v1.5/async-profiler-1.5-linux-x64.tar.gz
+   tar xvzf async-profiler.tar.gz
+   mkdir profiles
    mvn package ${MVN_ADDITIONAL_ARG_LINE}
+   echo "Dumped profiles to $ base64 -d | tar xvz"
+   tar cz profiles | base64
 fi
 
 # download glowroot jar

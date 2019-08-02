@@ -2983,7 +2983,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.22.2</version>
                     <configuration>
-                        <argLine>-Xms512m -Xmx1024m</argLine>
+                        <argLine>-Xms512m -Xmx1024m -agentpath:build/libasyncProfiler.so=start,svg,file=profiles/${project.artifactId}.svg</argLine>
                         <reuseForks>true</reuseForks>
                         <!-- Fail tests longer than 2 hours, prevent form random locking tests -->
                         <forkedProcessTimeoutInSeconds>7200</forkedProcessTimeoutInSeconds>
