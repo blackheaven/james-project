@@ -81,30 +81,21 @@ class ReactorUtilsTest {
     @Nested
     class ToInputStream {
         @Test
-        void shouldConsumeNothingWhenNoBytesAreRead() {
-            AtomicInteger generateElements = new AtomicInteger(0);
-            Flux<byte[]> source = Flux.from(Mono.fromCallable(() -> new byte[]{(byte) generateElements.getAndIncrement()}))
-                .limitRate(2)
-                .subscribeOn(Schedulers.elastic());
-
-            ReactorUtils.toInputStream(source);
-
-            assertThat(generateElements.get()).isEqualTo(0);
-        }
-
-        @Test
         void shouldConsumeOnlyTheReadBytesAndThePrefetch() throws IOException, InterruptedException {
             AtomicInteger generateElements = new AtomicInteger(0);
             Flux<byte[]> source = Flux.range(0, 10)
-                .publishOn(Schedulers.elastic(), 2)
-                .concatMap(ignored -> Mono.delay(Duration.ofMillis(100)).then(Mono.defer(() -> Mono.just(new byte[]{(byte) generateElements.getAndIncrement()}))), 1);
+                .subscribeOn(Schedulers.elastic())
+                .limitRate(2)
+                .doOnRequest(request -> generateElements.getAndAdd((int) request))
+                .map(index -> new byte[] {(byte) (int) index});
 
             InputStream inputStream = ReactorUtils.toInputStream(source);
             byte[] readBytes = new byte[5];
             inputStream.read(readBytes, 0, readBytes.length);
 
             assertThat(readBytes).contains(0, 1, 2, 3, 4);
-            assertThat(generateElements.get()).isEqualTo(5);
+            Thread.sleep(200);
+            assertThat(generateElements.get()).isEqualTo(6);
         }
     }
 }

@@ -34,7 +34,7 @@ public class ReactorUtils {
     }
 
     public static InputStream toInputStream(Flux<byte[]> byteArrays) {
-        return new StreamInputStream(byteArrays.toStream());
+        return new StreamInputStream(byteArrays.toStream(1));
     }
 
     private static  class StreamInputStream extends InputStream {
