@@ -52,7 +52,7 @@ public class PreDeletionHooks {
             .publishOn(Schedulers.elastic())
             .limitRate(1)
             .flatMap(hook -> metricFactory.runPublishingTimerMetric(PRE_DELETION_HOOK_METRIC_NAME,
-                Mono.from(hook.notifyDelete(deleteOperation))))
+                Mono.from(hook.notifyDelete(deleteOperation))), 1)
             .then();
     }
 }

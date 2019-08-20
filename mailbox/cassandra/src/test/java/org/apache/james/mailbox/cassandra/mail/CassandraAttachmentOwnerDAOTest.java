@@ -79,8 +79,7 @@ class CassandraAttachmentOwnerDAOTest {
         int referenceCountExceedingPaging = 5050;
 
         Flux.range(0, referenceCountExceedingPaging)
-            .limitRate(128)
-            .flatMap(i -> testee.addOwner(ATTACHMENT_ID, Username.fromRawValue("owner" + i)))
+            .flatMap(i -> testee.addOwner(ATTACHMENT_ID, Username.fromRawValue("owner" + i)), 128)
             .blockLast();
 
         assertThat(testee.retrieveOwners(ATTACHMENT_ID).toIterable())
