@@ -118,7 +118,7 @@ class ReactorUtilsTest {
         @Test
         void GivenAFluxOf3BytesWithAnEmptyByteArrayShouldConsumeOnlyTheReadBytesAndThePrefetch() throws IOException, InterruptedException {
             AtomicInteger generateElements = new AtomicInteger(0);
-            Flux<byte[]> source = Flux.just(new byte[] {0, 1, 2}, new byte[] {}, new byte[] {3, 4, 5}, new byte[] {6, 7, 8})
+            Flux<byte[]> source = Flux.just(new byte[] {0, 1, 2}, new byte[] {}, new byte[] {3, 4, 5}, new byte[] {6, 7, 8}, new byte[] {9, 10, 11})
                     .subscribeOn(Schedulers.elastic())
                     .limitRate(2)
                     .doOnRequest(request -> generateElements.getAndAdd((int) request));
