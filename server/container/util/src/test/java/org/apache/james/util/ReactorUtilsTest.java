@@ -81,7 +81,7 @@ class ReactorUtilsTest {
     @Nested
     class ToInputStream {
         @Test
-        void GivenAFluxOnOneByteShouldConsumeOnlyTheReadBytesAndThePrefetch() throws IOException, InterruptedException {
+        void givenAFluxOnOneByteShouldConsumeOnlyTheReadBytesAndThePrefetch() throws IOException, InterruptedException {
             AtomicInteger generateElements = new AtomicInteger(0);
             Flux<byte[]> source = Flux.range(0, 10)
                 .subscribeOn(Schedulers.elastic())
@@ -99,7 +99,7 @@ class ReactorUtilsTest {
         }
 
         @Test
-        void GivenAFluxOf3BytesShouldConsumeOnlyTheReadBytesAndThePrefetch() throws IOException, InterruptedException {
+        void givenAFluxOf3BytesShouldConsumeOnlyTheReadBytesAndThePrefetch() throws IOException, InterruptedException {
             AtomicInteger generateElements = new AtomicInteger(0);
             Flux<byte[]> source = Flux.just(new byte[] {0, 1, 2}, new byte[] {3, 4, 5}, new byte[] {6, 7, 8})
                     .subscribeOn(Schedulers.elastic())
@@ -116,7 +116,7 @@ class ReactorUtilsTest {
         }
 
         @Test
-        void GivenAFluxOf3BytesWithAnEmptyByteArrayShouldConsumeOnlyTheReadBytesAndThePrefetch() throws IOException, InterruptedException {
+        void givenAFluxOf3BytesWithAnEmptyByteArrayShouldConsumeOnlyTheReadBytesAndThePrefetch() throws IOException, InterruptedException {
             AtomicInteger generateElements = new AtomicInteger(0);
             Flux<byte[]> source = Flux.just(new byte[] {0, 1, 2}, new byte[] {}, new byte[] {3, 4, 5}, new byte[] {6, 7, 8}, new byte[] {9, 10, 11})
                     .subscribeOn(Schedulers.elastic())
@@ -133,7 +133,7 @@ class ReactorUtilsTest {
         }
 
         @Test
-        void GivenAnEmptyFluxShouldConsumeOnlyThePrefetch() throws IOException, InterruptedException {
+        void givenAnEmptyFluxShouldConsumeOnlyThePrefetch() throws IOException, InterruptedException {
             AtomicInteger generateElements = new AtomicInteger(0);
             Flux<byte[]> source = Flux.<byte[]>empty()
                     .subscribeOn(Schedulers.elastic())
