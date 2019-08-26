@@ -106,6 +106,10 @@ class DistributedTaskManagerTest implements TaskManagerContract {
         return new EventSourcingTaskManager(workQueueSupplier, eventStore, executionDetailsProjection, HOSTNAME);
     }
 
+    private TaskManager taskManager(Hostname hostname) {
+        return new EventSourcingTaskManager(workQueueSupplier, eventStore, executionDetailsProjection, hostname);
+    }
+
     @Test
     void givenOneEventStoreTwoEventTaskManagersShareTheSameEvents() {
         TaskManager taskManager1 = taskManager();
@@ -136,8 +140,8 @@ class DistributedTaskManagerTest implements TaskManagerContract {
     void givenTwoTaskManagersAndTwoTaskOnlyOneTaskShouldRunAtTheSameTime() throws InterruptedException {
         CountDownLatch waitingForFirstTaskLatch = new CountDownLatch(1);
 
-        TaskManager taskManager1 = taskManager();
-        TaskManager taskManager2 = taskManager();
+        TaskManager taskManager1 = taskManager(HOSTNAME);
+        TaskManager taskManager2 = taskManager(HOSTNAME_2);
 
         taskManager1.submit(new MemoryReferenceTask(() -> {
             waitingForFirstTaskLatch.await();
@@ -156,12 +160,10 @@ class DistributedTaskManagerTest implements TaskManagerContract {
     }
 
     @Test
-        // FIXME it's currently dependent of the implementation of the sequential TaskManager with the exclusive RabbitMQ consumer
-        // once we store the node where the event have been created/started/completed we should rewrite it with this information.
     void givenTwoTaskManagerATaskSubmittedOnOneCouldBeRunOnTheOther() throws InterruptedException {
-        TaskManager taskManager1 = taskManager();
+        TaskManager taskManager1 = taskManager(HOSTNAME);
         Thread.sleep(100); // FIXME used to ensure that taskManager1 is the worker consuming from rabbit
-        TaskManager taskManager2 = taskManager();
+        TaskManager taskManager2 = taskManager(HOSTNAME_2);
 
         TaskId taskId = taskManager2.submit(new CompletedTask());
 
@@ -169,5 +171,9 @@ class DistributedTaskManagerTest implements TaskManagerContract {
             .atMost(Duration.ONE_SECOND)
             .pollInterval(100L, TimeUnit.MILLISECONDS)
             .until(() -> taskManager1.await(taskId).getStatus() == TaskManager.Status.COMPLETED);
+
+        TaskExecutionDetails executionDetails = taskManager2.getExecutionDetails(taskId);
+        assertThat(executionDetails.getSubmittedNode()).isEqualTo(HOSTNAME_2);
+        assertThat(executionDetails.getRanNode()).contains(HOSTNAME);
     }
 }
