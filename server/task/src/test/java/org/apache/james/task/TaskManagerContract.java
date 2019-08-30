@@ -47,6 +47,10 @@ public interface TaskManagerContract {
         .pollDelay(slowPacedPollInterval)
         .await();
     ConditionFactory awaitAtMostFiveSeconds = calmlyAwait.atMost(FIVE_SECONDS);
+    java.time.Duration TIMEOUT = java.time.Duration.ofMillis(Long.MAX_VALUE);
+
+    class CustomTimeoutException extends RuntimeException {}
+    class CustomUnknownException extends RuntimeException {}
 
     TaskManager taskManager();
 
@@ -412,10 +416,9 @@ public interface TaskManagerContract {
     @Test
     default void awaitShouldNotThrowWhenCompletedTask() {
         TaskManager taskManager = taskManager();
-        TaskId taskId = taskManager.submit(
-            new CompletedTask());
-        taskManager.await(taskId);
-        taskManager.await(taskId);
+        TaskId taskId = taskManager.submit(new CompletedTask());
+        taskManager.await(taskId, TIMEOUT).unwrap();
+        taskManager.await(taskId, TIMEOUT).unwrap();
     }
 
     @Test
@@ -431,7 +434,41 @@ public interface TaskManagerContract {
         TaskId task2 = taskManager.submit(
             new CompletedTask());
 
-        assertThat(taskManager.await(task2).getStatus()).isEqualTo(TaskManager.Status.COMPLETED);
+        assertThat(taskManager.await(task2, TIMEOUT).unwrap().getStatus()).isEqualTo(TaskManager.Status.COMPLETED);
+    }
+
+    @Test
+    default void awaitANonExistingTaskShouldReturnAnUnknownAwaitedTaskExecutionDetailsAndThrow() {
+        TaskManager taskManager = taskManager();
+        TaskManager.AwaitedTaskExecutionDetails result = taskManager.await(TaskId.generateTaskId(), TIMEOUT);
+
+        assertThat(result).isInstanceOf(TaskManager.UnknownAwaitedTaskExecutionDetails.class);
+
+        assertThatCode(() -> result
+                .onTimeout(CustomTimeoutException::new)
+                .onUnknown(CustomUnknownException::new)
+                .unwrap())
+            .isInstanceOf(CustomUnknownException.class);
+    }
+
+    @Test
+    default void awaitWithATooShortTimeoutShouldReturnATimeoutAwaitedTaskExecutionDetailsAndThrow() {
+        TaskManager taskManager = taskManager();
+        TaskId taskId = taskManager.submit(new MemoryReferenceTask(
+            () -> {
+                Thread.sleep(1000);
+                return Task.Result.COMPLETED;
+            }));
+
+        TaskManager.AwaitedTaskExecutionDetails result = taskManager.await(taskId, java.time.Duration.ofMillis(10));
+
+        assertThat(result).isInstanceOf(TaskManager.TimeoutAwaitedTaskExecutionDetails.class);
+
+        assertThatCode(() -> result
+                .onTimeout(CustomTimeoutException::new)
+                .onUnknown(CustomUnknownException::new)
+                .unwrap())
+            .isInstanceOf(CustomTimeoutException.class);
     }
 
     @Test

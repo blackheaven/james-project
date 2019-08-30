@@ -19,17 +19,21 @@
 package org.apache.james.task.eventsourcing
 
 import java.io.Closeable
+import java.time.Duration
 import java.util
+import java.util.Optional
 
 import com.google.common.annotations.VisibleForTesting
 import javax.inject.Inject
 
 import org.apache.james.eventsourcing.eventstore.{EventStore, History}
 import org.apache.james.eventsourcing.{AggregateId, Subscriber}
+import org.apache.james.task.TaskManager.{AwaitedTaskExecutionDetails, TerminatedAwaitedTaskExecutionDetails, TimeoutAwaitedTaskExecutionDetails, UnknownAwaitedTaskExecutionDetails}
 import org.apache.james.task._
 import org.apache.james.task.eventsourcing.TaskCommand._
 
 import reactor.core.publisher.Flux
+import reactor.core.scheduler.Schedulers
 
 class EventSourcingTaskManager @Inject @VisibleForTesting private[eventsourcing](
                                                                                   workQueueSupplier: WorkQueueSupplier,
@@ -91,19 +95,25 @@ class EventSourcingTaskManager @Inject @VisibleForTesting private[eventsourcing]
     eventSourcingSystem.dispatch(command)
   }
 
-  override final def await(id: TaskId): TaskExecutionDetails = {
-    val details = getExecutionDetails(id)
-    if (details.getStatus.isFinished) {
-      details
-    } else {
-      Flux.from(terminationSubscriber.listenEvents)
-          .filter{
+  override final def await(id: TaskId, timeout: Duration): AwaitedTaskExecutionDetails = {
+    try {
+      val details = getExecutionDetails(id)
+      if (details.getStatus.isFinished) {
+        new TerminatedAwaitedTaskExecutionDetails(details)
+      } else {
+        Flux.from(terminationSubscriber.listenEvents)
+          .subscribeOn(Schedulers.elastic)
+          .filter {
             case event: TaskEvent => event.getAggregateId.taskId == id
             case _ => false
           }
-          .blockFirst()
+          .blockFirst(timeout)
 
-      getExecutionDetails(id)
+        new TerminatedAwaitedTaskExecutionDetails(getExecutionDetails(id))
+      }
+    } catch {
+      case _: IllegalStateException => new TimeoutAwaitedTaskExecutionDetails()
+      case _: TaskNotFoundException => new UnknownAwaitedTaskExecutionDetails()
     }
   }
 

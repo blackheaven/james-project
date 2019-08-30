@@ -199,6 +199,81 @@ class TasksRoutesTest {
     }
 
     @Test
+    void getAwaitWithTimeoutShouldAwaitTaskCompletion() {
+        TaskId taskId = taskManager.submit(() -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            return Task.Result.COMPLETED;
+        });
+
+        given()
+            .queryParam("timeout", "5s")
+        .when()
+            .get("/" + taskId.getValue() + "/await")
+        .then()
+            .statusCode(HttpStatus.OK_200)
+            .body("status", is("completed"));
+    }
+
+    @Test
+    void getAwaitWithInvalidTimeoutShouldReturnAnError() {
+        TaskId taskId = taskManager.submit(() -> Task.Result.COMPLETED);
+
+        given()
+            .queryParam("timeout", "-5")
+        .when()
+            .get("/" + taskId.getValue() + "/await")
+        .then()
+            .statusCode(HttpStatus.BAD_REQUEST_400)
+            .body("message", is("Invalid timeout"));
+    }
+
+    @Test
+    void getAwaitWithATooBigTimeoutShouldReturnAnError() {
+        TaskId taskId = taskManager.submit(() -> Task.Result.COMPLETED);
+
+        given()
+            .queryParam("timeout", "5y")
+        .when()
+            .get("/" + taskId.getValue() + "/await")
+        .then()
+            .statusCode(HttpStatus.BAD_REQUEST_400)
+            .body("message", is("Invalid timeout"));
+    }
+
+    @Test
+    void getAwaitWithAShorterTimeoutShouldReturnTimeout() {
+        TaskId taskId = taskManager.submit(() -> {
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            return Task.Result.COMPLETED;
+        });
+
+        given()
+            .queryParam("timeout", "2")
+        .when()
+            .get("/" + taskId.getValue() + "/await")
+        .then()
+            .statusCode(HttpStatus.REQUEST_TIMEOUT_408)
+            .body("message", is("The timeout has been reached"));
+    }
+
+    @Test
+    void getAwaitWithANonExistingTaskShouldReturnNotFound() {
+        when()
+            .get("/" + TaskId.generateTaskId().asString() + "/await")
+        .then()
+            .statusCode(HttpStatus.NOT_FOUND_404)
+            .body("message", is("The taskId is not found"));
+    }
+
+    @Test
     void getAwaitShouldNotFailUponError() {
         TaskId taskId = taskManager.submit(() -> {
             throw new RuntimeException();

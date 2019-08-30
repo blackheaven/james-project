@@ -123,7 +123,7 @@ public class MemoryTaskManager implements TaskManager {
         return ImmutableList.copyOf(tasksFiltered(status).values());
     }
 
-    public Map<TaskId, TaskExecutionDetails> tasksFiltered(Status status) {
+    private Map<TaskId, TaskExecutionDetails> tasksFiltered(Status status) {
         return idToExecutionDetails.entrySet()
             .stream()
             .filter(details -> details.getValue().getStatus().equals(status))
@@ -140,17 +140,18 @@ public class MemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public TaskExecutionDetails await(TaskId id) {
+    public AwaitedTaskExecutionDetails await(TaskId id, Duration timeout) {
         if (Optional.ofNullable(idToExecutionDetails.get(id)).isPresent()) {
-            return Flux.interval(NOW, AWAIT_POLLING_DURATION, Schedulers.elastic())
-                .map(ignored -> getExecutionDetails(id))
-                .filter(details -> details.getStatus() == Status.COMPLETED
-                    || details.getStatus() == Status.FAILED
-                    || details.getStatus() == Status.CANCELLED)
-                .take(1)
-                .blockFirst();
+            try {
+                return new TerminatedAwaitedTaskExecutionDetails(Flux.interval(NOW, AWAIT_POLLING_DURATION, Schedulers.elastic())
+                    .map(ignored -> getExecutionDetails(id))
+                    .filter(details -> details.getStatus().isFinished())
+                    .blockFirst(timeout));
+            } catch (IllegalStateException e) {
+                return new TimeoutAwaitedTaskExecutionDetails();
+            }
         } else {
-            return null;
+            return new UnknownAwaitedTaskExecutionDetails();
         }
     }
 
