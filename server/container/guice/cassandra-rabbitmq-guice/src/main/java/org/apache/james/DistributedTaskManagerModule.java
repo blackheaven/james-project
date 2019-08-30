@@ -23,7 +23,6 @@ package org.apache.james;
 import org.apache.james.modules.server.HostnameModule;
 import org.apache.james.task.TaskManager;
 import org.apache.james.task.eventsourcing.EventSourcingTaskManager;
-import org.apache.james.task.eventsourcing.MemoryTerminationSubscriber;
 import org.apache.james.task.eventsourcing.TaskExecutionDetailsProjection;
 import org.apache.james.task.eventsourcing.TerminationSubscriber;
 import org.apache.james.task.eventsourcing.WorkQueueSupplier;
