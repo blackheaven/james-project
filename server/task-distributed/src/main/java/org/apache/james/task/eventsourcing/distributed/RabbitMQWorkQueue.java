@@ -26,7 +26,6 @@ import java.util.UUID;
 
 import javax.annotation.PreDestroy;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.james.backend.rabbitmq.ReactorRabbitMQChannelPool;
 import org.apache.james.backend.rabbitmq.SimpleConnectionPool;
 import org.apache.james.lifecycle.api.Startable;
@@ -48,7 +47,7 @@ import com.rabbitmq.client.Delivery;
 
 import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.WorkQueueProcessor;
+import reactor.core.publisher.UnicastProcessor;
 import reactor.core.scheduler.Schedulers;
 import reactor.rabbitmq.AcknowledgableDelivery;
 import reactor.rabbitmq.BindingSpecification;
@@ -57,13 +56,13 @@ import reactor.rabbitmq.ExchangeSpecification;
 import reactor.rabbitmq.OutboundMessage;
 import reactor.rabbitmq.QueueSpecification;
 import reactor.rabbitmq.RabbitFlux;
-import reactor.rabbitmq.Receiver;
 import reactor.rabbitmq.ReceiverOptions;
 import reactor.rabbitmq.Sender;
 
 public class RabbitMQWorkQueue implements WorkQueue, Startable {
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQWorkQueue.class);
 
+    // Need at least one by receivers but a shared one for senders
     static final Integer MAX_CHANNELS_NUMBER = 5;
     static final String EXCHANGE_NAME = "taskManagerWorkQueueExchange";
     static final String QUEUE_NAME = "taskManagerWorkQueue";
@@ -80,7 +79,7 @@ public class RabbitMQWorkQueue implements WorkQueue, Startable {
     private final JsonTaskSerializer taskSerializer;
     private Sender sender;
     private RabbitMQExclusiveConsumer receiver;
-    private WorkQueueProcessor<TaskId> sendCancelRequestsQueue;
+    private UnicastProcessor<TaskId> sendCancelRequestsQueue;
     private Disposable sendCancelRequestsQueueHandle;
 
     public RabbitMQWorkQueue(TaskManagerWorker worker, SimpleConnectionPool simpleConnectionPool, JsonTaskSerializer taskSerializer) {
@@ -138,7 +137,7 @@ public class RabbitMQWorkQueue implements WorkQueue, Startable {
         cancelRequestSender.bind(BindingSpecification.binding(CANCEL_REQUESTS_EXCHANGE_NAME, CANCEL_REQUESTS_ROUTING_KEY, queueName)).block();
         registerCancelRequestsListener(queueName);
 
-        sendCancelRequestsQueue = WorkQueueProcessor.create();
+        sendCancelRequestsQueue = UnicastProcessor.create();
         sendCancelRequestsQueueHandle = cancelRequestSender
             .send(sendCancelRequestsQueue.map(this::makeCancelRequestMessage))
             .subscribeOn(Schedulers.elastic())
@@ -146,8 +145,9 @@ public class RabbitMQWorkQueue implements WorkQueue, Startable {
     }
 
     private void registerCancelRequestsListener(String queueName) {
-        Receiver receiver = RabbitFlux.createReceiver(new ReceiverOptions().connectionMono(connectionMono));
-        receiver.consumeAutoAck(queueName)
+        RabbitFlux
+            .createReceiver(new ReceiverOptions().connectionMono(connectionMono))
+            .consumeAutoAck(queueName)
             .subscribeOn(Schedulers.elastic())
             .map(this::readCancelRequestMessage)
             .doOnNext(worker::cancelTask)
