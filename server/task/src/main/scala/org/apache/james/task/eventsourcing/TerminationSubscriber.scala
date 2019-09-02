@@ -26,9 +26,7 @@ import reactor.core.publisher.DirectProcessor
 
 trait TerminationSubscriber extends Subscriber {
   override def handle(event: Event): Unit = event match {
-    case event: Completed => addEvent(event)
-    case event: Failed => addEvent(event)
-    case event: Cancelled => addEvent(event)
+    case event: TerminalTaskEvent => addEvent(event)
     case _ =>
   }
 
@@ -40,7 +38,7 @@ trait TerminationSubscriber extends Subscriber {
 class MemoryTerminationSubscriber extends TerminationSubscriber {
   private val events = DirectProcessor.create[Event]()
 
-  override def addEvent(event: Event) =
+  override def addEvent(event: Event): Unit =
     events.onNext(event)
 
   override def listenEvents: Publisher[Event] =
