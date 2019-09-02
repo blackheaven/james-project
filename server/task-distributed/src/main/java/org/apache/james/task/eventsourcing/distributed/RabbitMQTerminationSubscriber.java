@@ -43,9 +43,9 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Delivery;
 import reactor.core.Disposable;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.DirectProcessor;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.WorkQueueProcessor;
+import reactor.core.publisher.UnicastProcessor;
 import reactor.core.scheduler.Schedulers;
 import reactor.rabbitmq.BindingSpecification;
 import reactor.rabbitmq.ExchangeSpecification;
@@ -67,8 +67,8 @@ public class RabbitMQTerminationSubscriber implements TerminationSubscriber, Sta
     private final Mono<Connection> connectionMono;
     private final ReactorRabbitMQChannelPool channelPool;
     private final String queueName;
-    private WorkQueueProcessor<OutboundMessage> sendQueue;
-    private Flux<Event> listener;
+    private UnicastProcessor<OutboundMessage> sendQueue;
+    private DirectProcessor<Event> listener;
     private Disposable sendQueueHandle;
 
     @Inject
@@ -85,16 +85,19 @@ public class RabbitMQTerminationSubscriber implements TerminationSubscriber, Sta
         sender.declareExchange(ExchangeSpecification.exchange(EXCHANGE_NAME)).block();
         sender.declare(QueueSpecification.queue(queueName).durable(false).autoDelete(true)).block();
         sender.bind(BindingSpecification.binding(EXCHANGE_NAME, ROUTING_KEY, queueName)).block();
-        sendQueue = WorkQueueProcessor.create();
+        sendQueue = UnicastProcessor.create();
         sendQueueHandle = sender
             .send(sendQueue)
             .subscribeOn(Schedulers.elastic())
             .subscribe();
 
         Receiver receiver = RabbitFlux.createReceiver(new ReceiverOptions().connectionMono(connectionMono));
-        listener = receiver
+        listener = DirectProcessor.create();
+        receiver
             .consumeAutoAck(queueName)
-            .concatMap(this::toEvent);
+            .subscribeOn(Schedulers.elastic())
+            .concatMap(this::toEvent)
+            .subscribe(listener::onNext);
     }
 
     @Override

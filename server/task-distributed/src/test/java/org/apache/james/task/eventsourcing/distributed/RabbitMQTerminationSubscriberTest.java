@@ -22,24 +22,22 @@ package org.apache.james.task.eventsourcing.distributed;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Set;
 
 import org.apache.james.backend.rabbitmq.RabbitMQExtension;
-import org.apache.james.eventsourcing.EventId;
+import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.eventstore.cassandra.JsonEventSerializer;
 import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTOModule;
 import org.apache.james.server.task.json.JsonTaskSerializer;
-import org.apache.james.task.Task;
-import org.apache.james.task.TaskId;
-import org.apache.james.task.eventsourcing.Completed;
-import org.apache.james.task.eventsourcing.TaskAggregateId;
-import org.apache.james.task.eventsourcing.TaskEvent;
 import org.apache.james.task.eventsourcing.TerminationSubscriber;
 import org.apache.james.task.eventsourcing.TerminationSubscriberContract;
 
 import com.github.steveash.guavate.Guavate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 class RabbitMQTerminationSubscriberTest implements TerminationSubscriberContract {
     private static final JsonTaskSerializer TASK_SERIALIZER = new JsonTaskSerializer();
@@ -60,11 +58,16 @@ class RabbitMQTerminationSubscriberTest implements TerminationSubscriberContract
     void givenTwoTerminationSubscribersWhenAnEventIsSentItShouldBeReceivedByBoth() {
         TerminationSubscriber subscriber1 = subscriber();
         TerminationSubscriber subscriber2 = subscriber();
-        TaskEvent event = new Completed(new TaskAggregateId(TaskId.generateTaskId()), EventId.fromSerialized(42), Task.Result.COMPLETED);
 
-        subscriber1.handle(event);
+        sendEvents(subscriber1, COMPLETED_EVENT);
 
-        assertEvents(subscriber1).containsOnly(event);
-        assertEvents(subscriber2).containsOnly(event);
+        List<List<Event>> listenedEvents = Flux.just(subscriber1, subscriber2)
+            .subscribeOn(Schedulers.elastic())
+            .flatMap(this::collectEvents)
+            .collectList()
+            .block();
+        assertThat(listenedEvents).hasSize(2);
+        assertThat(listenedEvents.get(0)).containsExactly(COMPLETED_EVENT);
+        assertThat(listenedEvents.get(1)).containsExactly(COMPLETED_EVENT);
     }
 }
