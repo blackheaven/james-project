@@ -41,8 +41,8 @@ public interface TerminationSubscriberContract {
     Completed COMPLETED_EVENT = new Completed(new TaskAggregateId(TaskId.generateTaskId()), EventId.fromSerialized(42), Task.Result.COMPLETED);
     Failed FAILED_EVENT = new Failed(new TaskAggregateId(TaskId.generateTaskId()), EventId.fromSerialized(42));
     Cancelled CANCELLED_EVENT = new Cancelled(new TaskAggregateId(TaskId.generateTaskId()), EventId.fromSerialized(42));
-    int DELAY_BETWEEN_EVENTS = 50;
-    int DELAY_BEFORE_PUBLISHING = 50;
+    Duration DELAY_BETWEEN_EVENTS = Duration.ofMillis(50);
+    Duration DELAY_BEFORE_PUBLISHING = Duration.ofMillis(50);
 
     TerminationSubscriber subscriber();
 
@@ -114,7 +114,7 @@ public interface TerminationSubscriberContract {
 
         sendEvents(subscriber, COMPLETED_EVENT, FAILED_EVENT, CANCELLED_EVENT);
 
-        List<Event> listenedEvents = Mono.delay(Duration.ofMillis(Math.round(DELAY_BEFORE_PUBLISHING + 1.5 * DELAY_BETWEEN_EVENTS)))
+        List<Event> listenedEvents = Mono.delay(DELAY_BEFORE_PUBLISHING.plus(DELAY_BETWEEN_EVENTS.multipliedBy(3).dividedBy(2)))
             .then(Mono.defer(() -> collectEvents(subscriber)))
             .subscribeOn(Schedulers.elastic())
             .block();
@@ -129,15 +129,15 @@ public interface TerminationSubscriberContract {
     default Mono<List<Event>> collectEvents(TerminationSubscriber subscriber) {
         return Flux.from(subscriber.listenEvents())
             .subscribeOn(Schedulers.elastic())
-            .take(Duration.ofMillis(DELAY_BEFORE_PUBLISHING + 7 * DELAY_BETWEEN_EVENTS))
+            .take(DELAY_BEFORE_PUBLISHING.plus(DELAY_BETWEEN_EVENTS.multipliedBy(7)))
             .collectList();
     }
 
     default void sendEvents(TerminationSubscriber subscriber, Event... events) {
-        Mono.delay(Duration.ofMillis(DELAY_BEFORE_PUBLISHING))
+        Mono.delay(DELAY_BEFORE_PUBLISHING)
             .flatMapMany(ignored -> Flux.fromArray(events)
                 .subscribeOn(Schedulers.elastic())
-                .delayElements(Duration.ofMillis(DELAY_BETWEEN_EVENTS))
+                .delayElements(DELAY_BETWEEN_EVENTS)
                 .doOnNext(subscriber::handle))
             .subscribe();
     }
