@@ -19,12 +19,10 @@
 
 package org.apache.james.task.eventsourcing
 
-import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
-
 import org.apache.james.eventsourcing.{Event, Subscriber}
 import org.reactivestreams.Publisher
 
-import reactor.core.publisher.Flux
+import reactor.core.publisher.DirectProcessor
 
 trait TerminationSubscriber extends Subscriber {
   override def handle(event: Event): Unit = event match {
@@ -40,11 +38,11 @@ trait TerminationSubscriber extends Subscriber {
 }
 
 class MemoryTerminationSubscriber extends TerminationSubscriber {
-  private val events = new LinkedBlockingQueue[Event]()
+  private val events = DirectProcessor.create[Event]()
 
   override def addEvent(event: Event) =
-    events.add(event)
+    events.onNext(event)
 
   override def listenEvents: Publisher[Event] =
-    Flux.generate(sink => sink.next(events.poll(Long.MaxValue, TimeUnit.DAYS)))
+    events.share()
 }
