@@ -62,7 +62,7 @@ import reactor.rabbitmq.Sender;
 public class RabbitMQWorkQueue implements WorkQueue, Startable {
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQWorkQueue.class);
 
-    // Need at least one by receivers but a shared one for senders
+    // Need at least one by receivers plus a shared one for senders
     static final Integer MAX_CHANNELS_NUMBER = 5;
     static final String EXCHANGE_NAME = "taskManagerWorkQueueExchange";
     static final String QUEUE_NAME = "taskManagerWorkQueue";
