@@ -21,8 +21,6 @@ package org.apache.james.modules.server;
 
 import org.apache.james.task.MemoryTaskManager;
 import org.apache.james.task.TaskManager;
-import org.apache.james.task.eventsourcing.MemoryTerminationSubscriber;
-import org.apache.james.task.eventsourcing.TerminationSubscriber;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
@@ -33,7 +31,5 @@ public class TaskManagerModule extends AbstractModule {
         install(new HostnameModule());
         bind(MemoryTaskManager.class).in(Scopes.SINGLETON);
         bind(TaskManager.class).to(MemoryTaskManager.class);
-        bind(TerminationSubscriber.class).in(Scopes.SINGLETON);
-        bind(TerminationSubscriber.class).to(MemoryTerminationSubscriber.class);
     }
 }
