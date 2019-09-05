@@ -230,7 +230,7 @@ class TasksRoutesTest {
             .get("/" + taskId.getValue() + "/await")
         .then()
             .statusCode(HttpStatus.BAD_REQUEST_400)
-            .body("message", allOf(containsString("Invalid timeout"), containsString("Timeout should not be positive")));
+            .body("message", allOf(containsString("Invalid timeout"), containsString("Timeout should be positive")));
     }
 
     @Test

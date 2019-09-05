@@ -196,7 +196,7 @@ public class TasksRoutes implements Routes {
                 .filter(parameter -> !parameter.isEmpty());
 
             requestTimeout.ifPresent(timeout ->
-                Preconditions.checkState(!timeout.replaceAll(" ", "").startsWith("-"), "Timeout should not be positive"));
+                Preconditions.checkState(!timeout.replaceAll(" ", "").startsWith("-"), "Timeout should be positive"));
 
             Duration timeout = requestTimeout
                 .map(rawString -> DurationParser.parse(rawString, ChronoUnit.SECONDS))
