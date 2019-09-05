@@ -268,8 +268,9 @@ class TasksRoutesTest {
 
     @Test
     void getAwaitWithANonExistingTaskShouldReturnNotFound() {
+        String unknownTaskId = TaskId.generateTaskId().asString();
         when()
-            .get("/" + TaskId.generateTaskId().asString() + "/await")
+            .get("/" + unknownTaskId + "/await")
         .then()
             .statusCode(HttpStatus.NOT_FOUND_404)
             .body("message", is("The taskId is not found"));
