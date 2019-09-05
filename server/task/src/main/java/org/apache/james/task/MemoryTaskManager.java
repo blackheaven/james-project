@@ -140,18 +140,14 @@ public class MemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public AwaitedTaskExecutionDetails await(TaskId id, Duration timeout) {
-        if (Optional.ofNullable(idToExecutionDetails.get(id)).isPresent()) {
-            try {
-                return new TerminatedAwaitedTaskExecutionDetails(Flux.interval(NOW, AWAIT_POLLING_DURATION, Schedulers.elastic())
-                    .map(ignored -> getExecutionDetails(id))
-                    .filter(details -> details.getStatus().isFinished())
-                    .blockFirst(timeout));
-            } catch (IllegalStateException e) {
-                return new TimeoutAwaitedTaskExecutionDetails();
-            }
-        } else {
-            return new UnknownAwaitedTaskExecutionDetails();
+    public TaskExecutionDetails await(TaskId id, Duration timeout) throws TaskNotFoundException, ReachedTimeoutException {
+        try {
+            return Flux.interval(NOW, AWAIT_POLLING_DURATION, Schedulers.elastic())
+                .map(ignored -> getExecutionDetails(id))
+                .filter(details -> details.getStatus().isFinished())
+                .blockFirst(timeout);
+        } catch (IllegalStateException e) {
+            throw new ReachedTimeoutException();
         }
     }
 

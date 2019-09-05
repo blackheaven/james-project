@@ -21,18 +21,17 @@ package org.apache.james.task.eventsourcing
 import java.io.Closeable
 import java.time.Duration
 import java.util
-import java.util.Optional
 
-import com.google.common.annotations.VisibleForTesting
 import javax.inject.Inject
 
 import org.apache.james.eventsourcing.eventstore.{EventStore, History}
 import org.apache.james.eventsourcing.{AggregateId, Subscriber}
-import org.apache.james.task.TaskManager.{AwaitedTaskExecutionDetails, TerminatedAwaitedTaskExecutionDetails, TimeoutAwaitedTaskExecutionDetails, UnknownAwaitedTaskExecutionDetails}
+import org.apache.james.task.TaskManager.ReachedTimeoutException
 import org.apache.james.task._
 import org.apache.james.task.eventsourcing.TaskCommand._
 
-import reactor.core.publisher.Flux
+import com.google.common.annotations.VisibleForTesting
+import reactor.core.publisher.{Flux, Mono}
 import reactor.core.scheduler.Schedulers
 
 class EventSourcingTaskManager @Inject @VisibleForTesting private[eventsourcing](
@@ -95,25 +94,26 @@ class EventSourcingTaskManager @Inject @VisibleForTesting private[eventsourcing]
     eventSourcingSystem.dispatch(command)
   }
 
-  override final def await(id: TaskId, timeout: Duration): AwaitedTaskExecutionDetails = {
+  @throws(classOf[TaskNotFoundException])
+  @throws(classOf[ReachedTimeoutException])
+  override def await(id: TaskId, timeout: Duration): TaskExecutionDetails = {
     try {
-      val details = getExecutionDetails(id)
-      if (details.getStatus.isFinished) {
-        new TerminatedAwaitedTaskExecutionDetails(details)
-      } else {
-        Flux.from(terminationSubscriber.listenEvents)
-          .subscribeOn(Schedulers.elastic)
-          .filter {
-            case event: TaskEvent => event.getAggregateId.taskId == id
-            case _ => false
-          }
-          .blockFirst(timeout)
+      val details = Mono.fromSupplier[TaskExecutionDetails](() => getExecutionDetails(id))
+        .filter(_.getStatus.isFinished)
 
-        new TerminatedAwaitedTaskExecutionDetails(getExecutionDetails(id))
-      }
+      val findEvent = Flux.from(terminationSubscriber.listenEvents)
+        .filter {
+          case event: TaskEvent => event.getAggregateId.taskId == id
+          case _ => false
+        }
+        .next()
+        .then(details)
+
+      Flux.merge(findEvent, details)
+        .subscribeOn(Schedulers.elastic)
+        .blockFirst(timeout)
     } catch {
-      case _: IllegalStateException => new TimeoutAwaitedTaskExecutionDetails()
-      case _: TaskNotFoundException => new UnknownAwaitedTaskExecutionDetails()
+      case _: IllegalStateException => throw new ReachedTimeoutException
     }
   }
 

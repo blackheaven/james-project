@@ -49,9 +49,6 @@ public interface TaskManagerContract {
     ConditionFactory awaitAtMostFiveSeconds = calmlyAwait.atMost(FIVE_SECONDS);
     java.time.Duration TIMEOUT = java.time.Duration.ofMillis(Long.MAX_VALUE);
 
-    class CustomTimeoutException extends RuntimeException {}
-    class CustomUnknownException extends RuntimeException {}
-
     TaskManager taskManager();
 
     @Test
@@ -414,15 +411,15 @@ public interface TaskManagerContract {
     }
 
     @Test
-    default void awaitShouldNotThrowWhenCompletedTask() {
+    default void awaitShouldNotThrowWhenCompletedTask() throws TaskManager.ReachedTimeoutException {
         TaskManager taskManager = taskManager();
         TaskId taskId = taskManager.submit(new CompletedTask());
-        taskManager.await(taskId, TIMEOUT).unwrap();
-        taskManager.await(taskId, TIMEOUT).unwrap();
+        taskManager.await(taskId, TIMEOUT);
+        taskManager.await(taskId, TIMEOUT);
     }
 
     @Test
-    default void awaitShouldAwaitWaitingTask() {
+    default void awaitShouldAwaitWaitingTask() throws TaskManager.ReachedTimeoutException, InterruptedException {
         TaskManager taskManager = taskManager();
         CountDownLatch latch = new CountDownLatch(1);
         taskManager.submit(new MemoryReferenceTask(
@@ -431,24 +428,15 @@ public interface TaskManagerContract {
                 return Task.Result.COMPLETED;
             }));
         latch.countDown();
-        TaskId task2 = taskManager.submit(
-            new CompletedTask());
+        TaskId task2 = taskManager.submit(new CompletedTask());
 
-        assertThat(taskManager.await(task2, TIMEOUT).unwrap().getStatus()).isEqualTo(TaskManager.Status.COMPLETED);
+        assertThat(taskManager.await(task2, TIMEOUT).getStatus()).isEqualTo(TaskManager.Status.COMPLETED);
     }
 
     @Test
     default void awaitANonExistingTaskShouldReturnAnUnknownAwaitedTaskExecutionDetailsAndThrow() {
-        TaskManager taskManager = taskManager();
-        TaskManager.AwaitedTaskExecutionDetails result = taskManager.await(TaskId.generateTaskId(), TIMEOUT);
-
-        assertThat(result).isInstanceOf(TaskManager.UnknownAwaitedTaskExecutionDetails.class);
-
-        assertThatCode(() -> result
-                .onTimeout(CustomTimeoutException::new)
-                .onUnknown(CustomUnknownException::new)
-                .unwrap())
-            .isInstanceOf(CustomUnknownException.class);
+        assertThatCode(() -> taskManager().await(TaskId.generateTaskId(), TIMEOUT))
+            .isInstanceOf(TaskNotFoundException.class);
     }
 
     @Test
@@ -460,15 +448,8 @@ public interface TaskManagerContract {
                 return Task.Result.COMPLETED;
             }));
 
-        TaskManager.AwaitedTaskExecutionDetails result = taskManager.await(taskId, java.time.Duration.ofMillis(10));
-
-        assertThat(result).isInstanceOf(TaskManager.TimeoutAwaitedTaskExecutionDetails.class);
-
-        assertThatCode(() -> result
-                .onTimeout(CustomTimeoutException::new)
-                .onUnknown(CustomUnknownException::new)
-                .unwrap())
-            .isInstanceOf(CustomTimeoutException.class);
+        assertThatCode(() -> taskManager.await(taskId, java.time.Duration.ofMillis(10)))
+            .isInstanceOf(TaskManager.ReachedTimeoutException.class);
     }
 
     @Test

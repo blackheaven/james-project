@@ -147,21 +147,7 @@ public class TasksRoutes implements Routes {
         TaskId taskId = getTaskId(req);
         Duration timeout = getTimeout(req);
         return respondStatus(taskId,
-            () -> taskManager
-                .await(taskId, timeout)
-                .onUnknown(() ->
-                    ErrorResponder.builder()
-                        .statusCode(HttpStatus.NOT_FOUND_404)
-                        .type(ErrorResponder.ErrorType.SERVER_ERROR)
-                        .message("The taskId is not found")
-                        .haltError())
-                .onTimeout(() ->
-                    ErrorResponder.builder()
-                        .statusCode(HttpStatus.REQUEST_TIMEOUT_408)
-                        .type(ErrorResponder.ErrorType.SERVER_ERROR)
-                        .message("The timeout has been reached")
-                        .haltError())
-                .unwrap());
+            () -> awaitTask(taskId, timeout));
     }
 
     private Object respondStatus(TaskId taskId, Supplier<TaskExecutionDetails> executionDetailsSupplier) {
@@ -219,6 +205,24 @@ public class TasksRoutes implements Routes {
                 .cause(e)
                 .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
                 .message("Invalid timeout")
+                .haltError();
+        }
+    }
+
+    private TaskExecutionDetails awaitTask(TaskId taskId, Duration timeout) {
+        try {
+            return taskManager.await(taskId, timeout);
+        } catch (TaskManager.ReachedTimeoutException e) {
+            throw ErrorResponder.builder()
+                .statusCode(HttpStatus.REQUEST_TIMEOUT_408)
+                .type(ErrorResponder.ErrorType.SERVER_ERROR)
+                .message("The timeout has been reached")
+                .haltError();
+        } catch (TaskNotFoundException e) {
+            throw ErrorResponder.builder()
+                .statusCode(HttpStatus.NOT_FOUND_404)
+                .type(ErrorResponder.ErrorType.SERVER_ERROR)
+                .message("The taskId is not found")
                 .haltError();
         }
     }

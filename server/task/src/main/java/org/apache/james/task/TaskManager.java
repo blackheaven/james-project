@@ -22,7 +22,6 @@ package org.apache.james.task;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 
 public interface TaskManager {
     boolean FINISHED = true;
@@ -60,60 +59,7 @@ public interface TaskManager {
         }
     }
 
-    interface AwaitedTaskExecutionDetails {
-        AwaitedTaskExecutionDetails onUnknown(Supplier<RuntimeException> exceptionSupplier);
-
-        AwaitedTaskExecutionDetails onTimeout(Supplier<RuntimeException> exceptionSupplier);
-
-        TaskExecutionDetails unwrap();
-    }
-
-    class UnknownAwaitedTaskExecutionDetails implements AwaitedTaskExecutionDetails {
-        public AwaitedTaskExecutionDetails onUnknown(Supplier<RuntimeException> exceptionSupplier) {
-            throw exceptionSupplier.get();
-        }
-
-        public AwaitedTaskExecutionDetails onTimeout(Supplier<RuntimeException> exceptionSupplier) {
-            return this;
-        }
-
-        public TaskExecutionDetails unwrap() {
-            throw new RuntimeException("await has failed due to unknown task");
-        }
-    }
-
-    class TimeoutAwaitedTaskExecutionDetails implements AwaitedTaskExecutionDetails {
-        public AwaitedTaskExecutionDetails onUnknown(Supplier<RuntimeException> exceptionSupplier) {
-            return this;
-        }
-
-        public AwaitedTaskExecutionDetails onTimeout(Supplier<RuntimeException> exceptionSupplier) {
-            throw exceptionSupplier.get();
-        }
-
-        public TaskExecutionDetails unwrap() {
-            throw new RuntimeException("await has failed due to timeout");
-        }
-    }
-
-    class TerminatedAwaitedTaskExecutionDetails implements AwaitedTaskExecutionDetails {
-        private final TaskExecutionDetails executionDetails;
-
-        public TerminatedAwaitedTaskExecutionDetails(TaskExecutionDetails executionDetails) {
-            this.executionDetails = executionDetails;
-        }
-
-        public AwaitedTaskExecutionDetails onUnknown(Supplier<RuntimeException> exceptionSupplier) {
-            return this;
-        }
-
-        public AwaitedTaskExecutionDetails onTimeout(Supplier<RuntimeException> exceptionSupplier) {
-            return this;
-        }
-
-        public TaskExecutionDetails unwrap() {
-            return executionDetails;
-        }
+    class ReachedTimeoutException extends Exception {
     }
 
     TaskId submit(Task task);
@@ -126,5 +72,5 @@ public interface TaskManager {
 
     void cancel(TaskId id);
 
-    AwaitedTaskExecutionDetails await(TaskId id, Duration timeout);
+    TaskExecutionDetails await(TaskId id, Duration timeout) throws TaskNotFoundException, ReachedTimeoutException;
 }

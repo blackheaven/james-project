@@ -53,7 +53,7 @@ public class ReIndexerManagement implements ReIndexerManagementMBean {
                      .build()) {
             TaskId taskId = taskManager.submit(reIndexer.reIndex(new MailboxPath(namespace, user, name)));
             taskManager.await(taskId, Duration.ofMillis(Long.MAX_VALUE));
-        } catch (IOException e) {
+        } catch (IOException | TaskManager.ReachedTimeoutException e) {
             throw new RuntimeException(e);
         }
     }
@@ -67,7 +67,7 @@ public class ReIndexerManagement implements ReIndexerManagementMBean {
                      .build()) {
             TaskId taskId = taskManager.submit(reIndexer.reIndex());
             taskManager.await(taskId, Duration.ofMillis(Long.MAX_VALUE));
-        } catch (IOException e) {
+        } catch (IOException | TaskManager.ReachedTimeoutException e) {
             throw new RuntimeException(e);
         }
     }
