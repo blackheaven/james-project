@@ -67,7 +67,7 @@ public class BlobStoreDeletedMessageVault implements DeletedMessageVault {
     private final BucketNameGenerator nameGenerator;
     private final Clock clock;
     private final RetentionConfiguration retentionConfiguration;
-    private BlobStoreVaultGarbageCollectionTask.Factory taskFactory;
+    private final BlobStoreVaultGarbageCollectionTask.Factory taskFactory;
 
     @Inject
     public BlobStoreDeletedMessageVault(MetricFactory metricFactory, DeletedMessageMetadataVault messageMetadataVault,
