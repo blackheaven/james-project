@@ -192,19 +192,24 @@ public class TasksRoutes implements Routes {
 
     private Duration getTimeout(Request req) {
         try {
-            Duration timeout = Optional.ofNullable(req.queryParams("timeout"))
-                .filter(parameter -> !parameter.isEmpty())
+            Optional<String> requestTimeout = Optional.ofNullable(req.queryParams("timeout"))
+                .filter(parameter -> !parameter.isEmpty());
+
+            requestTimeout.ifPresent(timeout ->
+                Preconditions.checkState(!timeout.replaceAll(" ", "").startsWith("-"), "Timeout should not be positive"));
+
+            Duration timeout = requestTimeout
                 .map(rawString -> DurationParser.parse(rawString, ChronoUnit.SECONDS))
                 .orElse(MAXIMUM_AWAIT_TIMEOUT);
 
-            Preconditions.checkState(timeout.compareTo(MAXIMUM_AWAIT_TIMEOUT) <= 0);
+            Preconditions.checkState(timeout.compareTo(MAXIMUM_AWAIT_TIMEOUT) <= 0, "Timeout should not exceed one year");
             return timeout;
         } catch (Exception e) {
             throw ErrorResponder.builder()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .cause(e)
                 .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
-                .message("Invalid timeout")
+                .message("Invalid timeout " + e.getMessage())
                 .haltError();
         }
     }

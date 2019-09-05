@@ -22,6 +22,8 @@ package org.apache.james.webadmin.routes;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static io.restassured.RestAssured.with;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -202,7 +204,7 @@ class TasksRoutesTest {
     void getAwaitWithTimeoutShouldAwaitTaskCompletion() {
         TaskId taskId = taskManager.submit(() -> {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -210,7 +212,7 @@ class TasksRoutesTest {
         });
 
         given()
-            .queryParam("timeout", "5s")
+            .queryParam("timeout", "2s")
         .when()
             .get("/" + taskId.getValue() + "/await")
         .then()
@@ -228,7 +230,7 @@ class TasksRoutesTest {
             .get("/" + taskId.getValue() + "/await")
         .then()
             .statusCode(HttpStatus.BAD_REQUEST_400)
-            .body("message", is("Invalid timeout"));
+            .body("message", allOf(containsString("Invalid timeout"), containsString("Timeout should not be positive")));
     }
 
     @Test
@@ -241,7 +243,7 @@ class TasksRoutesTest {
             .get("/" + taskId.getValue() + "/await")
         .then()
             .statusCode(HttpStatus.BAD_REQUEST_400)
-            .body("message", is("Invalid timeout"));
+            .body("message", allOf(containsString("Invalid timeout"), containsString("Timeout should not exceed one year")));
     }
 
     @Test
@@ -256,7 +258,7 @@ class TasksRoutesTest {
         });
 
         given()
-            .queryParam("timeout", "2")
+            .queryParam("timeout", "1")
         .when()
             .get("/" + taskId.getValue() + "/await")
         .then()
