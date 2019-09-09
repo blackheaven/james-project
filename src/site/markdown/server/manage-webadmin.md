@@ -3260,6 +3260,12 @@ The expected value is expressed in the following format: `Nunit`.
 `N` should be strictly positive.
 `unit` could be either in the short form (`s`, `m`, `h`, etc.), or in the long form (`day`, `week`, `month`, etc.).
 
+Examples:
+ - `30s`
+ - `5m`
+ - `7d`
+ - `1y`
+
 Response codes:
 
  - 200: The specific task was found and the execution report exposed above is returned
