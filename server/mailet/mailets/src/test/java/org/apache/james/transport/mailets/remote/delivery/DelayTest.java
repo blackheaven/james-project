@@ -52,7 +52,7 @@ public class DelayTest {
     }
 
     @Test
-    public void stringConstructorShouldThrowOnNegativeNumbers() throws Exception {
+    public void stringConstructorShouldThrowOnNegativeNumbers() {
         assertThatThrownBy(() -> Delay.from("-1s"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("Duration amount should be positive");
