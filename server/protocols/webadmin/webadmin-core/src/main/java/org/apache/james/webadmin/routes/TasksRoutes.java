@@ -210,7 +210,7 @@ public class TasksRoutes implements Routes {
     }
 
     private void assertDoesNotExceedMaximumTimeout(Duration timeout) {
-        Preconditions.checkState(timeout.compareTo(MAXIMUM_AWAIT_TIMEOUT) <= 0, "Timeout should not exceed one year");
+        Preconditions.checkState(timeout.compareTo(MAXIMUM_AWAIT_TIMEOUT) <= 0, "Timeout should not exceed 365 days");
     }
 
     private TaskExecutionDetails awaitTask(TaskId taskId, Duration timeout) {

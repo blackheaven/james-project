@@ -244,7 +244,7 @@ class TasksRoutesTest {
         .then()
             .statusCode(HttpStatus.BAD_REQUEST_400)
             .body("message", containsString("Invalid timeout"))
-            .body("details", containsString("Timeout should not exceed one year"));
+            .body("details", containsString("Timeout should not exceed 365 days"));
     }
 
     @Test
