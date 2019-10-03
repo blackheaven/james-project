@@ -8,10 +8,12 @@ Accepted (lazy consensus)
 
 ## Context
 
-In order to have a distributed version of James we need to have an unique way to deal with `Task`.
+In order to have a distributed version of James we need to have an homogeneous way to deal with `Task`.
 
-Currently `TaskManager` is independent and node-exclusive.
-We are not allowed to get all the `Task`s of a cluster.
+Currently, every James node of a cluster has its own instance of `TaskManager` and they have no knowledge of others, making it impossible to orchestrate task execution at the cluster level.
+Tasks are scheduled and ran on the same node.
+
+We are also unable to list or access to the details of all the `Task`s of a cluster.
 
 ## Decision
 
@@ -20,4 +22,4 @@ Create a distribution-aware implementation of `TaskManager`.
 ## Consequences
 
  * Split the `TaskManager` part dealing with the coordination (`Task` management and view) and the `Task` execution (located in `TaskManagerWorker`)
- * The distributed `TaskManager` will rely on RabbitMQ to coordinate and the `EventSystem` to synchronize states
+ * The distributed `TaskManager` will rely on RabbitMQ to coordinate and the event system to synchronize states

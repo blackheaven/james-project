@@ -13,7 +13,7 @@ We need to have a way to broadcast some `Event`s (`CancelRequested` and terminat
 
 ## Decision
 
- * Creating a `RabbitMQEventHandler` which publish `Event`s to RabbitMQ
+ * Creating a `RabbitMQEventHandler` which publish `Event`s pushed to the event system to RabbitMQ
  * the `Completed`, `Failed`, `Canceled` events will be broadcasted on an exchange
 
 
