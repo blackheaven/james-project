@@ -18,12 +18,12 @@ At this point in time a `Task` can contains any arbitrary code. It's not an elem
  * Create a `Factory` for one `Task`
  * Inject a `Factory` `Registry` via a Guice Module
  * The `Task` `Serialization` will be done in json, We will get inspired by `EventSerializer`
- * Every `Task` should have a specific integration test demonstrating that serialization works
+ * Every `Task`s should have a specific integration test demonstrating that serialization works
  * Each `Task` is responsible of eventually dealing with the different versions of the serialized informations
 
 
 ## Consequences
 
- * Every `Task` should be serializable.
- * Every `Task` should provide a `Factory` which would be responsible to deserialize the task and instantiate it.
+ * Every `Task`s should be serializable.
+ * Every `Task`s should provide a `Factory` which would be responsible to deserialize the task and instantiate it.
  * Every `Factory` should be registered through a Guice module to be created for each project containing a `Factory`

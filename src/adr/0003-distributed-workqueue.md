@@ -12,7 +12,7 @@ By switching the task manager to a distributed implementation, we need to be abl
 
 ## Decision
   For the time being we will keep the sequential execution property of the task manager.
-  This is an intermediate milestone forward the final implementation which will drop this property.
+  This is an intermediate milestone torward the final implementation which will drop this property.
 
  * Use a queue rabbitmq as a workqueue where only the `Created` events are pushed into.
    This queue will be exclusive and with a `prefetch = 1`.
