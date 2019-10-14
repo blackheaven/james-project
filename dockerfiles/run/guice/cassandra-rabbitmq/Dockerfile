@@ -2,7 +2,23 @@
 #
 # VERSION	1.0
 
-FROM openjdk:8u222-jre
+FROM adoptopenjdk:11-jdk-hotspot AS jre-builder
+
+RUN jlink \
+        --verbose \
+        --add-modules \
+        java.base,java.logging,java.management,java.naming,java.security.jgss,java.xml \
+        --no-header-files \
+        --no-man-pages \
+        --output /opt/jre
+        # --compress 2 \
+        # --strip-debug \
+
+# Final image
+FROM alpine:3.10
+
+ENV PATH = "$PATH:/opt/jre/bin"
+COPY --from=jre-builder /opt/jre /opt/jre
 
 # Ports that are used
 #
