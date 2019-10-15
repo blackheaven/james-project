@@ -11,7 +11,7 @@ Accepted (lazy consensus)
 In order to have a distributed version of James we need to have an homogeneous way to deal with `Task`.
 
 Currently, every James nodes of a cluster have their own instance of `TaskManager` and they have no knowledge of others, making it impossible to orchestrate task execution at the cluster level.
-Tasks are scheduled and ran on the same node.
+Tasks are scheduled and ran on the same node they are scheduled.
 
 We are also unable to list or access to the details of all the `Task`s of a cluster.
 

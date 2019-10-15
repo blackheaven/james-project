@@ -12,7 +12,7 @@ A `Task` could be run on any node of the cluster. To interrupt it we need to not
 
 ## Decision
 
-* We will add an EventHandler to broadcast the `CancelRequested` event to all the workers listening on a rabbitmq broadcasting exchange.
+* We will add an EventHandler to broadcast the `CancelRequested` event to all the workers listening on a RabbitMQ broadcasting exchange.
 
 * The `TaskManager` should register to the exchange and will apply `cancel` on the `TaskManagerWorker` if the `Task` is waiting or in progress on it.
 

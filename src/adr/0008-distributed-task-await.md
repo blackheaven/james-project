@@ -17,6 +17,6 @@ By switching the task manager to a distributed implementation, we need to be abl
 ## Consequences
 
  * `RabbitMQTaskManager` should broadcast termination `Event`s (`Completed`|`Failed`|`Canceled`)
- * `RabbitMQTaskManager.await` should, first check the `Task`'s state, and if it's not terminated, listen to RabbitMQ
+ * `RabbitMQTaskManager.await` should: first, check the `Task`'s state; and if it's not terminated, listen to RabbitMQ
  * The await should have a timeout limit
 
