@@ -84,7 +84,7 @@ public abstract class GenericMailet implements Mailet, MailetConfig {
      * @throws NullPointerException before {@link #init(MailetConfig)}
      */
     public boolean getInitParameter(String name, boolean defaultValue) {
-        Preconditions.checkNotNull(config, CONFIG_IS_NULL_ERROR_MESSAGE);
+        Preconditions.checkState(config != null, CONFIG_IS_NULL_ERROR_MESSAGE);
         return MailetUtil.getInitParameter(config, name).orElse(defaultValue);
     }
 
@@ -126,7 +126,7 @@ public abstract class GenericMailet implements Mailet, MailetConfig {
      */
     @Override
     public String getInitParameter(String name) {
-        Preconditions.checkNotNull(config, CONFIG_IS_NULL_ERROR_MESSAGE);
+        Preconditions.checkState(config != null, CONFIG_IS_NULL_ERROR_MESSAGE);
         return config.getInitParameter(name);
     }
 
@@ -143,7 +143,7 @@ public abstract class GenericMailet implements Mailet, MailetConfig {
      * @return a String containing the value of the initalization parameter
      */
     public String getInitParameter(String name, String defValue) {
-        Preconditions.checkNotNull(config, CONFIG_IS_NULL_ERROR_MESSAGE);
+        Preconditions.checkState(config != null, CONFIG_IS_NULL_ERROR_MESSAGE);
         String res = config.getInitParameter(name);
         if (res == null) {
             return defValue;
@@ -165,7 +165,7 @@ public abstract class GenericMailet implements Mailet, MailetConfig {
      */
     @Override
     public Iterator<String> getInitParameterNames() {
-        Preconditions.checkNotNull(config, CONFIG_IS_NULL_ERROR_MESSAGE);
+        Preconditions.checkState(config != null, CONFIG_IS_NULL_ERROR_MESSAGE);
         return config.getInitParameterNames();
     }
 
@@ -209,7 +209,7 @@ public abstract class GenericMailet implements Mailet, MailetConfig {
      */
     @Override
     public String getMailetName() {
-        Preconditions.checkNotNull(config, CONFIG_IS_NULL_ERROR_MESSAGE);
+        Preconditions.checkState(config != null, CONFIG_IS_NULL_ERROR_MESSAGE);
         return config.getMailetName();
     }
 
