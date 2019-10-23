@@ -53,9 +53,11 @@ There is many other ways one can help us: packaging, communication, etc ...
  ** https://github.com/apache/james-project/#how-to-add-a-user-[How to add a user?]
  ** https://github.com/apache/james-project/#how-to-manage-sieve-scripts-[How to manage SIEVE scripts?]
  ** https://github.com/apache/james-project/#how-to-retrieve-users-and-password-from-my-previous-container[How to retrieve users and password from my previous container?]
+ * https://github.com/apache/james-project/#develop-on-james[Develop on James]
  ** https://github.com/apache/james-project/#how-to-run-deployment-tests[How to run deployment Tests]
+ ** https://github.com/apache/james-project#how-to-check-the-merge-of-a-commit[How to check the merge of a commit]
  * https://github.com/apache/james-project/#generating-a-package-for-james[Generating a package for James]
- * https://github.com/apache/james-project/#know-more-about-james[Know more about James]
+ ** https://github.com/apache/james-project/#know-more-about-james-design[Know more about James design]
 
 == How to try James
 
@@ -483,6 +485,10 @@ Where :
 
 Beware : you will have concurrency issues if multiple containers are running on this single volume.
 
+== Develop on James
+
+James requires at least JDK 11 and maven 3.6.0 to build.
+
 === How to run deployment Tests
 
 We wrote some MPT (James' Mail Protocols Tests subproject) deployment tests to validate a James
@@ -555,7 +561,7 @@ Where:
 
 Note: A helper script is provided for the generation of packages for a specific git commit. For instance:
 
-    $ sh dockerfiles/packaging/guice/cassandra/package.sh 3.2.0 1 c298195e84 $PWD/result
+    $ sh dockerfiles/packaging/guice/cassandra/package.sh 3.5.0 1 c298195e84 $PWD/result
 
 The generated package allow you to choose between a deployment with or without LDAP using update-alternatives.
 Once installed, try:
@@ -564,6 +570,6 @@ Once installed, try:
 
 By default James is configured without LDAP support.
 
-= Know more about James
+== Know more about James design
 
 James comes with a https://james.apache.org/documentation.html[Documentation] and https://github.com/linagora/james-project/tree/master/src/adr[Architectural Decision Records].
