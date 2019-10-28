@@ -898,6 +898,7 @@ public abstract class GetMessageListMethodTest {
             .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()));
     }
 
+    @Category(BasicFeature.class)
     @Test
     public void getMessageListShouldExcludeMessagesWhenInMailboxesFilterMatchesMailboxAndText() throws Exception {
         MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE, "mailbox");
@@ -914,9 +915,9 @@ public abstract class GetMessageListMethodTest {
         given()
             .header("Authorization", aliceAccessToken.serialize())
             .body("[[\"getMessageList\", {\"filter\":{\"inMailboxes\":[\"" + mailboxId.serialize() + "\"],\"text\":\"test\"}}, \"#0\"]]")
-            .when()
+        .when()
             .post("/jmap")
-            .then()
+        .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", equalTo(messageIds));
