@@ -108,7 +108,12 @@ public abstract class AbstractMailboxProcessor<M extends ImapRequest> extends Ab
             } else {
                 getMailboxManager().startProcessingRequest(ImapSessionUtils.getMailboxSession(session));
 
-                doProcess(message, session, tag, command, responder);
+                try {
+                    doProcess(message, session, tag, command, responder);
+                } catch (Exception unexpectedException) {
+                    LOGGER.error("Unexpected error during IMAP processing", unexpectedException);
+                    no(command, tag, responder, HumanReadableText.GENERIC_FAILURE_DURING_PROCESSING);
+                }
 
                 getMailboxManager().endProcessingRequest(ImapSessionUtils.getMailboxSession(session));
 
