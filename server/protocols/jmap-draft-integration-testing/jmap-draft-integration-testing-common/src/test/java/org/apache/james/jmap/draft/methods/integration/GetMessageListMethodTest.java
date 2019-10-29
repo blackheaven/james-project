@@ -900,7 +900,7 @@ public abstract class GetMessageListMethodTest {
 
     @Category(BasicFeature.class)
     @Test
-    public void getMessageListShouldExcludeMessagesWhenInMailboxesFilterMatchesMailboxAndText() throws Exception {
+    public void getMessageListShouldNotExcludeMessagesWhenInMailboxesFilterMatchesMailboxAndText() throws Exception {
         MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE, "mailbox");
         List<String> messageIds = IntStream.range(0, 3)
             .boxed()
