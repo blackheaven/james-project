@@ -2120,8 +2120,8 @@ Additional query paramaters are supported:
  - `queue` allow you to target the mail queue you want to enqueue the mails in.
  - `processor` allow you to overwrite the state of the reprocessing mails, and thus select the processors they will start their processing in.
 
-While `processor` being an optional parameter, not specifying it will result reprocessing the mails in their current state ([see documentation about processors and state](https://james.apache.org/server/config-mailetcontainer.html)).
-Consequently, only few cases will give a different result, definitively storign them out of the mail repository.
+While `processor` being an optional parameter, not specifying it will result reprocessing the mails in their current state ([see documentation about processors and state](https://james.apache.org/server/feature-mailetcontainer.html#Processors)).
+Consequently, only few cases will give a different result, definitively storing them out of the mail repository.
 
 For instance:
 
