@@ -151,12 +151,19 @@ public class MailRepositoriesRoutes implements Routes {
             try {
                 repositoryStoreService.createMailRepository(path, protocol);
                 return Responses.returnNoContent(response);
-            } catch (MailRepositoryStore.MailRepositoryStoreException e) {
+            } catch (MailRepositoryStore.UnsupportedRepositoryStoreException e) {
                 throw ErrorResponder.builder()
                     .statusCode(HttpStatus.BAD_REQUEST_400)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .cause(e)
                     .message(String.format("'%s' is an unsupported protocol", protocol))
+                    .haltError();
+            } catch (MailRepositoryStore.MailRepositoryStoreException e) {
+                throw ErrorResponder.builder()
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .type(ErrorResponder.ErrorType.SERVER_ERROR)
+                    .cause(e)
+                    .message(String.format("Error while creating a mail repository with path '%s' and protocol '%s'", path.asString(), protocol))
                     .haltError();
             }
         }, jsonTransformer);
