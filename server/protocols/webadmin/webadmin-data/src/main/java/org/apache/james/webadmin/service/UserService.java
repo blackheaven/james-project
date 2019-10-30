@@ -89,7 +89,7 @@ public class UserService {
     private void usernamePreconditions(String username) {
         try {
             Preconditions.checkArgument(!Strings.isNullOrEmpty(username));
-            Preconditions.checkArgument(username.length() < MAXIMUM_MAIL_ADDRESS_LENGTH);
+            Preconditions.checkArgument(username.length() <= MAXIMUM_MAIL_ADDRESS_LENGTH);
         } catch (IllegalArgumentException e) {
             throw new InvalidUsername(e);
         }
