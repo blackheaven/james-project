@@ -185,7 +185,7 @@ class UsersRoutesTest {
         }
 
         @Test
-        void putingTwoTimesShouldBeAllowed() {
+        void puttingTwoTimesShouldBeAllowed() {
             // Given
             with()
                 .body("{\"password\":\"password\"}")
