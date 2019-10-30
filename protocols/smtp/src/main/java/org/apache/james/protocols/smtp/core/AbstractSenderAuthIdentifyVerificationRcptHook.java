@@ -18,8 +18,6 @@
  ****************************************************************/
 package org.apache.james.protocols.smtp.core;
 
-import java.util.Locale;
-
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.MaybeSender;
@@ -68,10 +66,10 @@ public abstract class AbstractSenderAuthIdentifyVerificationRcptHook implements 
     private boolean senderMatchSessionUser(MaybeSender maybeSender, SMTPSession session) {
         Preconditions.checkArgument(!maybeSender.isNullSender());
 
-        String authUser = session.getUser().toLowerCase(Locale.US);
+        String authUser = session.getUser();
         String username = getUser(maybeSender.get());
 
-        return username.equals(authUser);
+        return username.equalsIgnoreCase(authUser);
     }
 
     private boolean belongsToLocalDomain(MaybeSender maybeSender) {
