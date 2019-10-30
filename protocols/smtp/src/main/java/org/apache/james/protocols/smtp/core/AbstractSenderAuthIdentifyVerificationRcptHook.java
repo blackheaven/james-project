@@ -67,9 +67,9 @@ public abstract class AbstractSenderAuthIdentifyVerificationRcptHook implements 
         Preconditions.checkArgument(!maybeSender.isNullSender());
 
         String authUser = session.getUser();
-        String username = getUser(maybeSender.get());
+        String sender = getUser(maybeSender.get());
 
-        return username.equalsIgnoreCase(authUser);
+        return isSenderAllowed(authUser, sender);
     }
 
     private boolean belongsToLocalDomain(MaybeSender maybeSender) {
@@ -92,4 +92,8 @@ public abstract class AbstractSenderAuthIdentifyVerificationRcptHook implements 
      */
     protected abstract String getUser(MailAddress mailAddress);
 
+    /**
+     * Is a given sender allowed for a user
+     */
+    protected abstract boolean isSenderAllowed(String user, String sender);
 }
