@@ -188,7 +188,7 @@ public class GroupsRoutes implements Routes {
     @ApiResponses(value = {
         @ApiResponse(code = HttpStatus.OK_200, message = "OK", response = List.class),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400,
-            message = GROUP_ADDRESS + "," + GROUP_ADDRESS + " format is not valid"),
+            message = GROUP_ADDRESS + " or " + USER_ADDRESS + " format is not valid"),
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500,
             message = "Internal server error - Something went bad on the server side.")
     })
