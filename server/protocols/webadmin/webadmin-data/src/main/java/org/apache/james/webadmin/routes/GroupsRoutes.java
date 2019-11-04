@@ -81,7 +81,7 @@ public class GroupsRoutes implements Routes {
     private static final String MAILADDRESS_ASCII_DISCLAIMER = "Note that email addresses are restricted to ASCII character set. " +
         "Mail addresses not matching this criteria will be rejected.";
     private static final String GROUP_ADDRESS_TYPE = "group";
-    private static final String USER_ADDRESS_TYPE = "member";
+    private static final String USER_ADDRESS_TYPE = "group member";
 
     private final UsersRepository usersRepository;
     private final JsonTransformer jsonTransformer;
@@ -137,7 +137,7 @@ public class GroupsRoutes implements Routes {
     })
     @ApiResponses(value = {
         @ApiResponse(code = HttpStatus.NO_CONTENT_204, message = "OK", response = List.class),
-        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = GROUP_ADDRESS + "," + GROUP_ADDRESS + " or " + USER_ADDRESS + " format is not valid"),
+        @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = GROUP_ADDRESS + " or " + USER_ADDRESS + " format is not valid"),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Domain in the source is not managed by the DomainList"),
         @ApiResponse(code = HttpStatus.CONFLICT_409, message = "requested group address is already used for another purpose"),
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500,
@@ -188,7 +188,7 @@ public class GroupsRoutes implements Routes {
     @ApiResponses(value = {
         @ApiResponse(code = HttpStatus.OK_200, message = "OK", response = List.class),
         @ApiResponse(code = HttpStatus.BAD_REQUEST_400,
-            message = GROUP_ADDRESS + "," + GROUP_ADDRESS + " or " + USER_ADDRESS + " format is not valid"),
+            message = GROUP_ADDRESS + "," + GROUP_ADDRESS + " format is not valid"),
         @ApiResponse(code = HttpStatus.INTERNAL_SERVER_ERROR_500,
             message = "Internal server error - Something went bad on the server side.")
     })
