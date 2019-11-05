@@ -232,8 +232,12 @@ public class MailAddress implements java.io.Serializable {
         }
 
         localPart = localPartSB.toString();
+        domain = createDomain(domainSB.toString());
+    }
+
+    private Domain createDomain(String domain) throws AddressException {
         try {
-            domain = Domain.of(domainSB.toString());
+            return Domain.of(domain);
         } catch (IllegalArgumentException e) {
             throw new AddressException(e.getMessage());
         }
