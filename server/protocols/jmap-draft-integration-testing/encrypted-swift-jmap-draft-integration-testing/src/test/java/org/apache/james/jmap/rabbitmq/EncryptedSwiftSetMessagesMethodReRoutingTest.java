@@ -17,31 +17,32 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.modules;
+package org.apache.james.jmap.rabbitmq;
 
-import org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration;
-import org.apache.james.modules.objectstorage.PayloadCodecFactory;
-import org.apache.james.modules.objectstorage.swift.DockerSwiftTestRule;
+import java.io.IOException;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Module;
-import com.google.inject.util.Modules;
+import org.apache.james.CassandraRabbitMQSwiftJmapTestRule;
+import org.apache.james.DockerCassandraRule;
+import org.apache.james.GuiceJamesServer;
+import org.apache.james.jmap.draft.methods.integration.SetMessagesMethodReRoutingTest;
+import org.junit.Rule;
 
-public class TestSwiftBlobStoreModule extends AbstractModule {
+public class EncryptedSwiftSetMessagesMethodReRoutingTest extends SetMessagesMethodReRoutingTest {
 
-    private final DockerSwiftTestRule dockerSwiftTestRule;
+    @Rule
+    public DockerCassandraRule cassandra = new DockerCassandraRule();
 
-    public TestSwiftBlobStoreModule(PayloadCodecFactory payloadCodecFactory) {
-        this.dockerSwiftTestRule = new DockerSwiftTestRule(payloadCodecFactory);
+    @Rule
+    public CassandraRabbitMQSwiftJmapTestRule rule = CassandraRabbitMQSwiftJmapTestRule.defaultEncryptedTestRule();
+
+    @Override
+    protected GuiceJamesServer createJmapServer() throws IOException {
+        return rule.jmapServer(cassandra.getModule());
     }
 
     @Override
-    protected void configure() {
-        Module testSwiftBlobStoreModule = Modules
-            .override(dockerSwiftTestRule.getModule())
-            .with(binder -> binder.bind(BlobStoreChoosingConfiguration.class)
-                .toInstance(BlobStoreChoosingConfiguration.objectStorage()));
-
-        install(testSwiftBlobStoreModule);
+    protected void await() {
+        rule.await();
     }
 }
+

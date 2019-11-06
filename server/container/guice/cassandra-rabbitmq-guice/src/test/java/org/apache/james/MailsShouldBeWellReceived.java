@@ -21,9 +21,12 @@ package org.apache.james;
 
 import static org.awaitility.Duration.ONE_HUNDRED_MILLISECONDS;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.james.core.Domain;
+import org.apache.james.core.builder.MimeMessageBuilder;
 import org.apache.james.modules.protocols.ImapGuiceProbe;
 import org.apache.james.modules.protocols.SmtpGuiceProbe;
+import org.apache.james.server.core.MailImpl;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.IMAPMessageReader;
 import org.apache.james.utils.SMTPMessageSender;
@@ -44,7 +47,7 @@ interface MailsShouldBeWellReceived {
         .await();
 
     @Test
-    default void mailsShouldBeWellReceived(GuiceJamesServer server) throws Exception {
+    default void simpleMailShouldBeWellReceived(GuiceJamesServer server) throws Exception {
         server.getProbe(DataProbeImpl.class).fluent()
             .addDomain(DOMAIN)
             .addUser(JAMES_USER, PASSWORD);
@@ -52,6 +55,37 @@ interface MailsShouldBeWellReceived {
         try (SMTPMessageSender sender = new SMTPMessageSender(Domain.LOCALHOST.asString())) {
             sender.connect(JAMES_SERVER_HOST, server.getProbe(SmtpGuiceProbe.class).getSmtpPort())
                 .sendMessage("bob@any.com", JAMES_USER);
+        }
+
+        CALMLY_AWAIT.until(() -> server.getProbe(SpoolerProbe.class).processingFinished());
+
+        try (IMAPMessageReader reader = new IMAPMessageReader()) {
+            reader.connect(JAMES_SERVER_HOST, server.getProbe(ImapGuiceProbe.class).getImapPort())
+                .login(JAMES_USER, PASSWORD)
+                .select(IMAPMessageReader.INBOX)
+                .awaitMessage(CALMLY_AWAIT);
+        }
+    }
+
+    @Test
+    default void hugeMailShouldBeWellReceived(GuiceJamesServer server) throws Exception {
+        server.getProbe(DataProbeImpl.class).fluent()
+            .addDomain(DOMAIN)
+            .addUser(JAMES_USER, PASSWORD);
+
+        try (SMTPMessageSender sender = new SMTPMessageSender(Domain.LOCALHOST.asString())) {
+            String word = "word ";
+            int bodySize = 1024 * 1024;
+            String body = StringUtils.repeat(word, word.length()/bodySize);
+            sender.connect(JAMES_SERVER_HOST, server.getProbe(SmtpGuiceProbe.class).getSmtpPort())
+                .sendMessage(MailImpl.builder()
+                    .name("big-mail")
+                    .sender("bob@any.com")
+                    .addRecipient(JAMES_USER)
+                    .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
+                        .setSubject("I have a big body")
+                        .setText(body))
+                    .build());
         }
 
         CALMLY_AWAIT.until(() -> server.getProbe(SpoolerProbe.class).processingFinished());

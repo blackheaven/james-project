@@ -17,31 +17,44 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.modules;
+package org.apache.james.jmap.rabbitmq;
 
-import org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration;
-import org.apache.james.modules.objectstorage.PayloadCodecFactory;
-import org.apache.james.modules.objectstorage.swift.DockerSwiftTestRule;
+import java.io.IOException;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Module;
-import com.google.inject.util.Modules;
+import org.apache.james.CassandraRabbitMQSwiftJmapTestRule;
+import org.apache.james.DockerCassandraRule;
+import org.apache.james.GuiceJamesServer;
+import org.apache.james.dnsservice.api.DNSService;
+import org.apache.james.dnsservice.api.InMemoryDNSService;
+import org.apache.james.jmap.VacationRelayIntegrationTest;
+import org.junit.Rule;
 
-public class TestSwiftBlobStoreModule extends AbstractModule {
+public class EncryptedSwiftVacationRelayIntegrationTest extends VacationRelayIntegrationTest {
 
-    private final DockerSwiftTestRule dockerSwiftTestRule;
+    private final InMemoryDNSService inMemoryDNSService = new InMemoryDNSService();
 
-    public TestSwiftBlobStoreModule(PayloadCodecFactory payloadCodecFactory) {
-        this.dockerSwiftTestRule = new DockerSwiftTestRule(payloadCodecFactory);
+    @Rule
+    public DockerCassandraRule cassandra = new DockerCassandraRule();
+
+    @Rule
+    public CassandraRabbitMQSwiftJmapTestRule rule = CassandraRabbitMQSwiftJmapTestRule.defaultEncryptedTestRule();
+
+    @Override
+    protected GuiceJamesServer getJmapServer() throws IOException {
+        return rule.jmapServer(
+                cassandra.getModule(),
+                (binder) -> binder.bind(DNSService.class).toInstance(inMemoryDNSService));
     }
 
     @Override
-    protected void configure() {
-        Module testSwiftBlobStoreModule = Modules
-            .override(dockerSwiftTestRule.getModule())
-            .with(binder -> binder.bind(BlobStoreChoosingConfiguration.class)
-                .toInstance(BlobStoreChoosingConfiguration.objectStorage()));
-
-        install(testSwiftBlobStoreModule);
+    protected void await() {
+        rule.await();
     }
+
+    @Override
+    protected InMemoryDNSService getInMemoryDns() {
+        return inMemoryDNSService;
+    }
+
 }
+

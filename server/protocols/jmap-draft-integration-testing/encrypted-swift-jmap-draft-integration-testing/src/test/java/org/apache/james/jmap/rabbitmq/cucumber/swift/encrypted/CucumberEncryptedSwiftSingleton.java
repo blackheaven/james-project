@@ -16,32 +16,13 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
+package org.apache.james.jmap.rabbitmq.cucumber.swift.encrypted;
 
-package org.apache.james.modules;
-
-import org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration;
 import org.apache.james.modules.objectstorage.PayloadCodecFactory;
 import org.apache.james.modules.objectstorage.swift.DockerSwiftTestRule;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Module;
-import com.google.inject.util.Modules;
+public class CucumberEncryptedSwiftSingleton {
 
-public class TestSwiftBlobStoreModule extends AbstractModule {
-
-    private final DockerSwiftTestRule dockerSwiftTestRule;
-
-    public TestSwiftBlobStoreModule(PayloadCodecFactory payloadCodecFactory) {
-        this.dockerSwiftTestRule = new DockerSwiftTestRule(payloadCodecFactory);
-    }
-
-    @Override
-    protected void configure() {
-        Module testSwiftBlobStoreModule = Modules
-            .override(dockerSwiftTestRule.getModule())
-            .with(binder -> binder.bind(BlobStoreChoosingConfiguration.class)
-                .toInstance(BlobStoreChoosingConfiguration.objectStorage()));
-
-        install(testSwiftBlobStoreModule);
-    }
+    public static DockerSwiftTestRule encryptedSwiftServer = new DockerSwiftTestRule(PayloadCodecFactory.AES256);
 }
+

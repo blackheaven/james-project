@@ -17,31 +17,20 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.modules;
+package org.apache.james.jmap.rabbitmq.cucumber.swift.encrypted;
 
-import org.apache.james.modules.blobstore.BlobStoreChoosingConfiguration;
-import org.apache.james.modules.objectstorage.PayloadCodecFactory;
-import org.apache.james.modules.objectstorage.swift.DockerSwiftTestRule;
+import org.apache.james.jmap.categories.EnableCucumber;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Module;
-import com.google.inject.util.Modules;
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
 
-public class TestSwiftBlobStoreModule extends AbstractModule {
-
-    private final DockerSwiftTestRule dockerSwiftTestRule;
-
-    public TestSwiftBlobStoreModule(PayloadCodecFactory payloadCodecFactory) {
-        this.dockerSwiftTestRule = new DockerSwiftTestRule(payloadCodecFactory);
-    }
-
-    @Override
-    protected void configure() {
-        Module testSwiftBlobStoreModule = Modules
-            .override(dockerSwiftTestRule.getModule())
-            .with(binder -> binder.bind(BlobStoreChoosingConfiguration.class)
-                .toInstance(BlobStoreChoosingConfiguration.objectStorage()));
-
-        install(testSwiftBlobStoreModule);
-    }
+@RunWith(Cucumber.class)
+@CucumberOptions(features = "classpath:cucumber/GetMessages.feature",
+                glue = {"org.apache.james.jmap.draft.methods.integration", "org.apache.james.jmap.rabbitmq.cucumber.swift.encrypted"},
+                tags = {"not @Ignore", "@BasicFeature"},
+                strict = true)
+@Category(EnableCucumber.class)
+public class EncryptedSwiftGetMessagesMethodTest {
 }

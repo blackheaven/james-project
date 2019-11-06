@@ -34,6 +34,7 @@
 
     <modules>
         <module>cassandra-jmap-draft-integration-testing</module>
+        <module>encrypted-swift-jmap-draft-integration-testing</module>
         <module>jmap-draft-integration-testing-common</module>
         <module>memory-jmap-draft-integration-testing</module>
         <module>rabbitmq-jmap-draft-integration-testing</module>

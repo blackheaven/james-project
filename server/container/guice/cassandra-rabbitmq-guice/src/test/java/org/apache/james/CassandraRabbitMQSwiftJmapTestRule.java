@@ -28,6 +28,7 @@ import org.apache.james.modules.TestDockerESMetricReporterModule;
 import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.modules.TestRabbitMQModule;
 import org.apache.james.modules.TestSwiftBlobStoreModule;
+import org.apache.james.modules.objectstorage.PayloadCodecFactory;
 import org.apache.james.server.core.configuration.Configuration;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
@@ -39,24 +40,29 @@ import com.google.inject.Module;
 public class CassandraRabbitMQSwiftJmapTestRule implements TestRule {
 
     private static final int LIMIT_TO_10_MESSAGES = 10;
-    public static final int TWO_SECONDS = 2000;
+    private static final int TWO_SECONDS = 2000;
     private final TemporaryFolder temporaryFolder;
+    private final PayloadCodecFactory payloadCodecFactory;
 
     public static CassandraRabbitMQSwiftJmapTestRule defaultTestRule() {
-        return new CassandraRabbitMQSwiftJmapTestRule();
+        return new CassandraRabbitMQSwiftJmapTestRule(PayloadCodecFactory.DEFAULT);
+    }
+
+    public static CassandraRabbitMQSwiftJmapTestRule defaultEncryptedTestRule() {
+        return new CassandraRabbitMQSwiftJmapTestRule(PayloadCodecFactory.AES256);
     }
 
     private final GuiceModuleTestRule guiceModuleTestRule;
     private final DockerElasticSearchRule dockerElasticSearchRule;
 
-    public CassandraRabbitMQSwiftJmapTestRule(GuiceModuleTestRule... guiceModuleTestRule) {
+    CassandraRabbitMQSwiftJmapTestRule(PayloadCodecFactory payloadCodecFactory) {
+        this.payloadCodecFactory = payloadCodecFactory;
         TempFilesystemTestRule tempFilesystemTestRule = new TempFilesystemTestRule();
         this.dockerElasticSearchRule = new DockerElasticSearchRule();
         this.temporaryFolder = tempFilesystemTestRule.getTemporaryFolder();
         this.guiceModuleTestRule =
                 AggregateGuiceModuleTestRule
-                    .of(guiceModuleTestRule)
-                    .aggregate(dockerElasticSearchRule)
+                    .of(dockerElasticSearchRule)
                     .aggregate(tempFilesystemTestRule);
     }
 
@@ -70,7 +76,7 @@ public class CassandraRabbitMQSwiftJmapTestRule implements TestRule {
             .combineWith(CassandraRabbitMQJamesServerMain.MODULES)
             .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
             .overrideWith(new TestRabbitMQModule(DockerRabbitMQSingleton.SINGLETON))
-            .overrideWith(new TestSwiftBlobStoreModule())
+            .overrideWith(new TestSwiftBlobStoreModule(payloadCodecFactory))
             .overrideWith(new TestJMAPServerModule(LIMIT_TO_10_MESSAGES))
             .overrideWith(new TestDockerESMetricReporterModule(dockerElasticSearchRule.getDockerEs().getHttpHost()))
             .overrideWith(guiceModuleTestRule.getModule())
