@@ -27,6 +27,7 @@ import static org.apache.james.webadmin.vault.routes.DeletedMessagesVaultRoutes.
 import static org.apache.james.webadmin.vault.routes.DeletedMessagesVaultRoutes.USERS;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.collection.IsMapWithSize.anEmptyMap;
@@ -730,7 +731,8 @@ class RabbitMQWebAdminServerTaskSerializationIntegrationTest {
             .body("status", is("completed"))
             .body("taskId", is(taskId))
             .body("type", is("cassandra-migration"))
-            .body("additionalInformation.toVersion", is(toVersion.getValue()));
+            .body("additionalInformation.toVersion", is(toVersion.getValue()))
+            .body("additionalInformation.migrationsDetails", hasSize(0));
     }
 
     @Test

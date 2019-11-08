@@ -31,6 +31,7 @@ import org.apache.james.backends.cassandra.migration.MigrationTaskDTO;
 import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTOModule;
 import org.apache.james.json.DTOConverter;
 import org.apache.james.json.DTOModule;
+import org.apache.james.mailbox.cassandra.mail.migration.MailboxPathV2MigrationTaskAdditionalInformationDTO;
 import org.apache.james.mailbox.cassandra.mail.task.MailboxMergingTaskAdditionalInformationDTO;
 import org.apache.james.mailbox.cassandra.mail.task.MailboxMergingTaskDTO;
 import org.apache.james.mailbox.cassandra.mail.task.MailboxMergingTaskRunner;
@@ -361,8 +362,26 @@ public class TaskSerializationModule extends AbstractModule {
     }
 
     @ProvidesIntoSet
-    public AdditionalInformationDTOModule<?, ?> migrationTaskAdditionalInformation() {
-        return MigrationTaskAdditionalInformationDTO.serializationModule();
+    @Named("MigrationTransitionAdditionalInformationModules")
+    public AdditionalInformationDTOModule<?, ?> migrationMappingsSourcesMigrationAdditionalInformation() {
+        return MappingsSourcesMigrationTaskAdditionalInformationDTO.serializationModule(MappingsSourcesMigration.TYPE);
+    }
+
+    @ProvidesIntoSet
+    @Named("MigrationTransitionAdditionalInformationModules")
+    public AdditionalInformationDTOModule<?, ?> migrationMailboxPathV2MigrationAdditionalInformation() {
+        return MailboxPathV2MigrationTaskAdditionalInformationDTO.MODULE;
+    }
+
+    @Named("MigrationTransitionDTOConverterAdditionalInformationModules")
+    @Provides
+    public DTOConverter<TaskExecutionDetails.AdditionalInformation, AdditionalInformationDTO> migrationTransitionsDTOConverterAdditionalInformation(@Named("MigrationTransitionAdditionalInformationModules") Set<AdditionalInformationDTOModule<?, ?>> nestedModules) {
+        return new DTOConverter(nestedModules);
+    }
+
+    @ProvidesIntoSet
+    public AdditionalInformationDTOModule<?, ?> migrationTaskAdditionalInformation(@Named("MigrationTransitionDTOConverterAdditionalInformationModules") DTOConverter<TaskExecutionDetails.AdditionalInformation, AdditionalInformationDTO> transitionsAdditionalInformationDtoConverter) {
+        return MigrationTaskAdditionalInformationDTO.serializationModule(transitionsAdditionalInformationDtoConverter);
     }
 
     @ProvidesIntoSet

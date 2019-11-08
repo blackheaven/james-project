@@ -23,6 +23,7 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static io.restassured.RestAssured.with;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,6 +35,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 
@@ -46,6 +49,9 @@ import org.apache.james.backends.cassandra.versions.SchemaTransition;
 import org.apache.james.backends.cassandra.versions.SchemaVersion;
 import org.apache.james.task.Hostname;
 import org.apache.james.task.MemoryTaskManager;
+import org.apache.james.task.Task;
+import org.apache.james.task.TaskExecutionDetails;
+import org.apache.james.task.TaskType;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
 import org.apache.james.webadmin.utils.JsonTransformer;
@@ -72,11 +78,9 @@ public class CassandraMigrationRoutesTest {
     private MemoryTaskManager taskManager;
 
     private void createServer() {
-        Migration successfulMigration = () -> { };
-
         CassandraSchemaTransitions transitions = new CassandraSchemaTransitions(ImmutableMap.of(
-            FROM_OLDER_TO_CURRENT, successfulMigration,
-            FROM_CURRENT_TO_LATEST, successfulMigration));
+            FROM_OLDER_TO_CURRENT, migration("one", "1 -> 2"),
+            FROM_CURRENT_TO_LATEST, migration("two", "2 -> 3")));
 
         schemaVersionDAO = mock(CassandraSchemaVersionDAO.class);
         when(schemaVersionDAO.getCurrentSchemaVersion()).thenReturn(Mono.just(Optional.empty()));
@@ -93,6 +97,42 @@ public class CassandraMigrationRoutesTest {
         RestAssured.requestSpecification = WebAdminUtils.buildRequestSpecification(webAdminServer)
             .setBasePath(CassandraMigrationRoutes.VERSION_BASE)
             .build();
+    }
+
+    private Migration migration(String typeName, String label) {
+        return new Migration() {
+            public Task asTask() {
+                return new Task() {
+                    @Override
+                    public Result run() throws InterruptedException {
+                        return runTask();
+                    }
+
+                    @Override
+                    public TaskType type() {
+                        return TaskType.of(typeName);
+                    }
+
+                    @Override
+                    public Optional<TaskExecutionDetails.AdditionalInformation> details() {
+                        return Optional.of(new TaskExecutionDetails.AdditionalInformation() {
+                            public String getLabel() {
+                                return label;
+                            }
+
+                            @Override
+                            public Instant timestamp() {
+                                return Instant.MIN;
+                            }
+                        });
+                    }
+                };
+            }
+            @Override
+            public void apply() {
+                // Nothing
+            }
+        };
     }
 
     @Before
@@ -292,6 +332,7 @@ public class CassandraMigrationRoutesTest {
             .body("taskId", is(notNullValue()))
             .body("type", is(MigrationTask.CASSANDRA_MIGRATION.asString()))
             .body("additionalInformation.toVersion", is(LATEST_VERSION.getValue()))
+            .body("additionalInformation.migrationsDetails", hasSize(OLDER_VERSION.listTransitionsForTarget(LATEST_VERSION).size()))
             .body("startedDate", is(notNullValue()))
             .body("submitDate", is(notNullValue()))
             .body("completedDate", is(notNullValue()));

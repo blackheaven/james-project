@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.james.json.JsonGenericSerializer;
 import org.apache.james.server.task.json.dto.AdditionalInformationDTO;
@@ -32,9 +33,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableSet;
 
 public class JsonTaskAdditionalInformationSerializer {
+    @FunctionalInterface
+    public interface RequestRootModules {
+        RequestNestedModules root(AdditionalInformationDTOModule<?, ?>... modules);
+    }
 
-    public static JsonTaskAdditionalInformationSerializer of(AdditionalInformationDTOModule<?, ?>... modules) {
-        return new JsonTaskAdditionalInformationSerializer(ImmutableSet.copyOf(modules));
+    @FunctionalInterface
+    public interface RequestNestedModules {
+        JsonTaskAdditionalInformationSerializer nested(AdditionalInformationDTOModule<?, ?>... modules);
+    }
+
+    public static RequestRootModules builder() {
+        return root -> nested -> new JsonTaskAdditionalInformationSerializer(ImmutableSet.copyOf(root), ImmutableSet.copyOf(nested));
     }
 
     public static class InvalidAdditionalInformationException extends RuntimeException {
@@ -49,11 +59,15 @@ public class JsonTaskAdditionalInformationSerializer {
         }
     }
 
+    public static JsonTaskAdditionalInformationSerializer of(AdditionalInformationDTOModule<?, ?>... modules) {
+        return new JsonTaskAdditionalInformationSerializer(ImmutableSet.copyOf(modules), ImmutableSet.of());
+    }
+
     private JsonGenericSerializer<TaskExecutionDetails.AdditionalInformation, AdditionalInformationDTO> jsonGenericSerializer;
 
     @Inject
-    private JsonTaskAdditionalInformationSerializer(Set<AdditionalInformationDTOModule<?, ?>> modules) {
-        jsonGenericSerializer = JsonGenericSerializer.forModules(modules).withoutNestedType();
+    private JsonTaskAdditionalInformationSerializer(Set<AdditionalInformationDTOModule<?, ?>> root, @Named("MigrationTransitionAdditionalInformationModules") Set<AdditionalInformationDTOModule<?, ?>> nested) {
+        jsonGenericSerializer = JsonGenericSerializer.forModules(root).withNestedTypeModules(nested);
     }
 
     public String serialize(TaskExecutionDetails.AdditionalInformation additionalInformation) throws JsonProcessingException {

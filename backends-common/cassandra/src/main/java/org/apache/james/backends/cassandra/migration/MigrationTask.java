@@ -23,7 +23,9 @@ import static org.apache.james.backends.cassandra.versions.CassandraSchemaVersio
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import javax.inject.Inject;
 
@@ -33,11 +35,13 @@ import org.apache.james.backends.cassandra.versions.SchemaVersion;
 import org.apache.james.task.Task;
 import org.apache.james.task.TaskExecutionDetails;
 import org.apache.james.task.TaskType;
+import org.apache.james.util.OptionalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
-import com.google.common.annotations.VisibleForTesting;
+import com.github.steveash.guavate.Guavate;
+import com.google.common.collect.ImmutableList;
 
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
@@ -72,14 +76,20 @@ public class MigrationTask implements Task {
 
         private final SchemaVersion toVersion;
         private final Instant timestamp;
+        private final List<TaskExecutionDetails.AdditionalInformation> migrationsDetails;
 
-        public AdditionalInformation(SchemaVersion toVersion, Instant timestamp) {
+        public AdditionalInformation(SchemaVersion toVersion, Instant timestamp, List<TaskExecutionDetails.AdditionalInformation> migrationsDetails) {
             this.toVersion = toVersion;
             this.timestamp = timestamp;
+            this.migrationsDetails = migrationsDetails;
         }
 
         public int getToVersion() {
             return toVersion.getValue();
+        }
+
+        public List<TaskExecutionDetails.AdditionalInformation> getMigrationsDetails() {
+            return migrationsDetails;
         }
 
         @Override
@@ -91,19 +101,31 @@ public class MigrationTask implements Task {
     private final CassandraSchemaVersionDAO schemaVersionDAO;
     private final CassandraSchemaTransitions transitions;
     private final SchemaVersion target;
+    private List<AdditionalInformationSupplier> migrationsDetailsSupplier;
 
-    @VisibleForTesting
     public MigrationTask(CassandraSchemaVersionDAO schemaVersionDAO, CassandraSchemaTransitions transitions, SchemaVersion target) {
         this.schemaVersionDAO = schemaVersionDAO;
         this.transitions = transitions;
         this.target = target;
+        this.migrationsDetailsSupplier = ImmutableList.of();
     }
 
     @Override
     public Result run() {
-        getCurrentVersion().listTransitionsForTarget(target)
+        ImmutableList<Tuple2<SchemaTransition, Task>> transitionsAndMigration = getCurrentVersion()
+            .listTransitionsForTarget(target)
             .stream()
             .map(this::migration)
+            .collect(Guavate.toImmutableList());
+
+        Function<Task, AdditionalInformationSupplier> makeSupplier = task -> task::details;
+        migrationsDetailsSupplier = transitionsAndMigration
+            .stream()
+            .map(Tuple2::getT2)
+            .map(makeSupplier)
+            .collect(Guavate.toImmutableList());
+
+        transitionsAndMigration
             .forEach(Throwing.consumer(this::runMigration).sneakyThrow());
         return Result.COMPLETED;
     }
@@ -112,14 +134,15 @@ public class MigrationTask implements Task {
         return schemaVersionDAO.getCurrentSchemaVersion().block().orElse(DEFAULT_VERSION);
     }
 
-    private Tuple2<SchemaTransition, Migration> migration(SchemaTransition transition) {
+    private Tuple2<SchemaTransition, Task> migration(SchemaTransition transition) {
         return Tuples.of(
             transition,
             transitions.findMigration(transition)
-                .orElseThrow(() -> new MigrationException("unable to find a required Migration for transition " + transition)));
+                .orElseThrow(() -> new MigrationException("unable to find a required Migration for transition " + transition))
+                .asTask());
     }
 
-    private void runMigration(Tuple2<SchemaTransition, Migration> tuple) throws InterruptedException {
+    private void runMigration(Tuple2<SchemaTransition, Task> tuple) throws InterruptedException {
         SchemaVersion currentVersion = getCurrentVersion();
         SchemaTransition transition = tuple.getT1();
         SchemaVersion targetVersion = transition.to();
@@ -128,8 +151,9 @@ public class MigrationTask implements Task {
         }
 
         LOGGER.info("Migrating to version {} ", transition.toAsString());
-        Migration migration = tuple.getT2();
-        migration.asTask().run()
+        tuple
+            .getT2()
+            .run()
             .onComplete(
                 () -> schemaVersionDAO.updateVersion(transition.to()).block(),
                 () -> LOGGER.info("Migrating to version {} done", transition.toAsString()))
@@ -158,7 +182,17 @@ public class MigrationTask implements Task {
 
     @Override
     public Optional<TaskExecutionDetails.AdditionalInformation> details() {
-        return Optional.of(new AdditionalInformation(target, Clock.systemUTC().instant()));
+        ImmutableList<TaskExecutionDetails.AdditionalInformation> migrationsDetails = migrationsDetailsSupplier
+            .stream()
+            .map(AdditionalInformationSupplier::get)
+            .flatMap(OptionalUtils::toStream)
+            .collect(Guavate.toImmutableList());
+
+        return Optional.of(new AdditionalInformation(target, Clock.systemUTC().instant(), migrationsDetails));
     }
 
+    @FunctionalInterface
+    private interface AdditionalInformationSupplier {
+        Optional<TaskExecutionDetails.AdditionalInformation> get();
+    }
 }

@@ -39,6 +39,7 @@ import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
 import org.apache.james.backends.cassandra.versions.SchemaTransition;
 import org.apache.james.backends.cassandra.versions.SchemaVersion;
 import org.apache.james.task.Task;
+import org.apache.james.task.TaskType;
 import org.apache.james.util.concurrent.NamedThreadFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,6 +71,7 @@ class CassandraMigrationServiceTest {
 
         Task successFulTask = mock(Task.class);
         when(successFulTask.run()).thenReturn(Task.Result.COMPLETED);
+        when(successFulTask.type()).thenReturn(TaskType.of("mocked-task"));
         successfulMigration = mock(Migration.class);
         when(successfulMigration.asTask()).thenReturn(successFulTask);
         CassandraSchemaTransitions transitions = new CassandraSchemaTransitions(ImmutableMap.of(
@@ -187,7 +189,10 @@ class CassandraMigrationServiceTest {
         Task failingTask = mock(Task.class);
         when(failingTask.run()).thenThrow(MigrationException.class);
         Migration migration1 = failingTask::run;
+        Task nullTask = mock(Task.class);
+        when(nullTask.run()).thenReturn(Task.Result.COMPLETED);
         Migration migration2 = mock(Migration.class);
+        when(migration2.asTask()).thenReturn(nullTask);
 
         CassandraSchemaTransitions transitions = new CassandraSchemaTransitions(ImmutableMap.of(
                 FROM_OLDER_TO_CURRENT, migration1,
@@ -200,7 +205,8 @@ class CassandraMigrationServiceTest {
 
         verify(failingTask, times(1)).run();
         verifyNoMoreInteractions(failingTask);
-        verifyZeroInteractions(migration2);
+        verify(migration2, times(1)).asTask();
+        verifyZeroInteractions(nullTask);
     }
 
     public static class InMemorySchemaDAO extends CassandraSchemaVersionDAO {
