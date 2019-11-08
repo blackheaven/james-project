@@ -34,6 +34,7 @@ import static org.mockito.Mockito.mock;
 
 import java.net.InetAddress;
 
+import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.james.core.Domain;
 import org.apache.james.dlp.api.DLPConfigurationStore;
 import org.apache.james.dlp.eventsourcing.EventSourcingDLPConfigurationStore;
@@ -41,8 +42,10 @@ import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.domainlist.api.DomainList;
 import org.apache.james.domainlist.memory.MemoryDomainList;
 import org.apache.james.eventsourcing.eventstore.memory.InMemoryEventStore;
+import org.apache.james.modules.server.CamelMailetContainerModule;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.WebAdminUtils;
+import org.apache.james.webadmin.service.DLPStatusService;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,8 +69,10 @@ class DLPConfigurationRoutesTest {
     private EventSourcingDLPConfigurationStore dlpStore;
 
     private void createServer(DLPConfigurationStore dlpConfigurationStore, DomainList domainList) {
+        BaseHierarchicalConfiguration mailetConfiguration = null;
+        DLPStatusService dlpStatusService = new DLPStatusService(new CamelMailetContainerModule.MailetConfigurationProvider((s, l) -> mailetConfiguration));
         webAdminServer = WebAdminUtils.createWebAdminServer(
-                new DLPConfigurationRoutes(dlpConfigurationStore, domainList, new JsonTransformer()))
+                new DLPConfigurationRoutes(dlpConfigurationStore, domainList, new JsonTransformer(), dlpStatusService))
             .start();
 
         requestSpecification = buildRequestSpecification(webAdminServer);

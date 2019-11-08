@@ -21,13 +21,17 @@ package org.apache.james.modules.server;
 
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.routes.DLPConfigurationRoutes;
+import org.apache.james.webadmin.service.DLPStatusService;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 
 public class DLPRoutesModule extends AbstractModule {
     @Override
     protected void configure() {
+        bind(DLPStatusService.class).in(Scopes.SINGLETON);
+        bind(DLPStatusService.class).to(DLPStatusService.class);
         Multibinder.newSetBinder(binder(), Routes.class)
             .addBinding()
             .to(DLPConfigurationRoutes.class);

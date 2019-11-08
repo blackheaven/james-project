@@ -77,6 +77,9 @@ public class CamelMailetContainerModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(MailetConfigurationProvider.class).in(Scopes.SINGLETON);
+        bind(MailetConfigurationProvider.class).to(MailetConfigurationProvider.class);
+
         bind(CamelCompositeProcessor.class).in(Scopes.SINGLETON);
         bind(MailProcessor.class).to(CamelCompositeProcessor.class);
 
@@ -108,19 +111,18 @@ public class CamelMailetContainerModule extends AbstractModule {
     }
 
     @ProvidesIntoSet
-    InitializationOperation startSpooler(JamesMailSpooler jamesMailSpooler, ConfigurationProvider configurationProvider) {
+    InitializationOperation startSpooler(JamesMailSpooler jamesMailSpooler, MailetConfigurationProvider mailetConfigurationProvider) {
         return InitilizationOperationBuilder
             .forClass(JamesMailSpooler.class)
             .init(() -> {
-                jamesMailSpooler.configure(getJamesSpoolerConfiguration(configurationProvider));
+                jamesMailSpooler.configure(getJamesSpoolerConfiguration(mailetConfigurationProvider));
                 jamesMailSpooler.init();
             });
     }
 
-    private HierarchicalConfiguration<ImmutableNode> getJamesSpoolerConfiguration(ConfigurationProvider configurationProvider) {
+    private HierarchicalConfiguration<ImmutableNode> getJamesSpoolerConfiguration(MailetConfigurationProvider mailetConfigurationProvider) {
         try {
-            return configurationProvider.getConfiguration("mailetcontainer")
-                .configurationAt("spooler");
+            return mailetConfigurationProvider.forName("spooler");
         } catch (Exception e) {
             LOGGER.warn("Could not locate configuration for James Spooler. Assuming empty configuration for this component.");
             return new BaseHierarchicalConfiguration();
@@ -128,16 +130,15 @@ public class CamelMailetContainerModule extends AbstractModule {
     }
 
     @ProvidesIntoSet
-    InitializationOperation initMailetContext(ConfigurationProvider configurationProvider, JamesMailetContext mailetContext) {
+    InitializationOperation initMailetContext(JamesMailetContext mailetContext, MailetConfigurationProvider mailetConfigurationProvider) {
         return InitilizationOperationBuilder
             .forClass(JamesMailetContext.class)
-            .init(() -> mailetContext.configure(getMailetContextConfiguration(configurationProvider)));
+            .init(() -> mailetContext.configure(getMailetContextConfiguration(mailetConfigurationProvider)));
     }
 
-    private HierarchicalConfiguration<ImmutableNode> getMailetContextConfiguration(ConfigurationProvider configurationProvider) {
+    private HierarchicalConfiguration<ImmutableNode> getMailetContextConfiguration(MailetConfigurationProvider mailetConfigurationProvider) {
         try {
-            return configurationProvider.getConfiguration("mailetcontainer")
-                .configurationAt("context");
+            return mailetConfigurationProvider.forName("context");
         } catch (Exception e) {
             LOGGER.warn("Could not locate configuration for Mailet context. Assuming empty configuration for this component.");
             return new BaseHierarchicalConfiguration();
@@ -146,18 +147,18 @@ public class CamelMailetContainerModule extends AbstractModule {
 
     @Singleton
     public static class MailetModuleInitializationOperation implements InitializationOperation {
-        private final ConfigurationProvider configurationProvider;
+        private final MailetConfigurationProvider mailetConfigurationProvider;
         private final CamelCompositeProcessor camelCompositeProcessor;
         private final DefaultProcessorsConfigurationSupplier defaultProcessorsConfigurationSupplier;
         private final Set<TransportProcessorCheck> transportProcessorCheckSet;
         private final DefaultCamelContext camelContext;
 
         @Inject
-        public MailetModuleInitializationOperation(ConfigurationProvider configurationProvider,
+        public MailetModuleInitializationOperation(MailetConfigurationProvider mailetConfigurationProvider,
                                                    CamelCompositeProcessor camelCompositeProcessor,
                                                    Set<TransportProcessorCheck> transportProcessorCheckSet,
                                                    DefaultProcessorsConfigurationSupplier defaultProcessorsConfigurationSupplier, DefaultCamelContext camelContext) {
-            this.configurationProvider = configurationProvider;
+            this.mailetConfigurationProvider = mailetConfigurationProvider;
             this.camelCompositeProcessor = camelCompositeProcessor;
             this.transportProcessorCheckSet = transportProcessorCheckSet;
             this.defaultProcessorsConfigurationSupplier = defaultProcessorsConfigurationSupplier;
@@ -178,8 +179,7 @@ public class CamelMailetContainerModule extends AbstractModule {
 
         private HierarchicalConfiguration<ImmutableNode> getProcessorConfiguration() {
             try {
-                return configurationProvider.getConfiguration("mailetcontainer")
-                    .configurationAt("processors");
+                return mailetConfigurationProvider.forName("processors");
             } catch (Exception e) {
                 LOGGER.warn("Could not load configuration for Processors. Fallback to default.");
                 return defaultProcessorsConfigurationSupplier.getDefaultConfiguration();
@@ -248,4 +248,18 @@ public class CamelMailetContainerModule extends AbstractModule {
         HierarchicalConfiguration<ImmutableNode> getDefaultConfiguration();
     }
 
+    public static class MailetConfigurationProvider {
+        private final ConfigurationProvider configurationProvider;
+
+        @Inject
+        public MailetConfigurationProvider(ConfigurationProvider configurationProvider) {
+            this.configurationProvider = configurationProvider;
+        }
+
+        public HierarchicalConfiguration<ImmutableNode> forName(String nodeName) throws ConfigurationException {
+            return configurationProvider
+                .getConfiguration("mailetcontainer")
+                .configurationAt(nodeName);
+        }
+    }
 }

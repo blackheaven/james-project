@@ -41,6 +41,7 @@ import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.DLPConfigurationDTO;
 import org.apache.james.webadmin.dto.DLPConfigurationItemDTO;
+import org.apache.james.webadmin.service.DLPStatusService;
 import org.apache.james.webadmin.utils.ErrorResponder;
 import org.apache.james.webadmin.utils.ErrorResponder.ErrorType;
 import org.apache.james.webadmin.utils.JsonExtractor;
@@ -76,15 +77,17 @@ public class DLPConfigurationRoutes implements Routes {
     private static final String RULE_SPECIFIC_PATH = SPECIFIC_DLP_RULE_DOMAIN + SEPARATOR + "rules" + SEPARATOR + RULE_ID_NAME;
 
     private final JsonTransformer jsonTransformer;
+    private final DLPStatusService dlpStatusService;
     private final DLPConfigurationStore dlpConfigurationStore;
     private final JsonExtractor<DLPConfigurationDTO> jsonExtractor;
     private final DomainList domainList;
 
     @Inject
-    public DLPConfigurationRoutes(DLPConfigurationStore dlpConfigurationStore, DomainList domainList, JsonTransformer jsonTransformer) {
+    public DLPConfigurationRoutes(DLPConfigurationStore dlpConfigurationStore, DomainList domainList, JsonTransformer jsonTransformer, DLPStatusService dlpStatusService) {
         this.dlpConfigurationStore = dlpConfigurationStore;
         this.domainList = domainList;
         this.jsonTransformer = jsonTransformer;
+        this.dlpStatusService = dlpStatusService;
         this.jsonExtractor = new JsonExtractor<>(DLPConfigurationDTO.class);
     }
 
@@ -131,7 +134,14 @@ public class DLPConfigurationRoutes implements Routes {
 
             dlpConfigurationStore.store(senderDomain, rules);
 
-            return Responses.returnNoContent(response);
+            if (dlpStatusService.isActive()) {
+                return Responses.returnNoContent(response);
+            }
+            throw ErrorResponder.builder()
+                .statusCode(HttpStatus.BAD_REQUEST_400)
+                .type(ErrorType.INVALID_ARGUMENT)
+                .message("DLP is not active")
+                .haltError();
         });
     }
 
