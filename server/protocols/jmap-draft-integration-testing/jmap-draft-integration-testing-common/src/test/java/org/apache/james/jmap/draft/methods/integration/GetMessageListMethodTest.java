@@ -2321,7 +2321,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void sendingAMessageThroughAnotherProtocolShouldBePresentInOutboxViaJmap() throws Exception {
+    public void aMessageInOutboxShouldBeAccessibleViaJmap() throws Exception {
         MailboxId outboxMailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, ALICE, "Outbox");
         String messageBody = "We're all mad here.";
         mailboxProbe.appendMessage(
