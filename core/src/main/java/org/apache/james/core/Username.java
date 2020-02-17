@@ -97,7 +97,7 @@ public class Username {
         return domainPart;
     }
 
-    public Username changeDomain(Optional<Domain> domain) {
+    public Username withOtherDomain(Optional<Domain> domain) {
         return new Username(localPart, domain);
     }
 

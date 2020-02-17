@@ -65,7 +65,7 @@ public class CanSendFromImpl implements CanSendFrom {
         return relatedAliases(user)
             .flatMap(allowedUser -> domains.stream()
                 .map(Optional::of)
-                .map(allowedUser::changeDomain)
+                .map(allowedUser::withOtherDomain)
                 .map(Throwing.function(Username::asMailAddress).sneakyThrow()));
     }
 
