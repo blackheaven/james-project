@@ -97,6 +97,10 @@ public class Username {
         return domainPart;
     }
 
+    public Username changeDomain(Optional<Domain> domain) {
+        return new Username(localPart, domain);
+    }
+
     public boolean hasDomainPart() {
         return domainPart.isPresent();
     }
