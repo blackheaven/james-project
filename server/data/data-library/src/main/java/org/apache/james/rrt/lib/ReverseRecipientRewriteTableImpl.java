@@ -42,10 +42,12 @@ import com.github.steveash.guavate.Guavate;
 
 public class ReverseRecipientRewriteTableImpl implements ReverseRecipientRewriteTable {
     private final RecipientRewriteTable recipientRewriteTable;
+    private final int mappingLimit;
 
     @Inject
     public ReverseRecipientRewriteTableImpl(RecipientRewriteTable recipientRewriteTable) {
         this.recipientRewriteTable = recipientRewriteTable;
+        this.mappingLimit = recipientRewriteTable.getConfiguration().getMappingLimit();
     }
 
     @Override
@@ -64,7 +66,7 @@ public class ReverseRecipientRewriteTableImpl implements ReverseRecipientRewrite
     private Stream<Username> relatedAliases(Username user) {
         return StreamUtils.iterate(
             user,
-            (long) recipientRewriteTable.getMappingLimit(),
+            (long) mappingLimit,
             Throwing.<Username, Stream<Username>>function(targetUser ->
                 recipientRewriteTable
                     .listSources(Mapping.alias(targetUser.asString()))
@@ -94,7 +96,7 @@ public class ReverseRecipientRewriteTableImpl implements ReverseRecipientRewrite
     private Stream<Domain> fetchDomains(Domain domain) {
         return StreamUtils.iterate(
             domain,
-            (long) recipientRewriteTable.getMappingLimit(),
+            (long) mappingLimit,
             Throwing.<Domain, Stream<Domain>>function(targetDomain ->
                 recipientRewriteTable
                     .listSources(Mapping.domain(targetDomain))
