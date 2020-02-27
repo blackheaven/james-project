@@ -71,6 +71,11 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
     @Override
     public void configure(HierarchicalConfiguration<ImmutableNode> config) throws ConfigurationException {
         setConfiguration(RecipientRewriteTableConfiguration.fromConfiguration(config));
+        doConfigure(config);
+    }
+
+    protected void doConfigure(HierarchicalConfiguration<ImmutableNode> arg0) throws ConfigurationException {
+
     }
 
     @Override
