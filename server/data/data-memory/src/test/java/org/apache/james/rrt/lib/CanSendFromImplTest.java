@@ -26,7 +26,7 @@ import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.domainlist.lib.DomainListConfiguration;
 import org.apache.james.domainlist.memory.MemoryDomainList;
 import org.apache.james.rrt.api.CanSendFrom;
-import org.apache.james.rrt.api.ReverseRecipientRewriteTable;
+import org.apache.james.rrt.api.AliasResolver;
 import org.apache.james.rrt.memory.MemoryRecipientRewriteTable;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -48,8 +48,8 @@ public class CanSendFromImplTest implements CanSendFromContract {
         domainList.addDomain(OTHER_DOMAIN);
         recipientRewriteTable.setDomainList(domainList);
 
-        ReverseRecipientRewriteTable reverseRecipientRewriteTable = new ReverseRecipientRewriteTableImpl(recipientRewriteTable);
-        canSendFrom = new CanSendFromImpl(recipientRewriteTable, reverseRecipientRewriteTable);
+        AliasResolver aliasResolver = new AliasResolverImpl(recipientRewriteTable);
+        canSendFrom = new CanSendFromImpl(recipientRewriteTable, aliasResolver);
     }
 
     @Override

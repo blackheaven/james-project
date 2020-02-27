@@ -20,10 +20,10 @@ package org.apache.james.modules.data;
 
 import org.apache.james.rrt.api.CanSendFrom;
 import org.apache.james.rrt.api.RecipientRewriteTable;
-import org.apache.james.rrt.api.ReverseRecipientRewriteTable;
+import org.apache.james.rrt.api.AliasResolver;
 import org.apache.james.rrt.jpa.JPARecipientRewriteTable;
+import org.apache.james.rrt.lib.AliasResolverImpl;
 import org.apache.james.rrt.lib.CanSendFromImpl;
-import org.apache.james.rrt.lib.ReverseRecipientRewriteTableImpl;
 import org.apache.james.server.core.configuration.ConfigurationProvider;
 import org.apache.james.utils.InitializationOperation;
 import org.apache.james.utils.InitilizationOperationBuilder;
@@ -37,8 +37,8 @@ public class JPARecipientRewriteTableModule extends AbstractModule {
     public void configure() {
         bind(JPARecipientRewriteTable.class).in(Scopes.SINGLETON);
         bind(RecipientRewriteTable.class).to(JPARecipientRewriteTable.class);
-        bind(ReverseRecipientRewriteTableImpl.class).in(Scopes.SINGLETON);
-        bind(ReverseRecipientRewriteTable.class).to(ReverseRecipientRewriteTableImpl.class);
+        bind(AliasResolverImpl.class).in(Scopes.SINGLETON);
+        bind(AliasResolver.class).to(AliasResolverImpl.class);
         bind(CanSendFromImpl.class).in(Scopes.SINGLETON);
         bind(CanSendFrom.class).to(CanSendFromImpl.class);
     }

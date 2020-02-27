@@ -31,21 +31,21 @@ import javax.inject.Inject;
 import org.apache.james.core.Domain;
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.Username;
+import org.apache.james.rrt.api.AliasResolver;
 import org.apache.james.rrt.api.RecipientRewriteTable;
 import org.apache.james.rrt.api.RecipientRewriteTableException;
-import org.apache.james.rrt.api.ReverseRecipientRewriteTable;
 import org.apache.james.util.OptionalUtils;
 import org.apache.james.util.StreamUtils;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 
-public class ReverseRecipientRewriteTableImpl implements ReverseRecipientRewriteTable {
+public class AliasResolverImpl implements AliasResolver {
     private final RecipientRewriteTable recipientRewriteTable;
     private final int mappingLimit;
 
     @Inject
-    public ReverseRecipientRewriteTableImpl(RecipientRewriteTable recipientRewriteTable) {
+    public AliasResolverImpl(RecipientRewriteTable recipientRewriteTable) {
         this.recipientRewriteTable = recipientRewriteTable;
         this.mappingLimit = recipientRewriteTable.getConfiguration().getMappingLimit();
     }

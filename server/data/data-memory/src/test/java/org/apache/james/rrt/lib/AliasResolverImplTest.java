@@ -26,14 +26,14 @@ import org.apache.james.core.Username;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.domainlist.lib.DomainListConfiguration;
 import org.apache.james.domainlist.memory.MemoryDomainList;
-import org.apache.james.rrt.api.ReverseRecipientRewriteTable;
+import org.apache.james.rrt.api.AliasResolver;
 import org.apache.james.rrt.memory.MemoryRecipientRewriteTable;
 import org.junit.jupiter.api.BeforeEach;
 
-public class ReverseRecipientRewriteTableImplTest implements ReverseRecipientRewriteTableContract {
+public class AliasResolverImplTest implements AliasResolverContract {
 
     AbstractRecipientRewriteTable recipientRewriteTable;
-    ReverseRecipientRewriteTableImpl reverseRecipientRewriteTable;
+    AliasResolverImpl aliasResolver;
 
     @BeforeEach
     void setup() throws Exception {
@@ -48,12 +48,12 @@ public class ReverseRecipientRewriteTableImplTest implements ReverseRecipientRew
         domainList.addDomain(OTHER_DOMAIN);
         recipientRewriteTable.setDomainList(domainList);
 
-        this.reverseRecipientRewriteTable = new ReverseRecipientRewriteTableImpl(recipientRewriteTable);
+        this.aliasResolver = new AliasResolverImpl(recipientRewriteTable);
     }
 
     @Override
-    public ReverseRecipientRewriteTable reverseRecipientRewriteTable() {
-        return reverseRecipientRewriteTable;
+    public AliasResolver aliasResolver() {
+        return aliasResolver;
     }
 
     @Override
