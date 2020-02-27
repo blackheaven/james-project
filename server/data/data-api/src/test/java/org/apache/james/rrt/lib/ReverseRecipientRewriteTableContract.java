@@ -156,7 +156,7 @@ public interface ReverseRecipientRewriteTableContract {
     }
 
     @Test
-    default void listAddressesShouldContainAnUserAliasFollowingADomainAliasResolution() throws Exception {
+    default void listAddressesShouldContainAUserAliasFollowingADomainAliasResolution() throws Exception {
         Username userAliasBis = Username.of("aliasbis@" + OTHER_DOMAIN.asString());
         redirectUser(userAliasBis).to(USER_ALIAS);
         redirectUser(USER_ALIAS).to(USER);
