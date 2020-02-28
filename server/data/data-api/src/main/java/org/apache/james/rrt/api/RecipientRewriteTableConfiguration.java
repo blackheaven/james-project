@@ -31,6 +31,9 @@ import com.google.common.base.Preconditions;
 
 public class RecipientRewriteTableConfiguration {
 
+    private static final int DEFAULT_ENABLED_MAPPING_LIMIT = 10;
+    private static final int DISABLED_MAPPING_LIMIT = 0;
+
     // The maximum mappings which will process before throwing exception
     private final int mappingLimit;
 
@@ -38,7 +41,7 @@ public class RecipientRewriteTableConfiguration {
 
     @VisibleForTesting
     public RecipientRewriteTableConfiguration(boolean recursive, int mappingLimit) {
-        Preconditions.checkArgument(mappingLimit == 0 || recursive, "mappingLimit can not be different that 0 when recursive mode is disabled");
+        Preconditions.checkArgument(mappingLimit == 0 || recursive, "mappingLimit can not be different than 0 when recursive mode is disabled");
         this.recursive = recursive;
         this.mappingLimit = mappingLimit;
     }
@@ -47,10 +50,10 @@ public class RecipientRewriteTableConfiguration {
         boolean recursive = config.getBoolean("recursiveMapping", true);
         int mappingLimit;
         if (recursive) {
-            mappingLimit = config.getInt("mappingLimit", 10);
+            mappingLimit = config.getInt("mappingLimit", DEFAULT_ENABLED_MAPPING_LIMIT);
             checkMappingLimit(mappingLimit);
         } else {
-            mappingLimit = 0;
+            mappingLimit = DISABLED_MAPPING_LIMIT;
         }
         return new RecipientRewriteTableConfiguration(recursive, mappingLimit);
     }
