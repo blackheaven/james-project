@@ -40,13 +40,13 @@ import org.apache.james.core.Domain;
 import org.apache.james.core.Username;
 import org.apache.james.domainlist.api.DomainListException;
 import org.apache.james.domainlist.api.mock.SimpleDomainList;
+import org.apache.james.rrt.api.AliasReverseResolver;
 import org.apache.james.rrt.api.CanSendFrom;
 import org.apache.james.rrt.api.RecipientRewriteTable;
 import org.apache.james.rrt.api.RecipientRewriteTableException;
-import org.apache.james.rrt.api.AliasResolver;
 import org.apache.james.rrt.lib.CanSendFromImpl;
 import org.apache.james.rrt.lib.MappingSource;
-import org.apache.james.rrt.lib.AliasResolverImpl;
+import org.apache.james.rrt.lib.AliasReverseResolverImpl;
 import org.apache.james.rrt.memory.MemoryRecipientRewriteTable;
 import org.apache.james.user.api.UsersRepository;
 import org.apache.james.user.api.UsersRepositoryException;
@@ -100,7 +100,7 @@ class UserRoutesTest {
         final MemoryUsersRepository usersRepository;
         final SimpleDomainList domainList;
         final MemoryRecipientRewriteTable recipientRewriteTable;
-        final AliasResolver aliasResolver;
+        final AliasReverseResolver aliasReverseResolver;
         final CanSendFrom canSendFrom;
 
         WebAdminServer webAdminServer;
@@ -110,8 +110,8 @@ class UserRoutesTest {
             this.domainList = domainList;
             this.recipientRewriteTable = new MemoryRecipientRewriteTable();
             this.recipientRewriteTable.setDomainList(domainList);
-            this.aliasResolver = new AliasResolverImpl(recipientRewriteTable);
-            this.canSendFrom = new CanSendFromImpl(recipientRewriteTable, aliasResolver);
+            this.aliasReverseResolver = new AliasReverseResolverImpl(recipientRewriteTable);
+            this.canSendFrom = new CanSendFromImpl(recipientRewriteTable, aliasReverseResolver);
         }
 
         @Override

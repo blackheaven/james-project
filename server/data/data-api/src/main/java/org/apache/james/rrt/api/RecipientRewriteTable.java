@@ -122,11 +122,6 @@ public interface RecipientRewriteTable {
      */
     Map<MappingSource, Mappings> getAllMappings() throws RecipientRewriteTableException;
 
-    /**
-     * Return the configuration
-     *
-     * @return the configuration
-     */
     RecipientRewriteTableConfiguration getConfiguration();
 
     default Stream<MappingSource> listSources(Mapping mapping) throws RecipientRewriteTableException {
