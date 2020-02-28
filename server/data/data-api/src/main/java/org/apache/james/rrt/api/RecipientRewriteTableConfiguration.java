@@ -27,6 +27,7 @@ import org.apache.commons.configuration2.tree.ImmutableNode;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
 public class RecipientRewriteTableConfiguration {
 
@@ -37,14 +38,20 @@ public class RecipientRewriteTableConfiguration {
 
     @VisibleForTesting
     public RecipientRewriteTableConfiguration(boolean recursive, int mappingLimit) {
+        Preconditions.checkArgument(mappingLimit == 0 || recursive, "mappingLimit can not be different that 0 when recursive mode is disabled");
         this.recursive = recursive;
         this.mappingLimit = mappingLimit;
     }
 
     public static RecipientRewriteTableConfiguration fromConfiguration(HierarchicalConfiguration<ImmutableNode> config) throws ConfigurationException {
         boolean recursive = config.getBoolean("recursiveMapping", true);
-        int mappingLimit = config.getInt("mappingLimit", 10);
-        checkMappingLimit(mappingLimit);
+        int mappingLimit;
+        if (recursive) {
+            mappingLimit = config.getInt("mappingLimit", 10);
+            checkMappingLimit(mappingLimit);
+        } else {
+            mappingLimit = 0;
+        }
         return new RecipientRewriteTableConfiguration(recursive, mappingLimit);
     }
 
@@ -55,11 +62,7 @@ public class RecipientRewriteTableConfiguration {
     }
 
     public int getMappingLimit() {
-        if (recursive) {
-            return mappingLimit;
-        } else {
-            return 0;
-        }
+        return mappingLimit;
     }
 
     public boolean isRecursive() {
