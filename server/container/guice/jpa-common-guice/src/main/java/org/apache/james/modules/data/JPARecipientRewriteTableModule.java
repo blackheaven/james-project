@@ -18,9 +18,9 @@
  ****************************************************************/
 package org.apache.james.modules.data;
 
+import org.apache.james.rrt.api.AliasResolver;
 import org.apache.james.rrt.api.CanSendFrom;
 import org.apache.james.rrt.api.RecipientRewriteTable;
-import org.apache.james.rrt.api.AliasResolver;
 import org.apache.james.rrt.jpa.JPARecipientRewriteTable;
 import org.apache.james.rrt.lib.AliasResolverImpl;
 import org.apache.james.rrt.lib.CanSendFromImpl;
