@@ -27,6 +27,7 @@ import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.domainlist.lib.DomainListConfiguration;
 import org.apache.james.domainlist.memory.MemoryDomainList;
 import org.apache.james.rrt.api.AliasReverseResolver;
+import org.apache.james.rrt.api.RecipientRewriteTableConfiguration;
 import org.apache.james.rrt.memory.MemoryRecipientRewriteTable;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -47,6 +48,7 @@ public class AliasReverseResolverImplTest implements AliasReverseResolverContrac
         domainList.addDomain(DOMAIN);
         domainList.addDomain(OTHER_DOMAIN);
         recipientRewriteTable.setDomainList(domainList);
+        recipientRewriteTable.setConfiguration(new RecipientRewriteTableConfiguration(true, 10));
 
         this.aliasReverseResolver = new AliasReverseResolverImpl(recipientRewriteTable);
     }
