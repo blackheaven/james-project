@@ -86,25 +86,21 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
     @Override
     public Mappings getResolvedMappings(String user, Domain domain, EnumSet<Type> mappingTypes) throws ErrorMappingException, RecipientRewriteTableException {
         Preconditions.checkState(this.configuration != null, "RecipientRewriteTable is not configured");
-        return getMappings(Username.fromLocalPartWithDomain(user, domain), configuration.isRecursive(), configuration.getMappingLimit(), mappingTypes);
+        return getMappings(Username.fromLocalPartWithDomain(user, domain), configuration.getMappingLimit(), mappingTypes);
     }
 
-    private Mappings getMappings(Username username, boolean recursive, int mappingLimit, EnumSet<Type> mappingTypes) throws ErrorMappingException, RecipientRewriteTableException {
-
-        Domain domain = username.getDomainPart().get();
-        String localPart = username.getLocalPart();
-        Stream<Mapping> targetMappings = mapAddress(localPart, domain).asStream()
-            .filter(mapping -> mappingTypes.contains(mapping.getType()));
-
-        if (!recursive) {
-            return MappingsImpl.fromMappings(targetMappings);
-        }
+    private Mappings getMappings(Username username, int mappingLimit, EnumSet<Type> mappingTypes) throws ErrorMappingException, RecipientRewriteTableException {
 
         // We have to much mappings throw ErrorMappingException to avoid
         // infinity loop
         if (mappingLimit == 0) {
             throw new TooManyMappingException("554 Too many mappings to process");
         }
+
+        Domain domain = username.getDomainPart().get();
+        String localPart = username.getLocalPart();
+        Stream<Mapping> targetMappings = mapAddress(localPart, domain).asStream()
+                .filter(mapping -> mappingTypes.contains(mapping.getType()));
 
         try {
             return MappingsImpl.fromMappings(
@@ -145,7 +141,7 @@ public abstract class AbstractRecipientRewriteTable implements RecipientRewriteT
     }
 
     private Stream<Mapping> recurseMapping(Stream<Mapping> nonRecursiveResult, Username targetUsername, int remainingLoops, EnumSet<Type> mappingTypes) throws ErrorMappingException, RecipientRewriteTableException {
-        Mappings childMappings = getMappings(targetUsername, true, remainingLoops - 1, mappingTypes);
+        Mappings childMappings = getMappings(targetUsername, remainingLoops - 1, mappingTypes);
 
         if (childMappings.isEmpty()) {
             return nonRecursiveResult;

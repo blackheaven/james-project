@@ -249,7 +249,6 @@ public abstract class AbstractRecipientRewriteTableTest {
         Domain domain3 = Domain.of("domain3");
         MappingSource source1 = MappingSource.fromUser(user1, domain1);
         MappingSource source2 = MappingSource.fromUser(user2, domain2);
-        MappingSource source3 = MappingSource.fromUser(user3, domain3);
 
         setNonRecursiveRecipientRewriteTable();
 
