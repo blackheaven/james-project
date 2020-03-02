@@ -103,7 +103,7 @@ public class ReactorRabbitMQChannelPool implements ChannelPool, Startable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReactorRabbitMQChannelPool.class);
     private static final long MAXIMUM_BORROW_TIMEOUT_IN_MS = Duration.ofSeconds(5).toMillis();
-    private static final int MAX_CHANNELS_NUMBER = 5;
+    private static final int MAX_CHANNELS_NUMBER = 3;
     private static final int MAX_BORROW_RETRIES = 3;
     private static final Duration MIN_BORROW_DELAY = Duration.ofMillis(50);
     private static final Duration FOREVER = Duration.ofMillis(Long.MAX_VALUE);
@@ -220,20 +220,5 @@ public class ReactorRabbitMQChannelPool implements ChannelPool, Startable {
         borrowedChannels.forEach(channel -> getChannelCloseHandler().accept(SignalType.ON_NEXT, channel));
         borrowedChannels.clear();
         pool.close();
-    }
-
-    public boolean tryChannel() {
-        Channel channel = null;
-        try {
-            channel = borrow();
-            return channel.isOpen();
-        } catch (Throwable t) {
-            return false;
-        } finally {
-            if (channel != null) {
-                borrowedChannels.remove(channel);
-                pool.returnObject(channel);
-            }
-        }
     }
 }

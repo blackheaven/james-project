@@ -53,7 +53,7 @@ class RabbitMQWorkQueuePersistenceTest {
     void setUp() {
         worker = spy(new ImmediateWorker());
         serializer = JsonTaskSerializer.of(TestTaskDTOModules.COMPLETED_TASK_MODULE, TestTaskDTOModules.MEMORY_REFERENCE_TASK_MODULE.apply(new MemoryReferenceTaskStore()));
-        testee = new RabbitMQWorkQueue(worker, rabbitMQExtension.getRabbitChannelPool(), serializer);
+        testee = new RabbitMQWorkQueue(worker, rabbitMQExtension.getSender(), rabbitMQExtension.getReceiverProvider(), serializer);
         //declare the queue but do not start consuming from it
         testee.declareQueue();
     }
@@ -93,7 +93,7 @@ class RabbitMQWorkQueuePersistenceTest {
 
     private void startNewWorkqueue() {
         worker = spy(new ImmediateWorker());
-        testee = new RabbitMQWorkQueue(worker, rabbitMQExtension.getRabbitChannelPool(), serializer);
+        testee = new RabbitMQWorkQueue(worker, rabbitMQExtension.getSender(), rabbitMQExtension.getReceiverProvider(), serializer);
         testee.start();
     }
 
@@ -102,6 +102,5 @@ class RabbitMQWorkQueuePersistenceTest {
         rabbitMQExtension.getRabbitMQ().startApp();
         //wait until healthcheck is ok
         await().atMost(FIVE_SECONDS).until(() -> rabbitMQExtension.managementAPI().listQueues().size() > 0);
-        rabbitMQExtension.getRabbitChannelPool().start();
     }
 }

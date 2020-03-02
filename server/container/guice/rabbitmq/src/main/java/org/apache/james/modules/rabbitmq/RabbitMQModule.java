@@ -29,6 +29,8 @@ import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.rabbitmq.RabbitMQConfiguration;
 import org.apache.james.backends.rabbitmq.RabbitMQHealthCheck;
 import org.apache.james.backends.rabbitmq.ReactorRabbitMQChannelPool;
+import org.apache.james.backends.rabbitmq.ReceiverProvider;
+import org.apache.james.backends.rabbitmq.SimpleConnectionPool;
 import org.apache.james.core.healthcheck.HealthCheck;
 import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.eventstore.cassandra.dto.EventDTO;
@@ -62,6 +64,10 @@ import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.multibindings.ProvidesIntoSet;
+
+import reactor.rabbitmq.RabbitFlux;
+import reactor.rabbitmq.ReceiverOptions;
+import reactor.rabbitmq.Sender;
 
 public class RabbitMQModule extends AbstractModule {
 
@@ -148,5 +154,17 @@ public class RabbitMQModule extends AbstractModule {
         return InitilizationOperationBuilder
             .forClass(ReactorRabbitMQChannelPool.class)
             .init(instance::start);
+    }
+
+    @Provides
+    @Singleton
+    public Sender provideRabbitMQSender(ReactorRabbitMQChannelPool channelPool) {
+        return channelPool.getSender();
+    }
+
+    @Provides
+    @Singleton
+    public ReceiverProvider provideRabbitMQMailReceiver(SimpleConnectionPool simpleConnectionPool) {
+        return () -> RabbitFlux.createReceiver(new ReceiverOptions().connectionMono(simpleConnectionPool.getResilientConnection()));
     }
 }
