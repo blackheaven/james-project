@@ -24,9 +24,11 @@ import static org.apache.james.backends.rabbitmq.Constants.DURABLE;
 import static org.apache.james.backends.rabbitmq.Constants.EXCLUSIVE;
 import static org.apache.james.backends.rabbitmq.Constants.NO_ARGUMENTS;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.EVENT_BUS_ID;
+import static org.apache.james.mailbox.events.RetryBackoffConfiguration.FOREVER;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.james.backends.rabbitmq.ReceiverProvider;
 import org.apache.james.event.json.EventSerializer;
@@ -37,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
+import com.google.common.annotations.VisibleForTesting;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Delivery;
 
@@ -60,9 +63,14 @@ class KeyRegistrationHandler {
     private final RegistrationQueueName registrationQueue;
     private final RegistrationBinder registrationBinder;
     private final MailboxListenerExecutor mailboxListenerExecutor;
+    private final RetryBackoffConfiguration retryBackoff;
     private Optional<Disposable> receiverSubscriber;
+    private AtomicBoolean registrationQueueInitialized = new AtomicBoolean(false);
 
-    KeyRegistrationHandler(EventBusId eventBusId, EventSerializer eventSerializer, Sender sender, ReceiverProvider receiverProvider, RoutingKeyConverter routingKeyConverter, LocalListenerRegistry localListenerRegistry, MailboxListenerExecutor mailboxListenerExecutor) {
+    KeyRegistrationHandler(EventBusId eventBusId, EventSerializer eventSerializer,
+                           Sender sender, ReceiverProvider receiverProvider,
+                           RoutingKeyConverter routingKeyConverter, LocalListenerRegistry localListenerRegistry,
+                           MailboxListenerExecutor mailboxListenerExecutor, RetryBackoffConfiguration retryBackoff) {
         this.eventBusId = eventBusId;
         this.eventSerializer = eventSerializer;
         this.sender = sender;
@@ -70,19 +78,15 @@ class KeyRegistrationHandler {
         this.localListenerRegistry = localListenerRegistry;
         this.receiver = receiverProvider.createReceiver();
         this.mailboxListenerExecutor = mailboxListenerExecutor;
+        this.retryBackoff = retryBackoff;
         this.registrationQueue = new RegistrationQueueName();
         this.registrationBinder = new RegistrationBinder(sender, registrationQueue);
+        this.receiverSubscriber = Optional.empty();
+
     }
 
     void start() {
-        sender.declareQueue(QueueSpecification.queue(eventBusId.asString())
-            .durable(DURABLE)
-            .exclusive(!EXCLUSIVE)
-            .autoDelete(!AUTO_DELETE)
-            .arguments(NO_ARGUMENTS))
-            .map(AMQP.Queue.DeclareOk::getQueue)
-            .doOnSuccess(registrationQueue::initialize)
-            .block();
+        declareQueue();
 
         receiverSubscriber = Optional.of(receiver.consumeAutoAck(registrationQueue.asString(), new ConsumeOptions().qos(EventBus.EXECUTION_RATE))
             .subscribeOn(Schedulers.parallel())
@@ -90,21 +94,45 @@ class KeyRegistrationHandler {
             .subscribe());
     }
 
+    @VisibleForTesting
+    void declareQueue() {
+        sender.declareQueue(QueueSpecification.queue(eventBusId.asString())
+            .durable(DURABLE)
+            .exclusive(!EXCLUSIVE)
+            .autoDelete(!AUTO_DELETE)
+            .arguments(NO_ARGUMENTS))
+            .map(AMQP.Queue.DeclareOk::getQueue)
+            .retryBackoff(retryBackoff.getMaxRetries(), retryBackoff.getFirstBackoff(), FOREVER, retryBackoff.getJitterFactor())
+            .doOnSuccess(queueName -> {
+                if (!registrationQueueInitialized.get()) {
+                    registrationQueue.initialize(queueName);
+                    registrationQueueInitialized.set(true);
+                }
+            })
+            .block();
+    }
+
     void stop() {
         receiverSubscriber.filter(subscriber -> !subscriber.isDisposed())
             .ifPresent(Disposable::dispose);
         receiver.close();
-        sender.delete(QueueSpecification.queue(registrationQueue.asString())).block();
+        sender.delete(QueueSpecification.queue(registrationQueue.asString()))
+            .retryBackoff(retryBackoff.getMaxRetries(), retryBackoff.getFirstBackoff(), FOREVER, retryBackoff.getJitterFactor(), Schedulers.elastic())
+            .block();
     }
 
     Registration register(MailboxListener listener, RegistrationKey key) {
         LocalListenerRegistry.LocalRegistration registration = localListenerRegistry.addListener(key, listener);
         if (registration.isFirstListener()) {
-            registrationBinder.bind(key).block();
+            registrationBinder.bind(key)
+                .retryBackoff(retryBackoff.getMaxRetries(), retryBackoff.getFirstBackoff(), FOREVER, retryBackoff.getJitterFactor(), Schedulers.elastic())
+                .block();
         }
         return new KeyRegistration(() -> {
             if (registration.unregister().lastListenerRemoved()) {
-                registrationBinder.unbind(key).block();
+                registrationBinder.unbind(key)
+                    .retryBackoff(retryBackoff.getMaxRetries(), retryBackoff.getFirstBackoff(), FOREVER, retryBackoff.getJitterFactor(), Schedulers.elastic())
+                    .block();
             }
         });
     }

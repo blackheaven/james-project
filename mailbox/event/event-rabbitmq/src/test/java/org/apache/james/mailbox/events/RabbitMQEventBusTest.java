@@ -32,6 +32,7 @@ import static org.apache.james.mailbox.events.EventBusTestFixture.GROUP_A;
 import static org.apache.james.mailbox.events.EventBusTestFixture.KEY_1;
 import static org.apache.james.mailbox.events.EventBusTestFixture.NO_KEYS;
 import static org.apache.james.mailbox.events.EventBusTestFixture.WAIT_CONDITION;
+import static org.apache.james.mailbox.events.EventBusTestFixture.newAsyncListener;
 import static org.apache.james.mailbox.events.EventBusTestFixture.newListener;
 import static org.apache.james.mailbox.events.GroupRegistration.WorkQueueName.MAILBOX_EVENT_WORK_QUEUE_PREFIX;
 import static org.apache.james.mailbox.events.RabbitMQEventBus.MAILBOX_EVENT;
@@ -75,6 +76,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.stubbing.Answer;
 
+import reactor.core.publisher.Mono;
 import reactor.rabbitmq.BindingSpecification;
 import reactor.rabbitmq.ExchangeSpecification;
 import reactor.rabbitmq.QueueSpecification;
@@ -91,6 +93,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
     private RabbitMQEventBus eventBus;
     private RabbitMQEventBus eventBus2;
     private RabbitMQEventBus eventBus3;
+    private RabbitMQEventBus eventBusWithKeyHandlerNotStarted;
     private EventSerializer eventSerializer;
     private RoutingKeyConverter routingKeyConverter;
     private MemoryEventDeadLetters memoryEventDeadLetters;
@@ -106,10 +109,12 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         eventBus = newEventBus();
         eventBus2 = newEventBus();
         eventBus3 = newEventBus();
+        eventBusWithKeyHandlerNotStarted = newEventBus();
 
         eventBus.start();
         eventBus2.start();
         eventBus3.start();
+        eventBusWithKeyHandlerNotStarted.startWithoutStartingKeyRegistrationHandler();
     }
 
     @AfterEach
@@ -117,6 +122,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
         eventBus.stop();
         eventBus2.stop();
         eventBus3.stop();
+        eventBusWithKeyHandlerNotStarted.stop();
         ALL_GROUPS.stream()
             .map(GroupRegistration.WorkQueueName::of)
             .forEach(queueName -> rabbitMQExtension.getSender().delete(QueueSpecification.queue(queueName.asString())).block());
@@ -361,7 +367,6 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             }
 
             @Test
-            @Disabled("To fix in JAMES-3082 make message persistent in event bus")
             void dispatchShouldWorkAfterRestartForOldRegistration() throws Exception {
                 eventBus.start();
                 MailboxListener listener = newListener();
@@ -374,7 +379,6 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             }
 
             @Test
-            @Disabled("To fix in JAMES-3082 make message persistent in event bus")
             void dispatchShouldWorkAfterRestartForNewRegistration() throws Exception {
                 eventBus.start();
                 MailboxListener listener = newListener();
@@ -390,7 +394,6 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             }
 
             @Test
-            @Disabled("To fix in JAMES-3082 make message persistent in event bus")
             void redeliverShouldWorkAfterRestartForOldRegistration() throws Exception {
                 eventBus.start();
                 MailboxListener listener = newListener();
@@ -403,7 +406,6 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             }
 
             @Test
-            @Disabled("To fix in JAMES-3082 make message persistent in event bus")
             void redeliverShouldWorkAfterRestartForNewRegistration() throws Exception {
                 eventBus.start();
                 MailboxListener listener = newListener();
@@ -417,7 +419,6 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             }
 
             @Test
-            @Disabled("To fix in JAMES-3082 make message persistent in event bus")
             void dispatchShouldWorkAfterRestartForOldKeyRegistration() throws Exception {
                 eventBus.start();
                 MailboxListener listener = newListener();
@@ -430,7 +431,21 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             }
 
             @Test
-            @Disabled("To fix in JAMES-3082 make message persistent in event bus")
+            void dispatchedMessagesShouldSurviveARabbitMQRestart() throws Exception {
+                eventBusWithKeyHandlerNotStarted.startWithoutStartingKeyRegistrationHandler();
+                MailboxListener listener = newAsyncListener();
+                eventBusWithKeyHandlerNotStarted.register(listener, KEY_1);
+                Mono<Void> dispatch = eventBusWithKeyHandlerNotStarted.dispatch(EVENT, KEY_1);
+                dispatch.block();
+
+                rabbitMQExtension.getRabbitMQ().restart();
+
+                eventBusWithKeyHandlerNotStarted.startKeyRegistrationHandler();
+
+                assertThatListenerReceiveOneEvent(listener);
+            }
+
+            @Test
             void dispatchShouldWorkAfterRestartForNewKeyRegistration() throws Exception {
                 eventBus.start();
                 MailboxListener listener = newListener();
@@ -612,6 +627,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
                 eventBus.stop();
                 eventBus2.stop();
                 eventBus3.stop();
+                eventBusWithKeyHandlerNotStarted.stop();
 
                 assertThat(rabbitManagementAPI.listExchanges())
                     .anySatisfy(exchange -> assertThat(exchange.getName()).isEqualTo(MAILBOX_EVENT_EXCHANGE_NAME));
@@ -624,6 +640,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
                 eventBus.stop();
                 eventBus2.stop();
                 eventBus3.stop();
+                eventBusWithKeyHandlerNotStarted.stop();
 
                 assertThat(rabbitManagementAPI.listQueues())
                     .anySatisfy(queue -> assertThat(queue.getName()).contains(GroupA.class.getName()));
@@ -634,6 +651,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
                 eventBus.stop();
                 eventBus2.stop();
                 eventBus3.stop();
+                eventBusWithKeyHandlerNotStarted.stop();
 
                 assertThat(rabbitManagementAPI.listQueues())
                     .filteredOn(queue -> !queue.getName().startsWith(MAILBOX_EVENT_WORK_QUEUE_PREFIX))
