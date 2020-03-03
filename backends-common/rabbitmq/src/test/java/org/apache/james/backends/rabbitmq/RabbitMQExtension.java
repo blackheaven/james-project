@@ -142,6 +142,10 @@ public class RabbitMQExtension implements BeforeAllCallback, BeforeEachCallback,
         return rabbitMQ;
     }
 
+    public ReactorRabbitMQChannelPool getRabbitChannelPool() {
+        return channelPool;
+    }
+
     public Sender getSender() {
         return channelPool.getSender();
     }

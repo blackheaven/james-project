@@ -36,7 +36,7 @@ class RabbitMQHealthCheckTest {
 
     @BeforeEach
     void setUp() {
-        healthCheck = new RabbitMQHealthCheck(rabbitMQExtension.getConnectionPool());
+        healthCheck = new RabbitMQHealthCheck(rabbitMQExtension.getConnectionPool(), rabbitMQExtension.getRabbitChannelPool());
     }
 
     @AfterEach
