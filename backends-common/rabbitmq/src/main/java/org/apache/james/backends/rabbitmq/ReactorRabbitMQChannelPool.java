@@ -221,4 +221,19 @@ public class ReactorRabbitMQChannelPool implements ChannelPool, Startable {
         borrowedChannels.clear();
         pool.close();
     }
+
+    public boolean tryChannel() {
+        Channel channel = null;
+        try {
+            channel = borrow();
+            return channel.isOpen();
+        } catch (Throwable t) {
+            return false;
+        } finally {
+            if (channel != null) {
+                borrowedChannels.remove(channel);
+                pool.returnObject(channel);
+            }
+        }
+    }
 }

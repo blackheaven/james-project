@@ -32,10 +32,12 @@ public class RabbitMQHealthCheck implements HealthCheck {
     private static final ComponentName COMPONENT_NAME = new ComponentName("RabbitMQ backend");
 
     private final SimpleConnectionPool connectionPool;
+    private final ReactorRabbitMQChannelPool rabbitChannelPoolImpl;
 
     @Inject
-    public RabbitMQHealthCheck(SimpleConnectionPool connectionPool) {
+    public RabbitMQHealthCheck(SimpleConnectionPool connectionPool, ReactorRabbitMQChannelPool rabbitChannelPoolImpl) {
         this.connectionPool = connectionPool;
+        this.rabbitChannelPoolImpl = rabbitChannelPoolImpl;
     }
 
     @Override
@@ -46,7 +48,7 @@ public class RabbitMQHealthCheck implements HealthCheck {
     @Override
     public Result check() {
         try {
-            if (connectionPool.tryConnection()) {
+            if (connectionPool.tryConnection() && rabbitChannelPoolImpl.tryChannel()) {
                 return Result.healthy(COMPONENT_NAME);
             } else {
                 String message = "The created connection was not opened";
