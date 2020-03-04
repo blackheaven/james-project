@@ -35,6 +35,9 @@ public class RecipientRewriteTableConfiguration {
     public static final int DEFAULT_ENABLED_MAPPING_LIMIT = 10;
     public static final int DISABLED_MAPPING_LIMIT = 0;
 
+    public static final RecipientRewriteTableConfiguration DEFAULT_ENABLED = new RecipientRewriteTableConfiguration(RECURSIVE_MAPPING_ENABLE, DEFAULT_ENABLED_MAPPING_LIMIT);
+    public static final RecipientRewriteTableConfiguration DISABLED = new RecipientRewriteTableConfiguration(!RECURSIVE_MAPPING_ENABLE, DISABLED_MAPPING_LIMIT);
+
     // The maximum mappings which will process before throwing exception
     private final int mappingLimit;
 
