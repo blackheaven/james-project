@@ -21,8 +21,6 @@ package org.apache.james.backends.cassandra.utils;
 
 import java.util.Optional;
 
-import javax.inject.Inject;
-
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -37,7 +35,6 @@ public class CassandraAsyncExecutor {
 
     private final Session session;
 
-    @Inject
     public CassandraAsyncExecutor(Session session) {
         this.session = session;
     }

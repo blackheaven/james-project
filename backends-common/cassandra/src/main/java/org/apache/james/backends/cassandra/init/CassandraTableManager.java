@@ -19,8 +19,6 @@
 
 package org.apache.james.backends.cassandra.init;
 
-import javax.inject.Inject;
-
 import org.apache.james.backends.cassandra.components.CassandraModule;
 import org.apache.james.backends.cassandra.components.CassandraTable;
 import org.apache.james.backends.cassandra.components.CassandraTable.InitializationStatus;
@@ -39,7 +37,6 @@ public class CassandraTableManager {
     private final Session session;
     private final CassandraModule module;
 
-    @Inject
     public CassandraTableManager(CassandraModule module, Session session) {
         this.session = session;
         this.module = module;
