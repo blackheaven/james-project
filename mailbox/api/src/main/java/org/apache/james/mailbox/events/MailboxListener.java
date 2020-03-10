@@ -58,7 +58,7 @@ import com.google.common.collect.ImmutableSet;
 public interface MailboxListener {
 
     class MaxQueueSize {
-        public static final MaxQueueSize EMPTY = new MaxQueueSize(0);
+        public static final MaxQueueSize NONE = new MaxQueueSize(0);
 
         public static MaxQueueSize of(int size) {
             Preconditions.checkArgument(size > 0, "MaxQueueSize should be strictly positive, '{}' given", size);
@@ -118,7 +118,7 @@ public interface MailboxListener {
     }
 
     default MaxQueueSize getMaxQueueSize() {
-        return MaxQueueSize.EMPTY;
+        return MaxQueueSize.NONE;
     }
 
     /**

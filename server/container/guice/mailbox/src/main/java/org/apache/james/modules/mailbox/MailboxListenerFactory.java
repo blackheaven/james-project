@@ -94,7 +94,7 @@ public class MailboxListenerFactory {
                 binder -> binder.bind(new TypeLiteral<HierarchicalConfiguration<ImmutableNode>>() {})
                     .toInstance(configuration.orElse(new BaseHierarchicalConfiguration())),
                 binder -> binder.bind(MailboxListener.MaxQueueSize.class)
-                    .toInstance(maxQueueSize.orElse(MailboxListener.MaxQueueSize.EMPTY)));
+                    .toInstance(maxQueueSize.orElse(MailboxListener.MaxQueueSize.NONE)));
 
             return genericLoader.<MailboxListener>withChildModule(childModule)
                 .instantiate(clazz.get());
