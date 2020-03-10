@@ -78,6 +78,7 @@ public class MailboxListenersLoaderImpl implements Configurable, MailboxListener
             MailboxListener mailboxListener = mailboxListenerFactory.newInstance()
                 .withConfiguration(configuration.getConfiguration())
                 .withExecutionMode(configuration.isAsync().map(this::getExecutionMode))
+                .withMaxQueueSize(configuration.getMaxQueueSize())
                 .clazz(listenerClass)
                 .build();
 

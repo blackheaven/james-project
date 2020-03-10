@@ -41,12 +41,14 @@ public class MailboxListenerFactory {
         private Optional<ClassName> clazz;
         private Optional<MailboxListener.ExecutionMode> executionMode;
         private Optional<HierarchicalConfiguration<ImmutableNode>> configuration;
+        private Optional<MailboxListener.MaxQueueSize> maxQueueSize;
 
         public MailboxListenerBuilder(GuiceGenericLoader genericLoader) {
             this.genericLoader = genericLoader;
             this.clazz = Optional.empty();
             this.executionMode = Optional.empty();
             this.configuration = Optional.empty();
+            this.maxQueueSize = Optional.empty();
         }
 
         public MailboxListenerBuilder withExecutionMode(MailboxListener.ExecutionMode executionMode) {
@@ -59,6 +61,11 @@ public class MailboxListenerFactory {
             return this;
         }
 
+        public MailboxListenerBuilder withMaxQueueSize(MailboxListener.MaxQueueSize maxQueueSize) {
+            this.maxQueueSize = Optional.of(maxQueueSize);
+            return this;
+        }
+
         public MailboxListenerBuilder withExecutionMode(Optional<MailboxListener.ExecutionMode> executionMode) {
             executionMode.ifPresent(this::withExecutionMode);
             return this;
@@ -66,6 +73,11 @@ public class MailboxListenerFactory {
 
         public MailboxListenerBuilder withConfiguration(Optional<HierarchicalConfiguration<ImmutableNode>> configuration) {
             configuration.ifPresent(this::withConfiguration);
+            return this;
+        }
+
+        public MailboxListenerBuilder withMaxQueueSize(Optional<MailboxListener.MaxQueueSize> maxQueueSize) {
+            maxQueueSize.ifPresent(this::withMaxQueueSize);
             return this;
         }
 
@@ -80,7 +92,9 @@ public class MailboxListenerFactory {
                 binder -> binder.bind(MailboxListener.ExecutionMode.class)
                     .toInstance(executionMode.orElse(MailboxListener.ExecutionMode.SYNCHRONOUS)),
                 binder -> binder.bind(new TypeLiteral<HierarchicalConfiguration<ImmutableNode>>() {})
-                    .toInstance(configuration.orElse(new BaseHierarchicalConfiguration())));
+                    .toInstance(configuration.orElse(new BaseHierarchicalConfiguration())),
+                binder -> binder.bind(MailboxListener.MaxQueueSize.class)
+                    .toInstance(maxQueueSize.orElse(MailboxListener.MaxQueueSize.EMPTY)));
 
             return genericLoader.<MailboxListener>withChildModule(childModule)
                 .instantiate(clazz.get());

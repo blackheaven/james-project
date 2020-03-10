@@ -37,7 +37,9 @@ import org.apache.james.event.json.EventSerializer;
 import org.apache.james.util.MDCBuilder;
 
 import com.github.fge.lambdas.Throwing;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
@@ -70,6 +72,7 @@ class GroupRegistration implements Registration {
         }
     }
 
+    public static final Function<Integer, ImmutableMap<String, Object>> LIMIT_QUEUE_SIZE = size -> ImmutableMap.of("x-max-length", size);
     static final String RETRY_COUNT = "retry-count";
     static final int DEFAULT_RETRY_COUNT = 0;
 
@@ -120,7 +123,7 @@ class GroupRegistration implements Registration {
                 .durable(DURABLE)
                 .exclusive(!EXCLUSIVE)
                 .autoDelete(!AUTO_DELETE)
-                .arguments(NO_ARGUMENTS)),
+                .arguments(mailboxListener.getMaxQueueSize().asInt().map(LIMIT_QUEUE_SIZE).orElse(NO_ARGUMENTS))),
             sender.bind(BindingSpecification.binding()
                 .exchange(MAILBOX_EVENT_EXCHANGE_NAME)
                 .queue(queueName.asString())

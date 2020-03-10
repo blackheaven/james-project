@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.james.mailbox.events.MailboxListener;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -33,11 +34,12 @@ public class ListenerConfiguration {
         Preconditions.checkState(!Strings.isNullOrEmpty(listenerClass), "class name is mandatory");
         Optional<Boolean> isAsync = Optional.ofNullable(configuration.getBoolean("async", null));
         Optional<String> group = Optional.ofNullable(configuration.getString("group", null));
-        return new ListenerConfiguration(listenerClass, group, extractSubconfiguration(configuration), isAsync);
+        Optional<MailboxListener.MaxQueueSize> maxQueueSize = Optional.ofNullable(configuration.getInteger("maxQueueSize", null)).map(MailboxListener.MaxQueueSize::of);
+        return new ListenerConfiguration(listenerClass, group, extractSubconfiguration(configuration), isAsync, maxQueueSize);
     }
 
     public static ListenerConfiguration forClass(String clazz) {
-        return new ListenerConfiguration(clazz, Optional.empty(), Optional.empty(), Optional.empty());
+        return new ListenerConfiguration(clazz, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     private static Optional<HierarchicalConfiguration<ImmutableNode>> extractSubconfiguration(HierarchicalConfiguration<ImmutableNode> configuration) {
@@ -50,12 +52,18 @@ public class ListenerConfiguration {
     private final Optional<String> group;
     private final Optional<HierarchicalConfiguration<ImmutableNode>> configuration;
     private final Optional<Boolean> isAsync;
+    private final Optional<MailboxListener.MaxQueueSize> maxQueueSize;
 
-    private ListenerConfiguration(String clazz, Optional<String> group, Optional<HierarchicalConfiguration<ImmutableNode>> configuration, Optional<Boolean> isAsync) {
+    private ListenerConfiguration(String clazz,
+                                  Optional<String> group,
+                                  Optional<HierarchicalConfiguration<ImmutableNode>> configuration,
+                                  Optional<Boolean> isAsync,
+                                  Optional<MailboxListener.MaxQueueSize> maxQueueSize) {
         this.clazz = clazz;
         this.group = group;
         this.configuration = configuration;
         this.isAsync = isAsync;
+        this.maxQueueSize = maxQueueSize;
     }
 
     public Optional<String> getGroup() {
@@ -72,5 +80,9 @@ public class ListenerConfiguration {
 
     public Optional<Boolean> isAsync() {
         return isAsync;
+    }
+
+    public Optional<MailboxListener.MaxQueueSize> getMaxQueueSize() {
+        return maxQueueSize;
     }
 }

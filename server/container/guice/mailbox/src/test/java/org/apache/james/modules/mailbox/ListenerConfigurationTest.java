@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
+import org.apache.james.mailbox.events.MailboxListener;
 import org.junit.jupiter.api.Test;
 
 class ListenerConfigurationTest {
@@ -85,5 +86,37 @@ class ListenerConfigurationTest {
         ListenerConfiguration listenerConfiguration = ListenerConfiguration.from(configuration);
 
         assertThat(listenerConfiguration.getGroup()).contains(groupName);
+    }
+
+    @Test
+    void getMaxQueueSizeShouldBeEmptyByDefault() {
+        BaseHierarchicalConfiguration configuration = new BaseHierarchicalConfiguration();
+        configuration.addProperty("class", "MyClassName");
+
+        ListenerConfiguration listenerConfiguration = ListenerConfiguration.from(configuration);
+
+        assertThat(listenerConfiguration.getMaxQueueSize()).isEmpty();
+    }
+
+    @Test
+    void getMaxQueueSizeShouldContainsConfiguredValue() {
+        MailboxListener.MaxQueueSize maxQueueSize = MailboxListener.MaxQueueSize.of(42);
+        BaseHierarchicalConfiguration configuration = new BaseHierarchicalConfiguration();
+        configuration.addProperty("class", "MyClassName");
+        configuration.addProperty("maxQueueSize", maxQueueSize.asInt().get());
+
+        ListenerConfiguration listenerConfiguration = ListenerConfiguration.from(configuration);
+
+        assertThat(listenerConfiguration.getMaxQueueSize()).contains(maxQueueSize);
+    }
+
+    @Test
+    void aNullMaxQueueSizeShouldThrow() {
+        BaseHierarchicalConfiguration configuration = new BaseHierarchicalConfiguration();
+        configuration.addProperty("class", "MyClassName");
+        configuration.addProperty("maxQueueSize", 0);
+
+        assertThatThrownBy(() -> ListenerConfiguration.from(configuration))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 }

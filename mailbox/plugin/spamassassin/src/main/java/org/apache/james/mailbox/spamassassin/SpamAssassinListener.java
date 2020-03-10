@@ -64,14 +64,21 @@ public class SpamAssassinListener implements SpamEventListener {
     private final MailboxManager mailboxManager;
     private final MailboxSessionMapperFactory mapperFactory;
     private final ExecutionMode executionMode;
+    private final MaxQueueSize maxQueueSize;
 
     @Inject
-    public SpamAssassinListener(SpamAssassin spamAssassin, SystemMailboxesProvider systemMailboxesProvider, MailboxManager mailboxManager, MailboxSessionMapperFactory mapperFactory, ExecutionMode executionMode) {
+    public SpamAssassinListener(SpamAssassin spamAssassin,
+                                SystemMailboxesProvider systemMailboxesProvider,
+                                MailboxManager mailboxManager,
+                                MailboxSessionMapperFactory mapperFactory,
+                                ExecutionMode executionMode,
+                                MaxQueueSize maxQueueSize) {
         this.spamAssassin = spamAssassin;
         this.systemMailboxesProvider = systemMailboxesProvider;
         this.mailboxManager = mailboxManager;
         this.mapperFactory = mapperFactory;
         this.executionMode = executionMode;
+        this.maxQueueSize = maxQueueSize;
     }
 
     @Override
@@ -100,6 +107,11 @@ public class SpamAssassinListener implements SpamEventListener {
             MailboxSession session = mailboxManager.createSystemSession(username);
             handleAdded(event, session, (Added) event);
         }
+    }
+
+    @Override
+    public MaxQueueSize getMaxQueueSize() {
+        return maxQueueSize;
     }
 
     private void handleAdded(Event event, MailboxSession session, Added addedEvent) throws MailboxException {

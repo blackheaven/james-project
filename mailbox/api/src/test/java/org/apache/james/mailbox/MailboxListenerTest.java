@@ -68,6 +68,11 @@ class MailboxListenerTest {
     private static final MessageMetaData META_DATA = new MessageMetaData(UID, ModSeq.of(45), new Flags(), 45, new Date(), TestMessageId.of(75));
 
     @Test
+    void maxQueueSizeShouldMatchBeanContract() {
+        EqualsVerifier.forClass(MailboxListener.MaxQueueSize.class).verify();
+    }
+
+    @Test
     void mailboxAddedShouldMatchBeanContract() {
         EqualsVerifier.forClass(MailboxListener.MailboxAdded.class).verify();
     }

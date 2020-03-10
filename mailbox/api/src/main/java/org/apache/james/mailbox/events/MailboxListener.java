@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedMap;
 
 import org.apache.james.core.Username;
@@ -43,6 +44,8 @@ import org.apache.james.mailbox.model.QuotaRoot;
 import org.apache.james.mailbox.model.UpdatedFlags;
 
 import com.github.steveash.guavate.Guavate;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -53,6 +56,48 @@ import com.google.common.collect.ImmutableSet;
  * Note that listeners may be removed asynchronously.
  */
 public interface MailboxListener {
+
+    class MaxQueueSize {
+        public static final MaxQueueSize EMPTY = new MaxQueueSize(0);
+
+        public static MaxQueueSize of(int size) {
+            Preconditions.checkArgument(size > 0, "MaxQueueSize should be strictly positive, '{}' given", size);
+            return new MaxQueueSize(size);
+        }
+
+        private final int size;
+
+        private MaxQueueSize(int size) {
+            this.size = size;
+        }
+
+        public Optional<Integer> asInt() {
+            return Optional.of(size)
+                .filter(givenSize -> givenSize > 0);
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (o instanceof MaxQueueSize) {
+                MaxQueueSize that = (MaxQueueSize) o;
+
+                return Objects.equals(this.size, that.size);
+            }
+            return false;
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hash(size);
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                .add("size", size)
+                .toString();
+        }
+    }
 
     interface GroupMailboxListener extends MailboxListener {
         Group getDefaultGroup();
@@ -70,6 +115,10 @@ public interface MailboxListener {
 
     default boolean isHandling(Event event) {
         return true;
+    }
+
+    default MaxQueueSize getMaxQueueSize() {
+        return MaxQueueSize.EMPTY;
     }
 
     /**
