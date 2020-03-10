@@ -19,15 +19,11 @@
 
 package org.apache.james.backends.es.search;
 
-import java.io.Closeable;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.james.backends.es.ListenerToFuture;
-import org.apache.james.util.streams.Iterators;
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -39,56 +35,11 @@ import org.elasticsearch.search.SearchHit;
 
 import com.github.fge.lambdas.Throwing;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
 public class ScrolledSearch {
-    private static class ScrollIterator implements Iterator<SearchResponse>, Closeable {
-        private final RestHighLevelClient client;
-        private CompletableFuture<SearchResponse> searchResponseFuture;
-
-        ScrollIterator(RestHighLevelClient client, SearchRequest searchRequest) {
-            this.client = client;
-            ListenerToFuture<SearchResponse> listener = new ListenerToFuture<>();
-            client.searchAsync(searchRequest, RequestOptions.DEFAULT, listener);
-
-            this.searchResponseFuture = listener.getFuture();
-        }
-
-        @Override
-        public void close() throws IOException {
-            ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
-            clearScrollRequest.addScrollId(searchResponseFuture.join().getScrollId());
-            client.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
-        }
-
-        @Override
-        public boolean hasNext() {
-            SearchResponse join = searchResponseFuture.join();
-            return !allSearchResponsesConsumed(join);
-        }
-
-        @Override
-        public SearchResponse next() {
-            SearchResponse result = searchResponseFuture.join();
-            ListenerToFuture<SearchResponse> listener = new ListenerToFuture<>();
-            client.scrollAsync(
-                new SearchScrollRequest()
-                    .scrollId(result.getScrollId())
-                    .scroll(TIMEOUT),
-                RequestOptions.DEFAULT,
-                listener);
-            searchResponseFuture = listener.getFuture();
-            return result;
-        }
-
-        public Stream<SearchResponse> stream() {
-            return Iterators.toStream(this)
-                .onClose(Throwing.runnable(this::close));
-        }
-
-        private boolean allSearchResponsesConsumed(SearchResponse searchResponse) {
-            return searchResponse.getHits().getHits().length == 0;
-        }
-    }
-
     private static final TimeValue TIMEOUT = TimeValue.timeValueMinutes(1);
 
     private final RestHighLevelClient client;
@@ -99,14 +50,59 @@ public class ScrolledSearch {
         this.searchRequest = searchRequest;
     }
 
-    public Stream<SearchHit> searchHits() {
+    public Flux<SearchHit> searchHits() {
         return searchResponses()
-            .flatMap(searchResponse -> Arrays.stream(searchResponse.getHits().getHits()));
+            .flatMap(searchResponse -> Flux.fromArray(searchResponse.getHits().getHits()));
     }
 
-    @SuppressWarnings("resource")
-    public Stream<SearchResponse> searchResponses() {
-        return new ScrollIterator(client, searchRequest)
-            .stream();
+    public Flux<SearchResponse> searchResponses() {
+        return ensureClosing(Flux.from(Mono.defer(() -> startScrolling(searchRequest)))
+            .subscribeOn(Schedulers.elastic())
+            .expand(this::nextResponse));
+    }
+
+    private Mono<SearchResponse> startScrolling(SearchRequest searchRequest) {
+        ListenerToFuture<SearchResponse> listener = new ListenerToFuture<>();
+        client.searchAsync(searchRequest, RequestOptions.DEFAULT, listener);
+
+        return Mono.fromFuture(listener.getFuture());
+    }
+
+    public Mono<SearchResponse> nextResponse(SearchResponse previous) {
+        if (allSearchResponsesConsumed(previous)) {
+            return Mono.empty();
+        }
+
+        ListenerToFuture<SearchResponse> listener = new ListenerToFuture<>();
+        client.scrollAsync(
+            new SearchScrollRequest()
+                .scrollId(previous.getScrollId())
+                .scroll(TIMEOUT),
+            RequestOptions.DEFAULT,
+            listener);
+
+        return Mono.fromFuture(listener.getFuture());
+    }
+
+    private boolean allSearchResponsesConsumed(SearchResponse searchResponse) {
+        return searchResponse.getHits().getHits().length == 0;
+    }
+
+    private Flux<SearchResponse> ensureClosing(Flux<SearchResponse> origin) {
+        AtomicReference<SearchResponse> latest = new AtomicReference<>();
+        return origin
+            .doOnNext(latest::set)
+            .doOnTerminate(close(latest));
+    }
+
+    public Runnable close(AtomicReference<SearchResponse> latest) {
+        return () -> Optional.ofNullable(latest.getAndSet(null)).map(Throwing.function(this::clearScroll).sneakyThrow());
+    }
+
+    private boolean clearScroll(SearchResponse current) throws IOException {
+        ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+        clearScrollRequest.addScrollId(current.getScrollId());
+
+        return client.clearScroll(clearScrollRequest, RequestOptions.DEFAULT).isSucceeded();
     }
 }
