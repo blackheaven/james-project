@@ -22,9 +22,7 @@ package org.apache.james.quota.search.elasticsearch;
 import static org.apache.james.quota.search.elasticsearch.json.JsonMessageConstants.USER;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.apache.james.backends.es.AliasName;
 import org.apache.james.backends.es.NodeMappingFactory;
@@ -44,6 +42,8 @@ import org.elasticsearch.search.sort.SortOrder;
 
 import com.github.steveash.guavate.Guavate;
 
+import reactor.core.publisher.Flux;
+
 public class ElasticSearchQuotaSearcher implements QuotaSearcher {
     private static final TimeValue TIMEOUT = TimeValue.timeValueMinutes(1);
 
@@ -60,18 +60,17 @@ public class ElasticSearchQuotaSearcher implements QuotaSearcher {
     @Override
     public List<Username> search(QuotaQuery query) {
         try {
-            try (Stream<SearchHit> searchHits = searchHits(query)) {
-                return searchHits
-                    .map(SearchHit::getId)
-                    .map(Username::of)
-                    .collect(Guavate.toImmutableList());
-            }
+            return searchHits(query)
+                .map(SearchHit::getId)
+                .map(Username::of)
+                .collect(Guavate.toImmutableList())
+                .block();
         } catch (IOException e) {
             throw new RuntimeException("Unexpected exception while executing " + query, e);
         }
     }
 
-    private Stream<SearchHit> searchHits(QuotaQuery query) throws IOException {
+    private Flux<SearchHit> searchHits(QuotaQuery query) throws IOException {
         if (query.getLimit().isLimited()) {
             return executeSingleSearch(query);
         } else {
@@ -79,7 +78,7 @@ public class ElasticSearchQuotaSearcher implements QuotaSearcher {
         }
     }
 
-    private Stream<SearchHit> executeSingleSearch(QuotaQuery query) throws IOException {
+    private Flux<SearchHit> executeSingleSearch(QuotaQuery query) throws IOException {
         SearchSourceBuilder searchSourceBuilder = searchSourceBuilder(query)
             .from(query.getOffset().getValue());
         query.getLimit().getValue()
@@ -89,12 +88,12 @@ public class ElasticSearchQuotaSearcher implements QuotaSearcher {
             .types(NodeMappingFactory.DEFAULT_MAPPING_NAME)
             .source(searchSourceBuilder);
 
-        return Arrays.stream(client.search(searchRequest, RequestOptions.DEFAULT)
+        return Flux.fromArray(client.search(searchRequest, RequestOptions.DEFAULT)
             .getHits()
             .getHits());
     }
 
-    private Stream<SearchHit> executeScrolledSearch(QuotaQuery query) {
+    private Flux<SearchHit> executeScrolledSearch(QuotaQuery query) {
         return new ScrolledSearch(client,
             new SearchRequest(readAlias.getValue())
                 .types(NodeMappingFactory.DEFAULT_MAPPING_NAME)

@@ -52,7 +52,6 @@ import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
-import org.apache.james.util.OptionalUtils;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,7 +111,8 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
 
         return searcher
             .search(ImmutableList.of(mailbox.getMailboxId()), searchQuery, noLimit)
-            .map(SearchResult::getMessageUid);
+            .map(SearchResult::getMessageUid)
+            .toStream();
     }
     
     @Override
@@ -123,15 +123,15 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
             return ImmutableList.of();
         }
 
-        try (Stream<SearchResult> searchResults = searcher.search(mailboxIds, searchQuery, Optional.empty())) {
-            return searchResults
-                .peek(this::logIfNoMessageId)
-                .map(SearchResult::getMessageId)
-                .flatMap(OptionalUtils::toStream)
-                .distinct()
-                .limit(limit)
-                .collect(Guavate.toImmutableList());
-        }
+        return searcher.search(mailboxIds, searchQuery, Optional.empty())
+            .doOnNext(this::logIfNoMessageId)
+            .map(SearchResult::getMessageId)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .distinct()
+            .take(limit)
+            .collect(Guavate.toImmutableList())
+            .block();
     }
 
     @Override
