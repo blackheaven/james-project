@@ -60,7 +60,7 @@
                      Please note that a <code>spamassassin.properties</code> file is needed.<br/>
                      This mailet is asynchronous by default, but this behaviour can be overridden by the <b>async</b>
                      configuration property.
-                     Additionally, a <b>maxQueueSize</b> parameter can be set in order to limit the waiting list.
+                     Additionally, only for <code>SpamAssassinListener</code>, a <b>maxQueueSize</b> parameter can be set in order to limit the waiting list.
                      Once this number is reached, older messages will be dropped.
                  </li>
                  <li><code>org.apache.james.mailbox.cassandra.MailboxOperationLoggingListener</code>:

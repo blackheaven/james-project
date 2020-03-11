@@ -563,7 +563,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
             @Test
             void stopShouldNotDeleteGroupRegistrationWorkQueue() {
                 eventBus.start();
-                eventBus.register(mock(MailboxListener.class), GROUP_A);
+                eventBus.register(newListener(), GROUP_A);
                 eventBus.stop();
 
                 assertThat(rabbitManagementAPI.listQueues())
@@ -655,7 +655,7 @@ class RabbitMQEventBusTest implements GroupContract.SingleEventBusGroupContract,
 
             @Test
             void multipleEventBusStopShouldNotDeleteGroupRegistrationWorkQueue() {
-                eventBus.register(mock(MailboxListener.class), GROUP_A);
+                eventBus.register(newListener(), GROUP_A);
 
                 eventBus.stop();
                 eventBus2.stop();

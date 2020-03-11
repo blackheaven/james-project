@@ -111,7 +111,7 @@ class ListenerConfigurationTest {
     }
 
     @Test
-    void aNullMaxQueueSizeShouldThrow() {
+    void zeroMaxQueueSizeShouldThrow() {
         BaseHierarchicalConfiguration configuration = new BaseHierarchicalConfiguration();
         configuration.addProperty("class", "MyClassName");
         configuration.addProperty("maxQueueSize", 0);

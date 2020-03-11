@@ -57,29 +57,34 @@ import com.google.common.collect.ImmutableSet;
  */
 public interface MailboxListener {
 
-    class MaxQueueSize {
-        public static final MaxQueueSize NONE = new MaxQueueSize(0);
+    interface MaxQueueSize {
+        UnlimitedMaxQueueSize NONE = new UnlimitedMaxQueueSize();
 
-        public static MaxQueueSize of(int size) {
-            Preconditions.checkArgument(size > 0, "MaxQueueSize should be strictly positive, '{}' given", size);
-            return new MaxQueueSize(size);
+        static LimitedMaxQueueSize of(int size) {
+            return new LimitedMaxQueueSize(size);
         }
+
+        Optional<Integer> asInt();
+    }
+
+    class LimitedMaxQueueSize implements MaxQueueSize {
 
         private final int size;
 
-        private MaxQueueSize(int size) {
+        private LimitedMaxQueueSize(int size) {
+            Preconditions.checkArgument(size > 0, "MaxQueueSize should be strictly positive, '{}' given", size);
             this.size = size;
         }
 
+        @Override
         public Optional<Integer> asInt() {
-            return Optional.of(size)
-                .filter(givenSize -> givenSize > 0);
+            return Optional.of(size);
         }
 
         @Override
         public final boolean equals(Object o) {
-            if (o instanceof MaxQueueSize) {
-                MaxQueueSize that = (MaxQueueSize) o;
+            if (o instanceof LimitedMaxQueueSize) {
+                LimitedMaxQueueSize that = (LimitedMaxQueueSize) o;
 
                 return Objects.equals(this.size, that.size);
             }
@@ -95,6 +100,25 @@ public interface MailboxListener {
         public String toString() {
             return MoreObjects.toStringHelper(this)
                 .add("size", size)
+                .toString();
+        }
+    }
+
+    class UnlimitedMaxQueueSize implements MaxQueueSize {
+
+        @Override
+        public Optional<Integer> asInt() {
+            return Optional.empty();
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            return o instanceof UnlimitedMaxQueueSize;
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
                 .toString();
         }
     }

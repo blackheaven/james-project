@@ -123,6 +123,7 @@ public interface EventBusTestFixture {
         MailboxListener listener = mock(MailboxListener.class);
         when(listener.getExecutionMode()).thenReturn(MailboxListener.ExecutionMode.SYNCHRONOUS);
         when(listener.isHandling(any(MailboxListener.MailboxAdded.class))).thenReturn(true);
+        when(listener.getMaxQueueSize()).thenReturn(MailboxListener.MaxQueueSize.NONE);
         return listener;
     }
 
