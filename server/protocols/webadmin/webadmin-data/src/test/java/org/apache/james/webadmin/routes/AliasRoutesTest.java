@@ -455,7 +455,7 @@ class AliasRoutesTest {
 
             Map<String, Object> errors = when()
                 .put("bob@not-managed-domain.tld" + SEPARATOR + "sources" + SEPARATOR + BOB)
-                .then()
+            .then()
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .contentType(ContentType.JSON)
                 .extract()
