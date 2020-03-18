@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.james.protocols.smtp.SMTPSession;
 import org.apache.james.protocols.smtp.hook.HookReturnCode;
@@ -36,33 +37,32 @@ public class MaxUnknownCmdHandlerTest {
     @Test
     public void testRejectAndClose() throws Exception {
         SMTPSession session = new BaseFakeSMTPSession() {
-            private final HashMap<String,Object> map = new HashMap<>();
+            private final HashMap<AttachmentKey<?>, Object> map = new HashMap<>();
 
             @Override
-            public Map<String,Object> getState() {
+            public Map<AttachmentKey<?>, Object> getState() {
                 return map;
             }
 
             @Override
-            public Object setAttachment(String key, Object value, State state) {
+            public <T> Optional<T> setAttachment(AttachmentKey<T> key, T value, State state) {
                 if (state == State.Connection) {
                     throw new UnsupportedOperationException();
-
                 } else {
                     if (value == null) {
-                        return map.remove(key);
+                        return key.convert(map.remove(key));
                     } else {
-                        return map.put(key, value);
+                        return key.convert(map.put(key, value));
                     }
                 }
             }
 
             @Override
-            public Object getAttachment(String key, State state) {
+            public <T> Optional<T> getAttachment(AttachmentKey<T> key, State state) {
                 if (state == State.Connection) {
                     throw new UnsupportedOperationException();
                 } else {
-                    return map.get(key);
+                    return key.convert(map.get(key));
                 }
             }
         };

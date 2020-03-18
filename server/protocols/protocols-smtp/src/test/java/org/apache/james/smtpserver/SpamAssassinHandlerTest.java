@@ -22,6 +22,7 @@ import static org.apache.james.spamassassin.SpamAssassinResult.STATUS_MAIL;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -59,36 +60,36 @@ public class SpamAssassinHandlerTest {
 
         return new BaseFakeSMTPSession() {
 
-            private final HashMap<String, Object> sstate = new HashMap<>();
-            private final HashMap<String, Object> connectionState = new HashMap<>();
+            private final HashMap<AttachmentKey<?>, Object> sstate = new HashMap<>();
+            private final HashMap<AttachmentKey<?>, Object> connectionState = new HashMap<>();
             private boolean relayingAllowed;
 
             @Override
-            public Object setAttachment(String key, Object value, State state) {
+            public <T> Optional<T> setAttachment(AttachmentKey<T> key, T value, State state) {
                 if (state == State.Connection) {
                     if (value == null) {
-                        return connectionState.remove(key);
+                        return key.convert(connectionState.remove(key));
                     }
-                    return connectionState.put(key, value);
+                    return key.convert(connectionState.put(key, value));
                 } else {
                     if (value == null) {
-                        return sstate.remove(key);
+                        return key.convert(sstate.remove(key));
                     }
-                    return sstate.put(key, value);
+                    return key.convert(sstate.put(key, value));
                 }
             }
 
             @Override
-            public Object getAttachment(String key, State state) {
+            public <T> Optional<T> getAttachment(AttachmentKey<T> key, State state) {
                 try {
                     sstate.put(SMTPSession.SENDER, MaybeSender.of(new MailAddress("sender@james.apache.org")));
                 } catch (AddressException e) {
                     throw new RuntimeException(e);
                 }
                 if (state == State.Connection) {
-                    return connectionState.get(key);
+                    return key.convert(connectionState.get(key));
                 } else {
-                    return sstate.get(key);
+                    return key.convert(sstate.get(key));
                 }
             }
 

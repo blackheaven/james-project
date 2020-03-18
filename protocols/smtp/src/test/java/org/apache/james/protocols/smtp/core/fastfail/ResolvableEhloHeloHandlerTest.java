@@ -27,6 +27,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.MaybeSender;
@@ -48,8 +49,8 @@ public class ResolvableEhloHeloHandlerTest {
 
         return new BaseFakeSMTPSession() {
 
-            HashMap<String,Object> connectionMap = new HashMap<>();
-            HashMap<String,Object> map = new HashMap<>();
+            HashMap<AttachmentKey<?>, Object> connectionMap = new HashMap<>();
+            HashMap<AttachmentKey<?>, Object> map = new HashMap<>();
 
             @Override
             public boolean isAuthSupported() {
@@ -62,7 +63,7 @@ public class ResolvableEhloHeloHandlerTest {
             }
 
             @Override
-            public Map<String,Object> getConnectionState() {
+            public Map<AttachmentKey<?>, Object> getConnectionState() {
                 return connectionMap;
             }
 
@@ -72,33 +73,33 @@ public class ResolvableEhloHeloHandlerTest {
             }
 
             @Override
-            public Map<String,Object> getState() {
+            public Map<AttachmentKey<?>, Object> getState() {
                 return map;
             }
 
             @Override
-            public Object setAttachment(String key, Object value, State state) {
+            public <T> Optional<T> setAttachment(AttachmentKey<T> key, T value, State state) {
                 if (state == State.Connection) {
                     if (value == null) {
-                        return connectionMap.remove(key);
+                        return key.convert(connectionMap.remove(key));
                     } else {
-                        return connectionMap.put(key, value);
+                        return key.convert(connectionMap.put(key, value));
                     }
                 } else {
                     if (value == null) {
-                        return map.remove(key);
+                        return key.convert(map.remove(key));
                     } else {
-                        return connectionMap.put(key, value);
+                        return key.convert(connectionMap.put(key, value));
                     }
                 }
             }
 
             @Override
-            public Object getAttachment(String key, State state) {
+            public <T> Optional<T> getAttachment(AttachmentKey<T> key, State state) {
                 if (state == State.Connection) {
-                    return connectionMap.get(key);
+                    return key.convert(connectionMap.get(key));
                 } else {
-                    return connectionMap.get(key);
+                    return key.convert(map.get(key));
                 }
             }
 
@@ -126,7 +127,7 @@ public class ResolvableEhloHeloHandlerTest {
         ResolvableEhloHeloHandler handler = createHandler();
         
         handler.doHelo(session, INVALID_HOST);
-        assertThat(session.getAttachment(BAD_EHLO_HELO, Transaction)).withFailMessage("Invalid HELO").isNotNull();
+        assertThat(session.getAttachment(BAD_EHLO_HELO, Transaction)).withFailMessage("Invalid HELO").isPresent();
 
         HookReturnCode result = handler.doRcpt(session, MaybeSender.nullSender(), mailAddress).getResult();
         assertThat(HookReturnCode.deny()).describedAs("Reject").isEqualTo(result);
@@ -140,7 +141,7 @@ public class ResolvableEhloHeloHandlerTest {
 
   
         handler.doHelo(session, VALID_HOST);
-        assertThat(session.getAttachment(BAD_EHLO_HELO, Transaction)).withFailMessage("Valid HELO").isNull();
+        assertThat(session.getAttachment(BAD_EHLO_HELO, Transaction)).withFailMessage("Valid HELO").isEmpty();
 
         HookReturnCode result = handler.doRcpt(session, MaybeSender.nullSender(), mailAddress).getResult();
         assertThat(HookReturnCode.declined()).describedAs("Not reject").isEqualTo(result);
@@ -154,7 +155,7 @@ public class ResolvableEhloHeloHandlerTest {
 
 
         handler.doHelo(session, INVALID_HOST);
-        assertThat(session.getAttachment(BAD_EHLO_HELO, Transaction)).withFailMessage("Value stored").isNotNull();
+        assertThat(session.getAttachment(BAD_EHLO_HELO, Transaction)).withFailMessage("Value stored").isPresent();
 
 
         HookReturnCode result = handler.doRcpt(session, MaybeSender.nullSender(), mailAddress).getResult();
@@ -165,12 +166,12 @@ public class ResolvableEhloHeloHandlerTest {
     @Test
     public void testRejectRelay() throws Exception {
         MailAddress mailAddress = new MailAddress("test@localhost");
-        SMTPSession session = setupMockSession(INVALID_HOST,true,false,null,mailAddress);
+        SMTPSession session = setupMockSession(INVALID_HOST, true, false, null, mailAddress);
         ResolvableEhloHeloHandler handler = createHandler();
 
 
         handler.doHelo(session, INVALID_HOST);
-        assertThat(session.getAttachment(BAD_EHLO_HELO, Transaction)).withFailMessage("Value stored").isNotNull();
+        assertThat(session.getAttachment(BAD_EHLO_HELO, Transaction)).withFailMessage("Value stored").isPresent();
 
 
         HookReturnCode result = handler.doRcpt(session, MaybeSender.nullSender(), mailAddress).getResult();
