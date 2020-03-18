@@ -134,7 +134,7 @@ public class URIRBLHandler implements JamesMessageHook, ProtocolHandler {
             } else {
                 return HookResult.builder()
                     .hookReturnCode(HookReturnCode.deny())
-                    .smtpDescription(DSNStatus.getStatus(DSNStatus.PERMANENT, DSNStatus.SECURITY_OTHER) + " Rejected: message contains domain " + target.get() + " listed by " + uRblServer)
+                    .smtpDescription(DSNStatus.getStatus(DSNStatus.PERMANENT, DSNStatus.SECURITY_OTHER) + " Rejected: message contains domain " + target.orElse("[target not set]") + " listed by " + uRblServer)
                     .build();
             }
 

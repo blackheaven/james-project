@@ -48,6 +48,7 @@ public class UnknownCmdHandler extends AbstractHookableCmdHandler<UnknownHook> {
      * The name of the command handled by the command handler
      */
     private static final Collection<String> COMMANDS = ImmutableSet.of(UnknownCommandHandler.COMMAND_IDENTIFIER);
+    private static final String MISSING_CURR_COMMAND = "";
     public static final ProtocolSession.AttachmentKey<String> CURR_COMMAND = ProtocolSession.AttachmentKey.of("CURR_COMMAND", String.class);
 
     @Inject
@@ -75,7 +76,7 @@ public class UnknownCmdHandler extends AbstractHookableCmdHandler<UnknownHook> {
 
     @Override
     protected HookResult callHook(UnknownHook rawHook, SMTPSession session, String parameters) {
-        return rawHook.doUnknown(session, session.getAttachment(CURR_COMMAND, State.Transaction).orElse(""));
+        return rawHook.doUnknown(session, session.getAttachment(CURR_COMMAND, State.Transaction).orElse(MISSING_CURR_COMMAND));
     }
 
     @Override

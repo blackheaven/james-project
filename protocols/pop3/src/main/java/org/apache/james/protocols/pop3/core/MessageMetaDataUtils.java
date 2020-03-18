@@ -33,7 +33,7 @@ public class MessageMetaDataUtils {
      */
     public static MessageMetaData getMetaData(POP3Session session, int number) {
         return session.getAttachment(POP3Session.UID_LIST, State.Transaction)
-            .filter(uidList -> number < uidList.size())
+            .filter(uidList -> number <= uidList.size())
             .map(uidList -> uidList.get(number - 1))
             .orElse(null);
     }
