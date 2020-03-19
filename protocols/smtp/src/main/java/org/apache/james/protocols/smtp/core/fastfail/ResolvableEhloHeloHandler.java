@@ -40,7 +40,7 @@ import org.apache.james.protocols.smtp.hook.RcptHook;
  */
 public class ResolvableEhloHeloHandler implements RcptHook, HeloHook {
 
-    public static final ProtocolSession.AttachmentKey<String> BAD_EHLO_HELO = ProtocolSession.AttachmentKey.of("BAD_EHLO_HELO", String.class);
+    public static final ProtocolSession.AttachmentKey<Boolean> BAD_EHLO_HELO = ProtocolSession.AttachmentKey.of("BAD_EHLO_HELO", Boolean.class);
 
     /**
      * Check if EHLO/HELO is resolvable
@@ -51,9 +51,8 @@ public class ResolvableEhloHeloHandler implements RcptHook, HeloHook {
      *            The argument
      */
     protected void checkEhloHelo(SMTPSession session, String argument) {
-        
         if (isBadHelo(session, argument)) {
-            session.setAttachment(BAD_EHLO_HELO, "true", State.Transaction);
+            session.setAttachment(BAD_EHLO_HELO, true, State.Transaction);
         }
     }
     
@@ -75,7 +74,7 @@ public class ResolvableEhloHeloHandler implements RcptHook, HeloHook {
 
     protected boolean check(SMTPSession session,MailAddress rcpt) {
         // not reject it
-        return !session.getAttachment(BAD_EHLO_HELO, State.Transaction).isPresent();
+        return session.getAttachment(BAD_EHLO_HELO, State.Transaction).isPresent();
     }
 
     @Override

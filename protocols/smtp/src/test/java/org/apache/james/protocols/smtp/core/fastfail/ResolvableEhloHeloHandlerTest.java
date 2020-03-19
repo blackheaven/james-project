@@ -89,7 +89,7 @@ public class ResolvableEhloHeloHandlerTest {
                     if (value == null) {
                         return key.convert(map.remove(key));
                     } else {
-                        return key.convert(connectionMap.put(key, value));
+                        return key.convert(map.put(key, value));
                     }
                 }
             }
@@ -123,7 +123,7 @@ public class ResolvableEhloHeloHandlerTest {
     @Test
     public void testRejectInvalidHelo() throws Exception {
         MailAddress mailAddress = new MailAddress("test@localhost");
-        SMTPSession session = setupMockSession(INVALID_HOST,false,false,null,mailAddress);
+        SMTPSession session = setupMockSession(INVALID_HOST, false, false, null, mailAddress);
         ResolvableEhloHeloHandler handler = createHandler();
         
         handler.doHelo(session, INVALID_HOST);
@@ -136,7 +136,7 @@ public class ResolvableEhloHeloHandlerTest {
     @Test
     public void testNotRejectValidHelo() throws Exception {
         MailAddress mailAddress = new MailAddress("test@localhost");
-        SMTPSession session = setupMockSession(VALID_HOST,false,false,null,mailAddress);
+        SMTPSession session = setupMockSession(VALID_HOST, false, false, null, mailAddress);
         ResolvableEhloHeloHandler handler = createHandler();
 
   
@@ -178,4 +178,3 @@ public class ResolvableEhloHeloHandlerTest {
         assertThat(HookReturnCode.deny()).describedAs("Reject").isEqualTo(result);
     }
 }
-    
