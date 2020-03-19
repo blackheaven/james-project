@@ -153,6 +153,11 @@ public class BaseFakeSMTPSession implements SMTPSession {
     }
 
     @Override
+    public <T> Optional<T> removeAttachment(AttachmentKey<T> key, State state) {
+        throw new UnsupportedOperationException("Unimplemented Stub Method");
+    }
+
+    @Override
     public <T> Optional<T> getAttachment(AttachmentKey<T> key, State state) {
         throw new UnsupportedOperationException("Unimplemented Stub Method");
     }

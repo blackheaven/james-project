@@ -41,6 +41,8 @@ import org.apache.james.protocols.smtp.utils.BaseFakeSMTPSession;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.base.Preconditions;
+
 public class DNSRBLHandlerTest {
 
     private SMTPSession mockedSMTPSession;
@@ -147,18 +149,24 @@ public class DNSRBLHandlerTest {
             
             @Override
             public <T> Optional<T> setAttachment(AttachmentKey<T> key, T value, State state) {
+                Preconditions.checkNotNull(key, "key cannot be null");
+                Preconditions.checkNotNull(value, "value cannot be null");
+
                 if (state == State.Connection) {
-                    if (value == null) {
-                        return key.convert(connectionState.remove(key));
-                    } else {
-                        return key.convert(connectionState.put(key, value));
-                    }
+                    return key.convert(connectionState.put(key, value));
                 } else {
-                    if (value == null) {
-                        return key.convert(sessionState.remove(key));
-                    } else {
-                        return key.convert(sessionState.put(key, value));
-                    }
+                    return key.convert(sessionState.put(key, value));
+                }
+            }
+
+            @Override
+            public <T> Optional<T> removeAttachment(AttachmentKey<T> key, State state) {
+                Preconditions.checkNotNull(key, "key cannot be null");
+
+                if (state == State.Connection) {
+                    return key.convert(connectionState.remove(key));
+                } else {
+                    return key.convert(sessionState.remove(key));
                 }
             }
 

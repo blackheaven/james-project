@@ -93,15 +93,24 @@ public interface ProtocolSession {
     }
 
     /**
-     * Store the given value with the given key in the specified {@link State}. If you want to remove a value you need to use <code>null</code> as value
+     * Store the given value with the given key in the specified {@link State}.
      * 
      * @param key the key under which the value should get stored
-     * @param value the value which will get stored under the given key or <code>null</code> if you want to remove any value which is stored under the key
+     * @param value the value which will get stored under the given key
      * @param state the {@link State} to which the mapping belongs
      * @return oldValue the value which was stored before for this key or <code>null</code> if non was stored before.
      */
     <T> Optional<T> setAttachment(AttachmentKey<T> key, T value, State state);
-    
+
+    /**
+     * Remove a value stored for the given key in the specified {@link State}.
+     *
+     * @param key the key under which the value should get stored
+     * @param state the {@link State} to which the mapping belongs
+     * @return oldValue the value which was stored before for this key or <code>null</code> if non was stored before.
+     */
+    <T> Optional<T> removeAttachment(AttachmentKey<T> key,State state);
+
     /**
      * Return the value which is stored for the given key in the specified {@link State} or <code>null</code> if non was stored before.
      * 

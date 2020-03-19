@@ -37,6 +37,8 @@ import org.apache.james.smtpserver.fastfail.SPFHandler;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.base.Preconditions;
+
 public class SPFHandlerTest {
 
     private DNSService mockedDnsService;
@@ -129,32 +131,40 @@ public class SPFHandlerTest {
     private void setupMockedSMTPSession(String ip, final String helo) {
         mockedSMTPSession = new BaseFakeSMTPSession() {
 
-            private final HashMap<AttachmentKey<?>, Object> sstate = new HashMap<>();
+            private final HashMap<AttachmentKey<?>, Object> sessionState = new HashMap<>();
             private final HashMap<AttachmentKey<?>, Object> connectionState = new HashMap<>();
 
             @Override
             public <T> Optional<T> setAttachment(AttachmentKey<T> key, T value, State state) {
+                Preconditions.checkNotNull(key, "key cannot be null");
+                Preconditions.checkNotNull(value, "value cannot be null");
+
                 if (state == State.Connection) {
-                    if (value == null) {
-                        return key.convert(connectionState.remove(key));
-                    }
                     return key.convert(connectionState.put(key, value));
                 } else {
-                    if (value == null) {
-                        return key.convert(sstate.remove(key));
-                    }
-                    return key.convert(sstate.put(key, value));
+                    return key.convert(sessionState.put(key, value));
+                }
+            }
+
+            @Override
+            public <T> Optional<T> removeAttachment(AttachmentKey<T> key, State state) {
+                Preconditions.checkNotNull(key, "key cannot be null");
+
+                if (state == State.Connection) {
+                    return key.convert(connectionState.remove(key));
+                } else {
+                    return key.convert(sessionState.remove(key));
                 }
             }
 
             @Override
             public <T> Optional<T> getAttachment(AttachmentKey<T> key, State state) {
-                sstate.put(SMTPSession.CURRENT_HELO_NAME, helo);
+                sessionState.put(SMTPSession.CURRENT_HELO_NAME, helo);
 
                 if (state == State.Connection) {
                     return key.convert(connectionState.get(key));
                 } else {
-                    return key.convert(sstate.get(key));
+                    return key.convert(sessionState.get(key));
                 }
             }
 

@@ -87,7 +87,7 @@ public class MailCmdHandler extends AbstractHookableCmdHandler<MailHook> {
         // Check if the response was not ok
         if (response.getRetCode().equals(SMTPRetCode.MAIL_OK) == false) {
             // cleanup the session
-            session.setAttachment(SMTPSession.SENDER, null,  State.Transaction);
+            session.removeAttachment(SMTPSession.SENDER, State.Transaction);
         }
 
         return response;

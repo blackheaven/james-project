@@ -33,6 +33,8 @@ import org.apache.james.protocols.smtp.hook.HookReturnCode;
 import org.apache.james.protocols.smtp.utils.BaseFakeSMTPSession;
 import org.junit.Test;
 
+import com.google.common.base.Preconditions;
+
 public class ValidSenderDomainHandlerTest {
     
     private ValidSenderDomainHandler createHandler() {
@@ -65,15 +67,24 @@ public class ValidSenderDomainHandlerTest {
 
             @Override
             public <T> Optional<T> setAttachment(AttachmentKey<T> key, T value, State state) {
+                Preconditions.checkNotNull(key, "key cannot be null");
+                Preconditions.checkNotNull(value, "value cannot be null");
+
                 if (state == State.Connection) {
                     throw new UnsupportedOperationException();
-
                 } else {
-                    if (value == null) {
-                        return key.convert(getState().remove(key));
-                    } else {
-                        return key.convert(getState().put(key, value));
-                    }
+                    return key.convert(getState().put(key, value));
+                }
+            }
+
+            @Override
+            public <T> Optional<T> removeAttachment(AttachmentKey<T> key, State state) {
+                Preconditions.checkNotNull(key, "key cannot be null");
+
+                if (state == State.Connection) {
+                    throw new UnsupportedOperationException();
+                } else {
+                    return key.convert(getState().remove(key));
                 }
             }
 
