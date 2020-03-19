@@ -19,6 +19,7 @@
 
 package org.apache.james.protocols.smtp.core;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -42,7 +43,6 @@ import org.apache.james.protocols.smtp.hook.RcptHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -77,7 +77,7 @@ public class RcptCmdHandler extends AbstractHookableCmdHandler<RcptHook> impleme
      */
     @Override
     protected Response doCoreCmd(SMTPSession session, String command, String parameters) {
-        List<MailAddress> rcptColl = session.getAttachment(SMTPSession.RCPT_LIST, State.Transaction).orElse(ImmutableList.of());
+        List<MailAddress> rcptColl = session.getAttachment(SMTPSession.RCPT_LIST, State.Transaction).orElseGet(ArrayList::new);
         MailAddress recipientAddress = session.getAttachment(CURRENT_RECIPIENT, State.Transaction).orElse(MailAddress.nullSender());
         rcptColl.add(recipientAddress);
         session.setAttachment(SMTPSession.RCPT_LIST, rcptColl, State.Transaction);
