@@ -56,7 +56,7 @@ trait EventStoreContract {
     SMono(testee.append(event1)).block()
     val event2 = TestEvent(EventId.first, EventStoreContract.AGGREGATE_1, "second")
     assertThatThrownBy(
-      () => testee.append(event2))
+      () => SMono(testee.append(event2)).block())
       .isInstanceOf(classOf[EventStoreFailedException])
   }
 
