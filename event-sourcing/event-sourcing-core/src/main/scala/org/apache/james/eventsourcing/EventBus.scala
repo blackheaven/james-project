@@ -19,8 +19,12 @@
 package org.apache.james.eventsourcing
 
 import javax.inject.Inject
+
 import org.apache.james.eventsourcing.eventstore.{EventStore, EventStoreFailedException}
+import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
+
+import reactor.core.scala.publisher.{SFlux, SMono}
 
 object EventBus {
   private val LOGGER = LoggerFactory.getLogger(classOf[EventBus])
@@ -28,12 +32,19 @@ object EventBus {
 
 class EventBus @Inject() (eventStore: EventStore, subscribers: Set[Subscriber]) {
   @throws[EventStoreFailedException]
-  def publish(events: List[Event]): Unit = {
-    eventStore.appendAll(events)
-    events
-      .flatMap((event: Event) => subscribers.map(subscriber => (event, subscriber)))
-      .foreach {case (event, subscriber) => handle(event, subscriber)}
+  def publish(events: Iterable[Event]): SMono[Unit] = {
+    SMono(eventStore.appendAll(events))
+        .thenEmpty(runHandles(events, subscribers))
+
   }
+
+  def runHandles(events: Iterable[Event], subscribers: Set[Subscriber]): SMono[Unit] = {
+    SFlux.fromIterable(events.flatMap((event: Event) => subscribers.map(subscriber => (event, subscriber))))
+      .concatMap(infos => runHandle(infos._1, infos._2))
+      .`then`()
+  }
+
+  def runHandle(event: Event, subscriber: Subscriber): Publisher[Unit] = SMono.fromCallable(() => handle(event, subscriber))
 
   private def handle(event : Event, subscriber: Subscriber) : Unit = {
     try {

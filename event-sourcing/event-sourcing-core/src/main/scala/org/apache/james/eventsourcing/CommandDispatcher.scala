@@ -20,7 +20,11 @@ package org.apache.james.eventsourcing
 
 import com.google.common.base.Preconditions
 import javax.inject.Inject
+
 import org.apache.james.eventsourcing.eventstore.EventStoreFailedException
+import org.reactivestreams.Publisher
+
+import reactor.core.scala.publisher.{SFlux, SMono}
 
 import scala.util.{Failure, Success, Try}
 
@@ -45,9 +49,19 @@ object CommandDispatcher {
 class CommandDispatcher @Inject()(eventBus: EventBus, handlers: Set[CommandHandler[_ <: Command]]) {
   Preconditions.checkArgument(hasOnlyOneHandlerByCommand(handlers), CommandDispatcher.ONLY_ONE_HANDLER_PRECONDITION)
 
-  def dispatch(c: Command): Unit = {
-    trySeveralTimes(() => tryDispatch(c))
-      .getOrElse(() => throw CommandDispatcher.TooManyRetries(c, CommandDispatcher.MAX_RETRY))
+  def dispatch(c: Command): Publisher[Unit] = {
+    tryDispatch(c)
+      .filter(worked => worked)
+      .single()
+      .retry(CommandDispatcher.MAX_RETRY, {
+        case _: NoSuchElementException => true
+        case _ => false
+      })
+      .onErrorMap({
+        case _: NoSuchElementException => CommandDispatcher.TooManyRetries(c, CommandDispatcher.MAX_RETRY)
+        case error => error
+      })
+      .`then`()
   }
 
   private def hasOnlyOneHandlerByCommand(handlers: Set[CommandHandler[_ <: Command]]): Boolean =
@@ -65,28 +79,28 @@ class CommandDispatcher @Inject()(eventBus: EventBus, handlers: Set[CommandHandl
       .map(_ => ())
 
 
-  private def tryDispatch(c: Command): Boolean = {
-    val maybeEvents: Option[Try[List[_ <: Event]]] = handleCommand(c)
-    maybeEvents match {
-      case Some(eventsTry) =>
-        eventsTry
-          .flatMap(events => Try(eventBus.publish(events))) match {
-          case Success(_) => true
-          case Failure(_: EventStoreFailedException) => false
-          case Failure(e) => throw e
-        }
+  private def tryDispatch(c: Command): SMono[Boolean] = {
+    handleCommand(c) match {
+      case Some(eventsPublisher) =>
+        SFlux(eventsPublisher)
+          .collectSeq()
+          .flatMap(events => eventBus.publish(events)
+            .`then`(SMono.just(true))
+            .onErrorResume {
+              case _: EventStoreFailedException => SMono.just(false)
+              case e => SMono.raiseError(e)
+            })
       case _ =>
         throw CommandDispatcher.UnknownCommandException(c)
     }
   }
 
-  private def handleCommand(c: Command): Option[Try[List[_ <: Event]]] = {
+  private def handleCommand(c: Command): Option[Publisher[_ <: Event]] = {
     handlersByClass
       .get(c.getClass)
       .map(commandHandler =>
-        Try(
-          commandHandler
-            .asInstanceOf[CommandHandler[c.type]]
-            .handle(c)))
+        commandHandler
+          .asInstanceOf[CommandHandler[c.type]]
+          .handle(c))
   }
 }

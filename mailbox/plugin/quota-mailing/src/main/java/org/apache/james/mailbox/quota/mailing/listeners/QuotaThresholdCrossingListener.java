@@ -42,6 +42,9 @@ import org.apache.mailet.MailetContext;
 
 import com.google.common.collect.ImmutableSet;
 
+import reactor.core.publisher.Mono;
+import scala.runtime.BoxedUnit;
+
 public class QuotaThresholdCrossingListener implements MailboxListener.GroupMailboxListener {
     public static class QuotaThresholdCrossingListenerGroup extends Group {
 
@@ -74,12 +77,12 @@ public class QuotaThresholdCrossingListener implements MailboxListener.GroupMail
     @Override
     public void event(Event event) {
         if (event instanceof QuotaUsageUpdatedEvent) {
-            handleEvent(event.getUsername(), (QuotaUsageUpdatedEvent) event);
+            handleEvent(event.getUsername(), (QuotaUsageUpdatedEvent) event).block();
         }
     }
 
-    private void handleEvent(Username username, QuotaUsageUpdatedEvent event) {
-        eventSourcingSystem.dispatch(
-            new DetectThresholdCrossing(username, event.getCountQuota(), event.getSizeQuota(), event.getInstant()));
+    private Mono<BoxedUnit> handleEvent(Username username, QuotaUsageUpdatedEvent event) {
+        return Mono.from(eventSourcingSystem.dispatch(
+            new DetectThresholdCrossing(username, event.getCountQuota(), event.getSizeQuota(), event.getInstant())));
     }
 }

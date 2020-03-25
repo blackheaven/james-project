@@ -27,27 +27,29 @@ import org.apache.james.task.Task.Result
 import org.apache.james.task.eventsourcing.TaskCommand._
 import org.apache.james.task.{TaskExecutionDetails, TaskId, TaskManagerWorker}
 
+import reactor.core.scala.publisher.SMono
+
 import scala.compat.java8.OptionConverters._
 
 case class WorkerStatusListener(eventSourcingSystem: EventSourcingSystem) extends TaskManagerWorker.Listener {
 
-  override def started(taskId: TaskId): Unit = eventSourcingSystem.dispatch(Start(taskId))
+  override def started(taskId: TaskId): Unit = SMono(eventSourcingSystem.dispatch(Start(taskId))).block()
 
   override def completed(taskId: TaskId, result: Result, additionalInformation: Optional[TaskExecutionDetails.AdditionalInformation]): Unit =
-    eventSourcingSystem.dispatch(Complete(taskId, result, additionalInformation.asScala))
+    SMono(eventSourcingSystem.dispatch(Complete(taskId, result, additionalInformation.asScala))).block()
 
   override def failed(taskId: TaskId, additionalInformation: Optional[TaskExecutionDetails.AdditionalInformation], errorMessage: String, t: Throwable): Unit =
-    eventSourcingSystem.dispatch(Fail(taskId, additionalInformation.asScala, Some(errorMessage), Some(Throwables.getStackTraceAsString(t))))
+    SMono(eventSourcingSystem.dispatch(Fail(taskId, additionalInformation.asScala, Some(errorMessage), Some(Throwables.getStackTraceAsString(t))))).block()
 
   override def failed(taskId: TaskId, additionalInformation: Optional[TaskExecutionDetails.AdditionalInformation], t: Throwable): Unit =
-    eventSourcingSystem.dispatch(Fail(taskId, additionalInformation.asScala, None, Some(Throwables.getStackTraceAsString(t))))
+    SMono(eventSourcingSystem.dispatch(Fail(taskId, additionalInformation.asScala, None, Some(Throwables.getStackTraceAsString(t))))).block()
 
   override def failed(taskId: TaskId, additionalInformation: Optional[TaskExecutionDetails.AdditionalInformation]): Unit =
-    eventSourcingSystem.dispatch(Fail(taskId, additionalInformation.asScala, None, None))
+    SMono(eventSourcingSystem.dispatch(Fail(taskId, additionalInformation.asScala, None, None))).block()
 
   override def cancelled(taskId: TaskId, additionalInformation: Optional[TaskExecutionDetails.AdditionalInformation]): Unit =
-    eventSourcingSystem.dispatch(Cancel(taskId, additionalInformation.asScala ))
+    SMono(eventSourcingSystem.dispatch(Cancel(taskId, additionalInformation.asScala ))).block()
 
   override def updated(taskId: TaskId, additionalInformation: TaskExecutionDetails.AdditionalInformation): Unit =
-    eventSourcingSystem.dispatch(UpdateAdditionalInformation(taskId, additionalInformation))
+    SMono(eventSourcingSystem.dispatch(UpdateAdditionalInformation(taskId, additionalInformation))).block()
 }

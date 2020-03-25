@@ -37,7 +37,10 @@ import org.apache.james.util.MDCBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class GetFilterMethod implements Method {
     private static final Logger LOGGER = LoggerFactory.getLogger(GetFilterMethod.class);
@@ -93,17 +96,18 @@ public class GetFilterMethod implements Method {
     }
 
     private Stream<JmapResponse> retrieveFilter(MethodCallId methodCallId, Username username) {
-        List<Rule> rules = filteringManagement.listRulesForUser(username);
-
-        GetFilterResponse getFilterResponse = GetFilterResponse.builder()
-            .rules(rules)
-            .build();
-
-        return Stream.of(JmapResponse.builder()
-            .methodCallId(methodCallId)
-            .response(getFilterResponse)
-            .responseName(RESPONSE_NAME)
-            .build());
+        return Flux.from(filteringManagement.listRulesForUser(username))
+            .collect(Guavate.toImmutableList())
+            .map(rules -> GetFilterResponse.builder()
+                .rules(rules)
+                .build())
+            .map(getFilterResponse -> JmapResponse.builder()
+                .methodCallId(methodCallId)
+                .response(getFilterResponse)
+                .responseName(RESPONSE_NAME)
+                .build())
+            .flatMapMany(Mono::just)
+            .toStream();
     }
 
     private JmapResponse unKnownError(MethodCallId methodCallId) {

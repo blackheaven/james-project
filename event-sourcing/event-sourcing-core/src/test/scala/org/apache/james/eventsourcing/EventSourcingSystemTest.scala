@@ -27,6 +27,9 @@ import org.mockito.Mockito.{doThrow, mock, when}
 import org.mockito.internal.matchers.InstanceOf
 import org.mockito.internal.progress.ThreadSafeMockingProgress
 
+import reactor.core.publisher.Mono
+import reactor.core.scala.publisher.{SFlux, SMono}
+
 import scala.collection.immutable.List
 import scala.jdk.CollectionConverters._
 
@@ -59,7 +62,7 @@ trait EventSourcingSystemTest {
   def dispatchShouldApplyCommandHandlerThenCallSubscribers(eventStore: EventStore) : Unit = {
     val subscriber = new DataCollectorSubscriber
     val eventSourcingSystem = new EventSourcingSystem(Set(simpleDispatcher(eventStore)), Set(subscriber), eventStore)
-    eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_1))
+    Mono.from(eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_1))).block()
     assertThat(subscriber.getData.asJava).containsExactly(EventSourcingSystemTest.PAYLOAD_1)
   }
 
@@ -70,7 +73,7 @@ trait EventSourcingSystemTest {
       Set(simpleDispatcher(eventStore)),
       Set((_: Event) => throw new RuntimeException, subscriber),
       eventStore)
-    eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_1))
+    Mono.from(eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_1))).block()
     assertThat(subscriber.getData.asJava).containsExactly(EventSourcingSystemTest.PAYLOAD_1)
   }
 
@@ -78,13 +81,13 @@ trait EventSourcingSystemTest {
   def throwingStoreShouldNotLeadToPublishing() : Unit = {
     val eventStore = mock(classOf[EventStore])
     doThrow(new RuntimeException).when(eventStore).appendAll(EventSourcingSystemTest.anyScalaList)
-    when(eventStore.getEventsOfAggregate(any)).thenReturn(History.empty)
+    when(eventStore.getEventsOfAggregate(any)).thenReturn(SMono.just(History.empty))
     val subscriber = new DataCollectorSubscriber
     val eventSourcingSystem = new EventSourcingSystem(
       Set(simpleDispatcher(eventStore)),
       Set((_: Event) => throw new RuntimeException, subscriber),
       eventStore)
-    assertThatThrownBy(() => eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_1)))
+    assertThatThrownBy(() => Mono.from(eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_1))).block())
       .isInstanceOf(classOf[RuntimeException])
     assertThat(subscriber.getData.asJava).isEmpty()
   }
@@ -93,17 +96,17 @@ trait EventSourcingSystemTest {
   def dispatchShouldApplyCommandHandlerThenStoreGeneratedEvents(eventStore: EventStore) : Unit = {
     val subscriber = new DataCollectorSubscriber
     val eventSourcingSystem = new EventSourcingSystem(Set(simpleDispatcher(eventStore)), Set(subscriber), eventStore)
-    eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_1))
+    Mono.from(eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_1))).block()
     val expectedEvent = TestEvent(EventId.first, EventSourcingSystemTest.AGGREGATE_ID, EventSourcingSystemTest.PAYLOAD_1)
-    assertThat(eventStore.getEventsOfAggregate(EventSourcingSystemTest.AGGREGATE_ID).getEventsJava).containsOnly(expectedEvent)
+    assertThat(SMono(eventStore.getEventsOfAggregate(EventSourcingSystemTest.AGGREGATE_ID)).block().getEventsJava).containsOnly(expectedEvent)
   }
 
   @Test
   def dispatchShouldCallSubscriberForSubsequentCommands(eventStore: EventStore) : Unit = {
     val subscriber = new DataCollectorSubscriber
     val eventSourcingSystem = new EventSourcingSystem(Set(simpleDispatcher(eventStore)), Set(subscriber), eventStore)
-    eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_1))
-    eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_2))
+    Mono.from(eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_1))).block()
+    Mono.from(eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_2))).block()
     assertThat(subscriber.getData.asJava).containsExactly(EventSourcingSystemTest.PAYLOAD_1, EventSourcingSystemTest.PAYLOAD_2)
   }
 
@@ -111,18 +114,18 @@ trait EventSourcingSystemTest {
   def dispatchShouldStoreEventsForSubsequentCommands(eventStore: EventStore) : Unit = {
     val subscriber = new DataCollectorSubscriber
     val eventSourcingSystem = new EventSourcingSystem(Set(simpleDispatcher(eventStore)), Set(subscriber), eventStore)
-    eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_1))
-    eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_2))
+    Mono.from(eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_1))).block()
+    Mono.from(eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand(EventSourcingSystemTest.PAYLOAD_2))).block()
     val expectedEvent1 = TestEvent(EventId.first, EventSourcingSystemTest.AGGREGATE_ID, EventSourcingSystemTest.PAYLOAD_1)
     val expectedEvent2 = TestEvent(expectedEvent1.eventId.next, EventSourcingSystemTest.AGGREGATE_ID, EventSourcingSystemTest.PAYLOAD_2)
-    assertThat(eventStore.getEventsOfAggregate(EventSourcingSystemTest.AGGREGATE_ID).getEventsJava).containsOnly(expectedEvent1, expectedEvent2)
+    assertThat(SMono(eventStore.getEventsOfAggregate(EventSourcingSystemTest.AGGREGATE_ID)).block().getEventsJava).containsOnly(expectedEvent1, expectedEvent2)
   }
 
   @Test
   def dispatcherShouldBeAbleToReturnSeveralEvents(eventStore: EventStore) : Unit = {
     val subscriber = new DataCollectorSubscriber
     val eventSourcingSystem = new EventSourcingSystem(Set(wordCuttingDispatcher(eventStore)), Set(subscriber), eventStore)
-    eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand("This is a test"))
+    Mono.from(eventSourcingSystem.dispatch(new EventSourcingSystemTest.MyCommand("This is a test"))).block()
     assertThat(subscriber.getData.asJava).containsExactly("This", "is", "a", "test")
   }
 
@@ -130,7 +133,7 @@ trait EventSourcingSystemTest {
   def unknownCommandsShouldBeIgnored(eventStore: EventStore) : Unit = {
     val subscriber = new DataCollectorSubscriber
     val eventSourcingSystem = new EventSourcingSystem(Set(wordCuttingDispatcher(eventStore)), Set(subscriber), eventStore)
-    assertThatThrownBy(() => eventSourcingSystem.dispatch(new Command() {}))
+    assertThatThrownBy(() => Mono.from(eventSourcingSystem.dispatch(new Command() {})).block())
       .isInstanceOf(classOf[CommandDispatcher.UnknownCommandException])
   }
 
@@ -146,22 +149,22 @@ trait EventSourcingSystemTest {
   def simpleDispatcher(eventStore: EventStore) = new CommandHandler[EventSourcingSystemTest.MyCommand]() {
     override def handledClass: Class[EventSourcingSystemTest.MyCommand] = classOf[EventSourcingSystemTest.MyCommand]
 
-    override def handle(myCommand: EventSourcingSystemTest.MyCommand): List[TestEvent] = {
-      val history = eventStore.getEventsOfAggregate(EventSourcingSystemTest.AGGREGATE_ID)
-      List(TestEvent(history.getNextEventId, EventSourcingSystemTest.AGGREGATE_ID, myCommand.getPayload))
+    override def handle(myCommand: EventSourcingSystemTest.MyCommand): SFlux[TestEvent] = {
+      SMono.apply(eventStore.getEventsOfAggregate(EventSourcingSystemTest.AGGREGATE_ID))
+          .flatMapMany(history => SFlux.just(TestEvent(history.getNextEventId, EventSourcingSystemTest.AGGREGATE_ID, myCommand.getPayload)))
     }
   }
 
   def wordCuttingDispatcher(eventStore: EventStore) = new CommandHandler[EventSourcingSystemTest.MyCommand]() {
     override def handledClass: Class[EventSourcingSystemTest.MyCommand] = classOf[EventSourcingSystemTest.MyCommand]
 
-    override def handle(myCommand: EventSourcingSystemTest.MyCommand): List[TestEvent] = {
-      val history = eventStore.getEventsOfAggregate(EventSourcingSystemTest.AGGREGATE_ID)
-      val eventIdIncrementer = new EventSourcingSystemTest.EventIdIncrementer(history.getNextEventId)
-      Splitter.on(" ").splitToList(myCommand.getPayload)
-        .asScala
-        .toList
-        .map((word: String) => TestEvent(eventIdIncrementer.next, EventSourcingSystemTest.AGGREGATE_ID, word))
+    override def handle(myCommand: EventSourcingSystemTest.MyCommand): SFlux[TestEvent] = {
+      SMono.apply(eventStore.getEventsOfAggregate(EventSourcingSystemTest.AGGREGATE_ID))
+        .map(history => new EventSourcingSystemTest.EventIdIncrementer(history.getNextEventId))
+        .flatMapMany(eventIdIncrementer => SFlux.fromIterable(Splitter.on(" ").splitToList(myCommand.getPayload)
+          .asScala
+          .toList
+          .map((word: String) => TestEvent(eventIdIncrementer.next, EventSourcingSystemTest.AGGREGATE_ID, word))))
     }
   }
 }

@@ -19,13 +19,15 @@
 
 package org.apache.james.jmap.api.filtering.impl;
 
-import java.util.List;
-
+import org.apache.james.eventsourcing.CommandHandler;
 import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.eventstore.EventStore;
-import org.apache.james.eventsourcing.javaapi.CommandHandlerJava;
+import org.reactivestreams.Publisher;
 
-public class DefineRulesCommandHandler implements CommandHandlerJava<DefineRulesCommand> {
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+public class DefineRulesCommandHandler implements CommandHandler<DefineRulesCommand> {
 
     private final EventStore eventStore;
 
@@ -39,14 +41,11 @@ public class DefineRulesCommandHandler implements CommandHandlerJava<DefineRules
     }
 
     @Override
-    public List<? extends Event> handleJava(DefineRulesCommand storeCommand) {
+    public Publisher<? extends Event> handle(DefineRulesCommand storeCommand) {
         FilteringAggregateId aggregateId = new FilteringAggregateId(storeCommand.getUsername());
 
-        return FilteringAggregate
-            .load(
-                aggregateId,
-                eventStore.getEventsOfAggregate(aggregateId))
-            .defineRules(storeCommand.getRules());
+        return Mono.from(eventStore.getEventsOfAggregate(aggregateId))
+        .flatMapMany(history -> Flux.fromIterable(FilteringAggregate.load(aggregateId, history).defineRules(storeCommand.getRules())));
     }
 
 }
