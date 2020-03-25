@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.james.util.MDCBuilder;
 import org.apache.james.util.concurrent.NamedThreadFactory;
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,20 +70,20 @@ public class SerialTaskManagerWorker implements TaskManagerWorker {
             return Mono.using(
                 () -> pollAdditionalInformation(taskWithId).subscribe(),
                 ignored -> Mono.fromFuture(future)
-                    .doOnError(exception -> handleExecutionError(taskWithId, listener, exception))
-                    .onErrorReturn(Task.Result.PARTIAL),
+                    .onErrorResume(exception -> Mono.from(handleExecutionError(taskWithId, listener, exception))
+                            .thenReturn(Task.Result.PARTIAL)),
                 Disposable::dispose);
         } else {
-            listener.cancelled(taskWithId.getId(), taskWithId.getTask().details());
-            return Mono.empty();
+            return Mono.from(listener.cancelled(taskWithId.getId(), taskWithId.getTask().details()))
+                .then(Mono.empty());
         }
     }
 
-    private void handleExecutionError(TaskWithId taskWithId, Listener listener, Throwable exception) {
+    private Publisher<Void> handleExecutionError(TaskWithId taskWithId, Listener listener, Throwable exception) {
         if (exception instanceof CancellationException) {
-            listener.cancelled(taskWithId.getId(), taskWithId.getTask().details());
+            return listener.cancelled(taskWithId.getId(), taskWithId.getTask().details());
         } else {
-            listener.failed(taskWithId.getId(), taskWithId.getTask().details(), exception);
+            return listener.failed(taskWithId.getId(), taskWithId.getTask().details(), exception);
         }
     }
 
@@ -91,7 +92,7 @@ public class SerialTaskManagerWorker implements TaskManagerWorker {
             .delayElement(pollingInterval, Schedulers.elastic())
             .repeat()
             .<TaskExecutionDetails.AdditionalInformation>handle((maybeDetails, sink) -> maybeDetails.ifPresent(sink::next))
-            .doOnNext(information -> listener.updated(taskWithId.getId(), information));
+            .flatMap(information -> Mono.from(listener.updated(taskWithId.getId(), information)).thenReturn(information));
     }
 
 
@@ -105,21 +106,21 @@ public class SerialTaskManagerWorker implements TaskManagerWorker {
     }
 
     private Task.Result run(TaskWithId taskWithId, Listener listener) {
-        listener.started(taskWithId.getId());
+        Mono.from(listener.started(taskWithId.getId())).block();
         try {
             return taskWithId.getTask()
                 .run()
-                .onComplete(result -> listener.completed(taskWithId.getId(), result, taskWithId.getTask().details()))
+                .onComplete(result -> Mono.from(listener.completed(taskWithId.getId(), result, taskWithId.getTask().details())).block())
                 .onFailure(() -> {
                     LOGGER.error("Task was partially performed. Check logs for more details. Taskid : " + taskWithId.getId());
-                    listener.failed(taskWithId.getId(), taskWithId.getTask().details());
+                    Mono.from(listener.failed(taskWithId.getId(), taskWithId.getTask().details())).block();
                 });
         } catch (InterruptedException e) {
-            listener.cancelled(taskWithId.getId(), taskWithId.getTask().details());
+            Mono.from(listener.cancelled(taskWithId.getId(), taskWithId.getTask().details())).block();
             return Task.Result.PARTIAL;
         } catch (Exception e) {
             LOGGER.error("Error while running task {}", taskWithId.getId(), e);
-            listener.failed(taskWithId.getId(), taskWithId.getTask().details(), e);
+            Mono.from(listener.failed(taskWithId.getId(), taskWithId.getTask().details(), e)).block();
             return Task.Result.PARTIAL;
         }
     }
@@ -133,8 +134,8 @@ public class SerialTaskManagerWorker implements TaskManagerWorker {
     }
 
     @Override
-    public void fail(TaskId taskId, Optional<TaskExecutionDetails.AdditionalInformation> additionalInformation, String errorMessage, Throwable reason) {
-        listener.failed(taskId, additionalInformation, errorMessage, reason);
+    public Publisher<Void> fail(TaskId taskId, Optional<TaskExecutionDetails.AdditionalInformation> additionalInformation, String errorMessage, Throwable reason) {
+        return listener.failed(taskId, additionalInformation, errorMessage, reason);
     }
 
     @Override

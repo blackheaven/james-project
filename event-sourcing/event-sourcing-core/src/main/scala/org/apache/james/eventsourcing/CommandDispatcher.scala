@@ -49,7 +49,7 @@ object CommandDispatcher {
 class CommandDispatcher @Inject()(eventBus: EventBus, handlers: Set[CommandHandler[_ <: Command]]) {
   Preconditions.checkArgument(hasOnlyOneHandlerByCommand(handlers), CommandDispatcher.ONLY_ONE_HANDLER_PRECONDITION)
 
-  def dispatch(c: Command): Publisher[Unit] = {
+  def dispatch(c: Command): Publisher[Void] = {
     tryDispatch(c)
       .filter(worked => worked)
       .single()
@@ -71,13 +71,6 @@ class CommandDispatcher @Inject()(eventBus: EventBus, handlers: Set[CommandHandl
 
   private val handlersByClass: Map[Class[_ <: Command], CommandHandler[_ <: Command]] =
     handlers.map(handler => (handler.handledClass, handler)).toMap
-
-
-  private def trySeveralTimes(singleTry: () => Boolean): Option[Unit] =
-    0.until(CommandDispatcher.MAX_RETRY)
-      .find(_ => singleTry())
-      .map(_ => ())
-
 
   private def tryDispatch(c: Command): SMono[Boolean] = {
     handleCommand(c) match {

@@ -19,14 +19,12 @@
 
 package org.apache.james.jmap.draft.methods;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
 import org.apache.james.core.Username;
 import org.apache.james.jmap.api.filtering.FilteringManagement;
-import org.apache.james.jmap.api.filtering.Rule;
 import org.apache.james.jmap.draft.model.GetFilterRequest;
 import org.apache.james.jmap.draft.model.GetFilterResponse;
 import org.apache.james.jmap.draft.model.MethodCallId;
@@ -39,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
