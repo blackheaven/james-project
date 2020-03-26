@@ -19,6 +19,8 @@
 
 package org.apache.james.dlp.eventsourcing.commands;
 
+import java.util.List;
+
 import org.apache.james.dlp.eventsourcing.aggregates.DLPAggregateId;
 import org.apache.james.dlp.eventsourcing.aggregates.DLPDomainConfiguration;
 import org.apache.james.eventsourcing.CommandHandler;
@@ -26,7 +28,6 @@ import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.eventstore.EventStore;
 import org.reactivestreams.Publisher;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class StoreCommandHandler implements CommandHandler<StoreCommand> {
@@ -43,10 +44,10 @@ public class StoreCommandHandler implements CommandHandler<StoreCommand> {
     }
 
     @Override
-    public Publisher<? extends Event> handle(StoreCommand storeCommand) {
+    public Publisher<List<? extends Event>> handle(StoreCommand storeCommand) {
         DLPAggregateId aggregateId = new DLPAggregateId(storeCommand.getDomain());
 
         return Mono.from(eventStore.getEventsOfAggregate(aggregateId))
-        .flatMapMany(history -> Flux.fromIterable(DLPDomainConfiguration.load(aggregateId, history).store(storeCommand.getRules())));
+        .map(history -> DLPDomainConfiguration.load(aggregateId, history).store(storeCommand.getRules()));
     }
 }

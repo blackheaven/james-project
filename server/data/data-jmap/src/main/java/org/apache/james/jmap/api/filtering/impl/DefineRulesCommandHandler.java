@@ -19,12 +19,13 @@
 
 package org.apache.james.jmap.api.filtering.impl;
 
+import java.util.List;
+
 import org.apache.james.eventsourcing.CommandHandler;
 import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.eventstore.EventStore;
 import org.reactivestreams.Publisher;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class DefineRulesCommandHandler implements CommandHandler<DefineRulesCommand> {
@@ -41,11 +42,11 @@ public class DefineRulesCommandHandler implements CommandHandler<DefineRulesComm
     }
 
     @Override
-    public Publisher<? extends Event> handle(DefineRulesCommand storeCommand) {
+    public Publisher<List<? extends Event>> handle(DefineRulesCommand storeCommand) {
         FilteringAggregateId aggregateId = new FilteringAggregateId(storeCommand.getUsername());
 
         return Mono.from(eventStore.getEventsOfAggregate(aggregateId))
-        .flatMapMany(history -> Flux.fromIterable(FilteringAggregate.load(aggregateId, history).defineRules(storeCommand.getRules())));
+        .map(history -> FilteringAggregate.load(aggregateId, history).defineRules(storeCommand.getRules()));
     }
 
 }

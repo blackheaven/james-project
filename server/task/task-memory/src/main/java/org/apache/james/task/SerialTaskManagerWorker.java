@@ -102,27 +102,27 @@ public class SerialTaskManagerWorker implements TaskManagerWorker {
                 .addContext(Task.TASK_ID, taskWithId.getId())
                 .addContext(Task.TASK_TYPE, taskWithId.getTask().type())
                 .addContext(Task.TASK_DETAILS, taskWithId.getTask().details()),
-            () -> run(taskWithId, listener));
+            () -> run(taskWithId, listener).block());
     }
 
-    private Task.Result run(TaskWithId taskWithId, Listener listener) {
-        Mono.from(listener.started(taskWithId.getId())).block();
-        try {
-            return taskWithId.getTask()
-                .run()
-                .onComplete(result -> Mono.from(listener.completed(taskWithId.getId(), result, taskWithId.getTask().details())).block())
-                .onFailure(() -> {
-                    LOGGER.error("Task was partially performed. Check logs for more details. Taskid : " + taskWithId.getId());
-                    Mono.from(listener.failed(taskWithId.getId(), taskWithId.getTask().details())).block();
-                });
-        } catch (InterruptedException e) {
-            Mono.from(listener.cancelled(taskWithId.getId(), taskWithId.getTask().details())).block();
-            return Task.Result.PARTIAL;
-        } catch (Exception e) {
-            LOGGER.error("Error while running task {}", taskWithId.getId(), e);
-            Mono.from(listener.failed(taskWithId.getId(), taskWithId.getTask().details(), e)).block();
-            return Task.Result.PARTIAL;
-        }
+    private Mono<Task.Result> run(TaskWithId taskWithId, Listener listener) {
+        return Mono.from(listener.started(taskWithId.getId()))
+            .then(Mono.fromCallable(() -> runTask(taskWithId, listener)))
+            .onErrorResume(InterruptedException.class, e -> Mono.from(listener.cancelled(taskWithId.getId(), taskWithId.getTask().details())).thenReturn(Task.Result.PARTIAL))
+            .onErrorResume(Exception.class, e -> {
+                LOGGER.error("Error while running task {}", taskWithId.getId(), e);
+                return Mono.from(listener.failed(taskWithId.getId(), taskWithId.getTask().details(), e)).thenReturn(Task.Result.PARTIAL);
+            });
+    }
+
+    private Task.Result runTask(TaskWithId taskWithId, Listener listener) throws InterruptedException {
+        return taskWithId.getTask()
+            .run()
+            .onComplete(result -> Mono.from(listener.completed(taskWithId.getId(), result, taskWithId.getTask().details())).block())
+            .onFailure(() -> {
+                LOGGER.error("Task was partially performed. Check logs for more details. Taskid : " + taskWithId.getId());
+                Mono.from(listener.failed(taskWithId.getId(), taskWithId.getTask().details())).block();
+            });
     }
 
     @Override

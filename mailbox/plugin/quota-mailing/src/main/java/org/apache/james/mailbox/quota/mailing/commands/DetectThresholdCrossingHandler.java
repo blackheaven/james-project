@@ -19,6 +19,8 @@
 
 package org.apache.james.mailbox.quota.mailing.commands;
 
+import java.util.List;
+
 import org.apache.james.eventsourcing.CommandHandler;
 import org.apache.james.eventsourcing.Event;
 import org.apache.james.eventsourcing.eventstore.EventStore;
@@ -26,7 +28,6 @@ import org.apache.james.mailbox.quota.mailing.QuotaMailingListenerConfiguration;
 import org.apache.james.mailbox.quota.mailing.aggregates.UserQuotaThresholds;
 import org.reactivestreams.Publisher;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class DetectThresholdCrossingHandler implements CommandHandler<DetectThresholdCrossing> {
@@ -42,9 +43,9 @@ public class DetectThresholdCrossingHandler implements CommandHandler<DetectThre
     }
 
     @Override
-    public Publisher<? extends Event> handle(DetectThresholdCrossing command) {
+    public Publisher<List<? extends Event>> handle(DetectThresholdCrossing command) {
         return loadAggregate(command)
-            .flatMapMany(aggregate -> Flux.fromIterable(aggregate.detectThresholdCrossing(quotaMailingListenerConfiguration, command)));
+            .map(aggregate -> aggregate.detectThresholdCrossing(quotaMailingListenerConfiguration, command));
     }
 
     private Mono<UserQuotaThresholds> loadAggregate(DetectThresholdCrossing command) {

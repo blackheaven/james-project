@@ -18,7 +18,8 @@
  ****************************************************************/
 package org.apache.james.eventsourcing
 
-import com.google.common.base.Splitter
+import java.util.{List => JavaList}
+
 import org.apache.james.eventsourcing.eventstore.{EventStore, History}
 import org.assertj.core.api.Assertions.{assertThat, assertThatThrownBy}
 import org.junit.jupiter.api.Test
@@ -26,11 +27,12 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{doThrow, mock, when}
 import org.mockito.internal.matchers.InstanceOf
 import org.mockito.internal.progress.ThreadSafeMockingProgress
+import org.reactivestreams.Publisher
 
+import com.google.common.base.Splitter
 import reactor.core.publisher.Mono
-import reactor.core.scala.publisher.{SFlux, SMono}
+import reactor.core.scala.publisher.SMono
 
-import scala.collection.immutable.List
 import scala.jdk.CollectionConverters._
 
 object EventSourcingSystemTest {
@@ -149,22 +151,22 @@ trait EventSourcingSystemTest {
   def simpleDispatcher(eventStore: EventStore) = new CommandHandler[EventSourcingSystemTest.MyCommand]() {
     override def handledClass: Class[EventSourcingSystemTest.MyCommand] = classOf[EventSourcingSystemTest.MyCommand]
 
-    override def handle(myCommand: EventSourcingSystemTest.MyCommand): SFlux[TestEvent] = {
+    override def handle(myCommand: EventSourcingSystemTest.MyCommand): Publisher[JavaList[_ <: Event]] = {
       SMono.apply(eventStore.getEventsOfAggregate(EventSourcingSystemTest.AGGREGATE_ID))
-          .flatMapMany(history => SFlux.just(TestEvent(history.getNextEventId, EventSourcingSystemTest.AGGREGATE_ID, myCommand.getPayload)))
+          .map(history => Seq(TestEvent(history.getNextEventId, EventSourcingSystemTest.AGGREGATE_ID, myCommand.getPayload)).asJava)
     }
   }
 
   def wordCuttingDispatcher(eventStore: EventStore) = new CommandHandler[EventSourcingSystemTest.MyCommand]() {
     override def handledClass: Class[EventSourcingSystemTest.MyCommand] = classOf[EventSourcingSystemTest.MyCommand]
 
-    override def handle(myCommand: EventSourcingSystemTest.MyCommand): SFlux[TestEvent] = {
+    override def handle(myCommand: EventSourcingSystemTest.MyCommand): Publisher[JavaList[_ <: Event]] = {
       SMono.apply(eventStore.getEventsOfAggregate(EventSourcingSystemTest.AGGREGATE_ID))
         .map(history => new EventSourcingSystemTest.EventIdIncrementer(history.getNextEventId))
-        .flatMapMany(eventIdIncrementer => SFlux.fromIterable(Splitter.on(" ").splitToList(myCommand.getPayload)
+        .map(eventIdIncrementer => Splitter.on(" ").splitToList(myCommand.getPayload)
           .asScala
           .toList
-          .map((word: String) => TestEvent(eventIdIncrementer.next, EventSourcingSystemTest.AGGREGATE_ID, word))))
+          .map((word: String) => TestEvent(eventIdIncrementer.next, EventSourcingSystemTest.AGGREGATE_ID, word)).asJava)
     }
   }
 }
