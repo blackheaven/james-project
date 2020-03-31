@@ -40,12 +40,12 @@ class EventBus @Inject() (eventStore: EventStore, subscribers: Set[Subscriber]) 
 
   def runHandles(events: Iterable[Event], subscribers: Set[Subscriber]): SMono[Void] = {
     SFlux.fromIterable(events.flatMap((event: Event) => subscribers.map(subscriber => (event, subscriber))))
-      .concatMap(infos => runHandle(infos._1, infos._2))
+      .flatMap(infos => runHandler(infos._1, infos._2))
       .`then`()
       .`then`(SMono.empty)
   }
 
-  def runHandle(event: Event, subscriber: Subscriber): Publisher[Void] = SMono.fromCallable(() => handle(event, subscriber)).`then`(SMono.empty)
+  def runHandler(event: Event, subscriber: Subscriber): Publisher[Void] = SMono.fromCallable(() => handle(event, subscriber)).`then`(SMono.empty)
 
   private def handle(event : Event, subscriber: Subscriber) : Unit = {
     try {

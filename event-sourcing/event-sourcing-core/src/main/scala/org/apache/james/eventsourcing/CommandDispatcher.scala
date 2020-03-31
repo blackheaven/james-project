@@ -60,7 +60,6 @@ class CommandDispatcher @Inject()(eventBus: EventBus, handlers: Set[CommandHandl
         case _: EventStoreFailedException => CommandDispatcher.TooManyRetries(c, CommandDispatcher.MAX_RETRY)
         case error => error
       })
-      .`then`()
   }
 
   private def hasOnlyOneHandlerByCommand(handlers: Set[CommandHandler[_ <: Command]]): Boolean =
@@ -75,7 +74,7 @@ class CommandDispatcher @Inject()(eventBus: EventBus, handlers: Set[CommandHandl
     handleCommand(c) match {
       case Some(eventsPublisher) =>
         SMono(eventsPublisher)
-          .flatMap(events => eventBus.publish(events.asScala))
+          .flatMap(events => eventBus.publish(events))
       case _ =>
         SMono.raiseError(CommandDispatcher.UnknownCommandException(c))
     }
