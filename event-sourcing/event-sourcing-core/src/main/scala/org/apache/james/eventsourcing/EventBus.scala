@@ -34,11 +34,11 @@ class EventBus @Inject() (eventStore: EventStore, subscribers: Set[Subscriber]) 
   @throws[EventStoreFailedException]
   def publish(events: Iterable[Event]): SMono[Void] = {
     SMono(eventStore.appendAll(events))
-        .`then`(runHandles(events, subscribers))
+        .`then`(runHandlers(events, subscribers))
 
   }
 
-  def runHandles(events: Iterable[Event], subscribers: Set[Subscriber]): SMono[Void] = {
+  def runHandlers(events: Iterable[Event], subscribers: Set[Subscriber]): SMono[Void] = {
     SFlux.fromIterable(events.flatMap((event: Event) => subscribers.map(subscriber => (event, subscriber))))
       .flatMap(infos => runHandler(infos._1, infos._2))
       .`then`()
