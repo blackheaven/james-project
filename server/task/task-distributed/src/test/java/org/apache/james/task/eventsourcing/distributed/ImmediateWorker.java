@@ -40,8 +40,8 @@ class ImmediateWorker implements TaskManagerWorker {
 
     @Override
     public Mono<Task.Result> executeTask(TaskWithId taskWithId) {
-        tasks.add(taskWithId);
-        return Mono.fromCallable(() -> taskWithId.getTask().run())
+        return Mono.fromRunnable(() -> tasks.add(taskWithId))
+            .then(Mono.fromCallable(() -> taskWithId.getTask().run()))
             .doOnNext(result -> results.add(result))
             .subscribeOn(Schedulers.elastic());
     }
@@ -52,8 +52,8 @@ class ImmediateWorker implements TaskManagerWorker {
 
     @Override
     public Publisher<Void> fail(TaskId taskId, Optional<TaskExecutionDetails.AdditionalInformation> additionalInformation, String errorMessage, Throwable reason) {
-        failedTasks.add(taskId);
-        return null;
+        return Mono.fromRunnable(() -> failedTasks.add(taskId))
+            .then();
     }
 
     @Override
