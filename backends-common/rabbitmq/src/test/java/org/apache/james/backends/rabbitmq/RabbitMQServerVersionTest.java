@@ -21,15 +21,14 @@ package org.apache.james.backends.rabbitmq;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import com.fasterxml.jackson.core.Version;
 
-import com.google.common.collect.ImmutableList;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 class RabbitMQServerVersionTest {
@@ -41,8 +40,8 @@ class RabbitMQServerVersionTest {
 
     @ParameterizedTest
     @MethodSource("versionsToParse")
-    void shouldParseVersion(String input, List<Integer> expected) {
-        assertThat(RabbitMQServerVersion.of(input).versions).containsExactly(expected.toArray(new Integer[expected.size()]));
+    void shouldParseVersion(String input, Version expected) {
+        assertThat(RabbitMQServerVersion.of(input).versions).isEqualTo(expected);
     }
 
     @ParameterizedTest
@@ -63,12 +62,12 @@ class RabbitMQServerVersionTest {
 
     static Stream<Arguments> versionsToParse() {
         return Stream.of(
-            Arguments.of("3.8.1", ImmutableList.of(3, 8, 1)),
-            Arguments.of("3.18.1", ImmutableList.of(3, 18, 1)),
-            Arguments.of("3.8.", ImmutableList.of(3, 8, 0)),
-            Arguments.of("3.8.0+beta.4.38.g33a7f97", ImmutableList.of(3, 8, 0)),
-            Arguments.of("3.7.1-alpha.40", ImmutableList.of(3, 7, 1)),
-            Arguments.of("3.7.0~alpha.449-1", ImmutableList.of(3, 7, 0))
+            Arguments.of("3.8.1", version(3, 8, 1)),
+            Arguments.of("3.18.1", version(3, 18, 1)),
+            Arguments.of("3.8.", version(3, 8, 0)),
+            Arguments.of("3.8.0+beta.4.38.g33a7f97", version(3, 8, 0)),
+            Arguments.of("3.7.1-alpha.40", version(3, 7, 1)),
+            Arguments.of("3.7.0~alpha.449-1", version(3, 7, 0))
         );
     }
 
@@ -89,5 +88,9 @@ class RabbitMQServerVersionTest {
             Arguments.of("3.8", "3.8.1"),
             Arguments.of("3.8.0", "4.0.0")
         );
+    }
+
+    private static Version version(int major, int minor, int patch) {
+        return new Version(major, minor, patch, "", "rabbitmq", "version");
     }
 }

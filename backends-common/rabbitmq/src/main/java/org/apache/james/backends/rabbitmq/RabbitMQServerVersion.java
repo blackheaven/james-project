@@ -19,82 +19,31 @@
 
 package org.apache.james.backends.rabbitmq;
 
-import java.util.Iterator;
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.core.util.VersionUtil;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 
 public class RabbitMQServerVersion {
-    private static final Pattern BEGINNING_DIGITS = Pattern.compile("^([\\d]+)");
-    private static final Pattern POINT = Pattern.compile("\\.");
-    private static final Pattern STOP = Pattern.compile("[\\-\\+~]");
-
     public static RabbitMQServerVersion of(String input) {
-        Function<String, Integer> toInt = part -> {
-            Matcher matcher = BEGINNING_DIGITS.matcher(part);
-            if (matcher.find()) {
-                return Integer.parseInt(matcher.group(0));
-            } else {
-                return 0;
-            }
-        };
-
-        ImmutableList.Builder<Integer> versions = ImmutableList.builder();
-        Iterable<String> parts = Splitter.on(POINT)
-            .trimResults()
-            .split(input);
-        for (String part : parts) {
-            versions.add(toInt.apply(part));
-
-            if (STOP.matcher(part).find()) {
-                break;
-            }
-        }
-
-        return new RabbitMQServerVersion(versions.build());
+        return new RabbitMQServerVersion(VersionUtil.parseVersion(input, "rabbitmq", "version"));
     }
 
     @VisibleForTesting
-    final ImmutableList<Integer> versions;
+    final Version versions;
 
-    private RabbitMQServerVersion(ImmutableList<Integer> versions) {
+    private RabbitMQServerVersion(Version versions) {
         this.versions = versions;
     }
 
     public boolean isAtLeast(RabbitMQServerVersion other) {
-        Iterator<Integer> currentVersions = versions.iterator();
-        Iterator<Integer> otherVersions = other.versions.iterator();
-
-        while (currentVersions.hasNext() && otherVersions.hasNext()) {
-            Integer otherVersion = otherVersions.next();
-            Integer currentVersion = currentVersions.next();
-            if (otherVersion < currentVersion) {
-                return true;
-            } else if (otherVersion > currentVersion) {
-                return false;
-            }
-        }
-
-        while (otherVersions.hasNext()) {
-            if (otherVersions.next() != 0) {
-                return false;
-            }
-        }
-
-        return true;
+        return versions.compareTo(other.versions) >= 0;
     }
 
     public String asString() {
-        return Joiner
-            .on('.')
-            .join(versions);
+        return versions.toFullString();
     }
 
     @Override
