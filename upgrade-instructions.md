@@ -256,7 +256,7 @@ Concerned products: Guice distributed James (rabbitMQ)
 
 The distributed James project (relying on Guice, Cassandra, ElasticSearch, RabbitMQ and optionally Swift) benefits from a new distributed task mananger.
 
-In order to enforce task sequential processing at the cluster level, we rely on a single active consumer, which is a feature introduced in RabbitMQ 3.8.1.
+In order to enforce task sequential processing at the cluster level, we rely on a single active consumer, which is a feature introduced in RabbitMQ 3.8.
 
 Users of distributed James product thus need to upgrade their RabbitMQ server to be at least version 3.8.1.
 
