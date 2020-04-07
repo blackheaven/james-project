@@ -59,7 +59,7 @@ public class RabbitMQHealthCheck implements HealthCheck {
                 if (!isCompatible) {
                     String versionCompatibilityError = String.format(
                         "RabbitMQ version(%s) is not compatible with the required one(%s)",
-                        version.map(RabbitMQServerVersion::asString).toString(),
+                        version.map(RabbitMQServerVersion::asString).orElse("no versions fetched"),
                         MINIMAL_VERSION.asString());
                     LOGGER.error(versionCompatibilityError);
                     return Result.unhealthy(COMPONENT_NAME, versionCompatibilityError);

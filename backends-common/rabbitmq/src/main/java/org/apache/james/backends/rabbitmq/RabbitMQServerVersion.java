@@ -25,6 +25,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
@@ -60,7 +61,8 @@ public class RabbitMQServerVersion {
         return new RabbitMQServerVersion(versions.build());
     }
 
-    private final ImmutableList<Integer> versions;
+    @VisibleForTesting
+    final ImmutableList<Integer> versions;
 
     private RabbitMQServerVersion(ImmutableList<Integer> versions) {
         this.versions = versions;

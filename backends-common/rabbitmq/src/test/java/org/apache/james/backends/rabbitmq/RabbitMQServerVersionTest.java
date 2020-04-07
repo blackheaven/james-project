@@ -21,6 +21,7 @@ package org.apache.james.backends.rabbitmq;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.google.common.collect.ImmutableList;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 class RabbitMQServerVersionTest {
@@ -39,8 +41,8 @@ class RabbitMQServerVersionTest {
 
     @ParameterizedTest
     @MethodSource("versionsToParse")
-    void shouldParseVersion(String input, String expected) {
-        assertThat(RabbitMQServerVersion.of(input).asString()).isEqualTo(expected);
+    void shouldParseVersion(String input, List<Integer> expected) {
+        assertThat(RabbitMQServerVersion.of(input).versions).containsExactly(expected.toArray(new Integer[expected.size()]));
     }
 
     @ParameterizedTest
@@ -61,12 +63,12 @@ class RabbitMQServerVersionTest {
 
     static Stream<Arguments> versionsToParse() {
         return Stream.of(
-            Arguments.of("3.8.1", "3.8.1"),
-            Arguments.of("3.18.1", "3.18.1"),
-            Arguments.of("3.8.", "3.8.0"),
-            Arguments.of("3.8.0+beta.4.38.g33a7f97", "3.8.0"),
-            Arguments.of("3.7.1-alpha.40", "3.7.1"),
-            Arguments.of("3.7.0~alpha.449-1", "3.7.0")
+            Arguments.of("3.8.1", ImmutableList.of(3, 8, 1)),
+            Arguments.of("3.18.1", ImmutableList.of(3, 18, 1)),
+            Arguments.of("3.8.", ImmutableList.of(3, 8, 0)),
+            Arguments.of("3.8.0+beta.4.38.g33a7f97", ImmutableList.of(3, 8, 0)),
+            Arguments.of("3.7.1-alpha.40", ImmutableList.of(3, 7, 1)),
+            Arguments.of("3.7.0~alpha.449-1", ImmutableList.of(3, 7, 0))
         );
     }
 
