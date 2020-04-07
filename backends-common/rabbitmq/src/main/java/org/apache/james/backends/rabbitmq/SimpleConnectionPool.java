@@ -94,7 +94,7 @@ public class SimpleConnectionPool implements AutoCloseable {
             return getOpenConnection()
                 .map(Connection::getServerProperties)
                 .flatMap(serverProperties -> Mono.justOrEmpty(serverProperties.get("version")))
-                .map(property -> (String) property)
+                .map(Object::toString)
                 .map(RabbitMQServerVersion::of)
                 .blockOptional(Duration.ofSeconds(1));
         } catch (Throwable t) {
