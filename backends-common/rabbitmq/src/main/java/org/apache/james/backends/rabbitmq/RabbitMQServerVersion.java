@@ -31,26 +31,26 @@ public class RabbitMQServerVersion {
         return new RabbitMQServerVersion(VersionUtil.parseVersion(input, "rabbitmq", "version"));
     }
 
-    @VisibleForTesting
-    final Version versions;
+    private final Version version;
 
-    private RabbitMQServerVersion(Version versions) {
-        this.versions = versions;
+    @VisibleForTesting
+    RabbitMQServerVersion(Version version) {
+        this.version = version;
     }
 
     public boolean isAtLeast(RabbitMQServerVersion other) {
-        return versions.compareTo(other.versions) >= 0;
+        return version.compareTo(other.version) >= 0;
     }
 
     public String asString() {
-        return versions.toFullString();
+        return version.toFullString();
     }
 
     @Override
     public final boolean equals(Object other) {
         if (other instanceof RabbitMQServerVersion) {
             RabbitMQServerVersion that = (RabbitMQServerVersion) other;
-            return Objects.equals(versions, that.versions);
+            return Objects.equals(version, that.version);
         }
 
         return false;
@@ -58,13 +58,13 @@ public class RabbitMQServerVersion {
 
     @Override
     public final int hashCode() {
-        return Objects.hash(versions);
+        return Objects.hash(version);
     }
 
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-            .add("versions", versions)
+            .add("version", version)
             .toString();
     }
 }

@@ -41,7 +41,7 @@ class RabbitMQServerVersionTest {
     @ParameterizedTest
     @MethodSource("versionsToParse")
     void shouldParseVersion(String input, Version expected) {
-        assertThat(RabbitMQServerVersion.of(input).versions).isEqualTo(expected);
+        assertThat(RabbitMQServerVersion.of(input)).isEqualTo(new RabbitMQServerVersion(expected));
     }
 
     @ParameterizedTest
