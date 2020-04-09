@@ -160,14 +160,7 @@ public class CassandraMessageMapper implements MessageMapper {
     }
 
     @Override
-    public Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange messageRange, FetchType ftype, int max) {
-        return findInMailboxReactive(mailbox, messageRange, ftype, max)
-            .toIterable()
-            .iterator();
-    }
-
-    @Override
-    public Flux<MailboxMessage> findInMailboxReactive(Mailbox mailbox, MessageRange messageRange, FetchType ftype, int limit) {
+    public Flux<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange messageRange, FetchType ftype, int limit) {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
 
         return Limit.from(limit).applyOnFlux(

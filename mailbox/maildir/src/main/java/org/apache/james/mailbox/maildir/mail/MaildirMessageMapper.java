@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.function.Function;
 
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
@@ -57,6 +58,9 @@ import org.apache.james.mailbox.store.mail.utils.ApplicableFlagCalculator;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class MaildirMessageMapper extends AbstractMessageMapper {
 
@@ -107,28 +111,24 @@ public class MaildirMessageMapper extends AbstractMessageMapper {
     }
 
     @Override
-    public Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set, FetchType fType, int max)
-            throws MailboxException {
-        final List<MailboxMessage> results;
+    public Flux<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set, FetchType fType, int max) {
         final MessageUid from = set.getUidFrom();
         final MessageUid to = set.getUidTo();
         final Type type = set.getType();
-        switch (type) {
-        default:
-        case ALL:
-            results = findMessagesInMailboxBetweenUIDs(mailbox, null, MessageUid.MIN_VALUE, null, max);
-            break;
-        case FROM:
-            results = findMessagesInMailboxBetweenUIDs(mailbox, null, from, null, max);
-            break;
-        case ONE:
-            results = findMessageInMailboxWithUID(mailbox, from);
-            break;
-        case RANGE:
-            results = findMessagesInMailboxBetweenUIDs(mailbox, null, from, to, max);
-            break;
-        }
-        return results.iterator();
+        return Mono.fromCallable(() -> {
+            switch (type) {
+                default:
+                case ALL:
+                    return findMessagesInMailboxBetweenUIDs(mailbox, null, MessageUid.MIN_VALUE, null, max);
+                case FROM:
+                    return findMessagesInMailboxBetweenUIDs(mailbox, null, from, null, max);
+                case ONE:
+                    return findMessageInMailboxWithUID(mailbox, from);
+                case RANGE:
+                    return findMessagesInMailboxBetweenUIDs(mailbox, null, from, to, max);
+            }
+        })
+        .flatMapIterable(Function.identity());
 
     }
 
@@ -155,9 +155,7 @@ public class MaildirMessageMapper extends AbstractMessageMapper {
         final List<UpdatedFlags> updatedFlags = new ArrayList<>();
         final MaildirFolder folder = maildirStore.createMaildirFolder(mailbox);
 
-        Iterator<MailboxMessage> it = findInMailbox(mailbox, set, FetchType.Metadata, UNLIMITED);
-        while (it.hasNext()) {
-            final MailboxMessage member = it.next();
+        for (MailboxMessage member : findInMailbox(mailbox, set, FetchType.Metadata, UNLIMITED).toIterable()) {
             Flags originalFlags = member.createFlags();
             member.setFlags(flagsUpdateCalculator.buildNewFlags(originalFlags));
             Flags newFlags = member.createFlags();
@@ -183,7 +181,7 @@ public class MaildirMessageMapper extends AbstractMessageMapper {
                     long modSeq;
                     // if the flags don't have change we should not try to move
                     // the file
-                    if (newMessageFile.equals(messageFile) == false) {
+                    if (!newMessageFile.equals(messageFile)) {
                         FileUtils.moveFile(messageFile, newMessageFile);
                         modSeq = newMessageFile.lastModified();
 
@@ -193,11 +191,11 @@ public class MaildirMessageMapper extends AbstractMessageMapper {
                     member.setModSeq(ModSeq.of(modSeq));
 
                     updatedFlags.add(UpdatedFlags.builder()
-                        .uid(member.getUid())
-                        .modSeq(member.getModSeq())
-                        .newFlags(newFlags)
-                        .oldFlags(originalFlags)
-                        .build());
+                            .uid(member.getUid())
+                            .modSeq(member.getModSeq())
+                            .newFlags(newFlags)
+                            .oldFlags(originalFlags)
+                            .build());
 
                     MessageUid uid = member.getUid();
                     folder.update(uid, newMessageName);

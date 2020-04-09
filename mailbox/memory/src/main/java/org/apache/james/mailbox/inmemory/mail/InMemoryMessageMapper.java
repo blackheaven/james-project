@@ -21,10 +21,10 @@ package org.apache.james.mailbox.inmemory.mail;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
@@ -46,6 +46,9 @@ import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
 import org.apache.james.mailbox.store.mail.utils.ApplicableFlagCalculator;
 
 import com.github.steveash.guavate.Guavate;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class InMemoryMessageMapper extends AbstractMessageMapper {
     private final Map<InMemoryId, Map<MessageUid, MailboxMessage>> mailboxByUid;
@@ -112,16 +115,18 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
     }
 
     @Override
-    public Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set, FetchType ftype, int max) {
-        List<MailboxMessage> results = new ArrayList<>(getMembershipByUidForMailbox(mailbox).values());
-        results.removeIf(mailboxMessage -> !set.includes(mailboxMessage.getUid()));
-        
-        Collections.sort(results);
-
-        if (max > 0 && results.size() > max) {
-            results = results.subList(0, max);
-        }
-        return results.iterator();
+    public Flux<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set, FetchType ftype, int max) {
+        return Mono.fromCallable(() -> new ArrayList<>(getMembershipByUidForMailbox(mailbox).values()))
+            .flatMapIterable(Function.identity())
+            .filter(mailboxMessage -> set.includes(mailboxMessage.getUid()))
+            .sort()
+            .collect(Guavate.toImmutableList())
+            .flatMapIterable(results -> {
+                if (max > 0 && results.size() > max) {
+                    return results.subList(0, max);
+                }
+                return results;
+            });
     }
 
     @Override
@@ -147,17 +152,11 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
 
     @Override
     public List<MessageUid> retrieveMessagesMarkedForDeletion(Mailbox mailbox, MessageRange messageRange) {
-        List<MessageUid> filteredResult = new ArrayList<>();
-
-        Iterator<MailboxMessage> it = findInMailbox(mailbox, messageRange, FetchType.Metadata, UNLIMITED);
-
-        while (it.hasNext()) {
-            MailboxMessage member = it.next();
-            if (member.isDeleted()) {
-                filteredResult.add(member.getUid());
-            }
-        }
-        return filteredResult;
+        return findInMailbox(mailbox, messageRange, FetchType.Metadata, UNLIMITED)
+            .filter(MailboxMessage::isDeleted)
+            .map(MailboxMessage::getUid)
+            .collect(Guavate.toImmutableList())
+            .block();
     }
 
     @Override

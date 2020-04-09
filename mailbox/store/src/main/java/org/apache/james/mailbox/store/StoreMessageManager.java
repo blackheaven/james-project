@@ -684,7 +684,7 @@ public class StoreMessageManager implements MessageManager {
 
         Mono<DeleteOperation> deleteOperation = Flux.fromIterable(MessageRange.toRanges(uids))
             .publishOn(Schedulers.elastic())
-            .flatMap(range -> messageMapper.findInMailboxReactive(mailbox, range, FetchType.Metadata, UNLIMITED))
+            .flatMap(range -> messageMapper.findInMailbox(mailbox, range, FetchType.Metadata, UNLIMITED))
             .map(mailboxMessage -> MetadataWithMailboxId.from(mailboxMessage.metaData(), mailboxMessage.getMailboxId()))
             .collect(Guavate.toImmutableList())
             .map(DeleteOperation::from);
@@ -809,7 +809,9 @@ public class StoreMessageManager implements MessageManager {
 
     private Iterator<MailboxMessage> retrieveOriginalRows(MessageRange set, MailboxSession session) throws MailboxException {
         MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
-        return messageMapper.findInMailbox(mailbox, set, FetchType.Full, UNLIMITED);
+        return messageMapper.findInMailbox(mailbox, set, FetchType.Full, UNLIMITED)
+            .toIterable()
+            .iterator();
     }
 
     private SortedMap<MessageUid, MessageMetaData> collectMetadata(Iterator<MessageMetaData> ids) {

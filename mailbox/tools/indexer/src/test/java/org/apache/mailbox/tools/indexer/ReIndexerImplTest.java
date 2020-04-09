@@ -211,7 +211,7 @@ public class ReIndexerImplTest {
         MessageUid uid = MessageUid.of(36);
 
         assertThatThrownBy(() -> reIndexer.reIndex(mailboxId, uid))
-            .isInstanceOf(MailboxNotFoundException.class);
+            .hasCauseInstanceOf(MailboxNotFoundException.class);
     }
 
     @Test
@@ -259,6 +259,6 @@ public class ReIndexerImplTest {
         MailboxId mailboxId = InMemoryId.of(42);
 
         assertThatThrownBy(() -> reIndexer.reIndex(mailboxId))
-            .isInstanceOf(MailboxNotFoundException.class);
+            .hasCauseInstanceOf(MailboxNotFoundException.class);
     }
 }

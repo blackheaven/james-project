@@ -89,7 +89,7 @@ public abstract class AbstractMailboxManagerAttachmentTest {
         inboxMessageManager.appendMessage(MessageManager.AppendCommand.builder()
             .build(mailInputStream), mailboxSession);
         
-        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1);
+        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1).toIterable().iterator();
         assertThat(messages.hasNext()).isTrue();
         assertThat(messages.next().getAttachments()).isEmpty();
     }
@@ -100,7 +100,7 @@ public abstract class AbstractMailboxManagerAttachmentTest {
         inboxMessageManager.appendMessage(MessageManager.AppendCommand.builder()
             .build(mailInputStream), mailboxSession);
 
-        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1);
+        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1).toIterable().iterator();
         assertThat(messages.hasNext()).isTrue();
         assertThat(messages.next().getAttachments()).hasSize(1);
     }
@@ -113,7 +113,7 @@ public abstract class AbstractMailboxManagerAttachmentTest {
 
         Optional<String> expectedName = Optional.of("exploits_of_a_mom.png");
 
-        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1);
+        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1).toIterable().iterator();
         List<MessageAttachmentMetadata> attachments = messages.next().getAttachments();
         assertThat(attachments.get(0).getName()).isEqualTo(expectedName);
     }
@@ -125,7 +125,7 @@ public abstract class AbstractMailboxManagerAttachmentTest {
         inboxMessageManager.appendMessage(MessageManager.AppendCommand.builder()
             .build(mailInputStream), mailboxSession);
         
-        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1);
+        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1).toIterable().iterator();
         assertThat(messages.hasNext()).isTrue();
         List<MessageAttachmentMetadata> attachments = messages.next().getAttachments();
         assertThat(attachments).hasSize(1);
@@ -140,7 +140,7 @@ public abstract class AbstractMailboxManagerAttachmentTest {
         inboxMessageManager.appendMessage(MessageManager.AppendCommand.builder()
             .build(mailInputStream), mailboxSession);
         
-        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1);
+        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1).toIterable().iterator();
         assertThat(messages.hasNext()).isTrue();
         assertThat(messages.next().getAttachments()).hasSize(2);
     }
@@ -152,7 +152,7 @@ public abstract class AbstractMailboxManagerAttachmentTest {
         inboxMessageManager.appendMessage(MessageManager.AppendCommand.builder()
             .build(mailInputStream), mailboxSession);
         
-        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1);
+        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1).toIterable().iterator();
         assertThat(messages.hasNext()).isTrue();
         List<MessageAttachmentMetadata> attachments = messages.next().getAttachments();
         assertThat(attachments).hasSize(2);
@@ -181,7 +181,7 @@ public abstract class AbstractMailboxManagerAttachmentTest {
         inboxMessageManager.appendMessage(MessageManager.AppendCommand.builder()
             .build(mailInputStream), mailboxSession);
         
-        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1);
+        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1).toIterable().iterator();
         assertThat(messages.hasNext()).isTrue();
         assertThat(messages.next().getAttachments()).hasSize(1);
     }
@@ -195,7 +195,7 @@ public abstract class AbstractMailboxManagerAttachmentTest {
         parseFailingInboxMessageManager.appendMessage(MessageManager.AppendCommand.builder()
             .build(mailInputStream), mailboxSession);
 
-        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1);
+        Iterator<MailboxMessage> messages = messageMapper.findInMailbox(inbox, MessageRange.all(), FetchType.Full, 1).toIterable().iterator();
         assertThat(messages.hasNext()).isTrue();
         List<MessageAttachmentMetadata> attachments = messages.next().getAttachments();
         assertThat(attachments).hasSize(0);

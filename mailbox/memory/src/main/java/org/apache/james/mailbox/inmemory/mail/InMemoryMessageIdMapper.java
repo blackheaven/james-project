@@ -29,7 +29,6 @@ import javax.mail.Flags;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.mailbox.MessageManager.FlagsUpdateMode;
-import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.Mailbox;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
@@ -47,6 +46,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class InMemoryMessageIdMapper implements MessageIdMapper {
     private final MailboxMapper mailboxMapper;
@@ -58,92 +58,81 @@ public class InMemoryMessageIdMapper implements MessageIdMapper {
     }
 
     @Override
-    public List<MailboxMessage> find(Collection<MessageId> messageIds, MessageMapper.FetchType fetchType) {
-        return findReactive(messageIds, fetchType)
-            .collect(Guavate.toImmutableList())
-            .block();
-    }
-
-    @Override
-    public Flux<MailboxMessage> findReactive(Collection<MessageId> messageIds, MessageMapper.FetchType fetchType) {
+    public Flux<MailboxMessage> find(Collection<MessageId> messageIds, MessageMapper.FetchType fetchType) {
         return mailboxMapper.list()
-            .flatMap(mailbox -> messageMapper.findInMailboxReactive(mailbox, MessageRange.all(), fetchType, UNLIMITED))
+            .flatMap(mailbox -> messageMapper.findInMailbox(mailbox, MessageRange.all(), fetchType, UNLIMITED))
             .filter(message -> messageIds.contains(message.getMessageId()));
     }
 
     @Override
-    public List<MailboxId> findMailboxes(MessageId messageId) {
+    public Flux<MailboxId> findMailboxes(MessageId messageId) {
         return find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
-            .stream()
-            .map(MailboxMessage::getMailboxId)
-            .collect(Guavate.toImmutableList());
+            .map(MailboxMessage::getMailboxId);
     }
 
     @Override
-    public void save(MailboxMessage mailboxMessage) throws MailboxException {
-        Mailbox mailbox = mailboxMapper.findMailboxById(mailboxMessage.getMailboxId());
-        messageMapper.save(mailbox, mailboxMessage);
+    public Mono<Void> save(MailboxMessage mailboxMessage) {
+        return mailboxMapper.findMailboxById(mailboxMessage.getMailboxId())
+            .flatMap(mailbox -> Mono.fromCallable(() -> messageMapper.save(mailbox, mailboxMessage)))
+            .then();
     }
 
     @Override
-    public void copyInMailbox(MailboxMessage mailboxMessage) throws MailboxException {
-        boolean isAlreadyInMailbox = findMailboxes(mailboxMessage.getMessageId()).contains(mailboxMessage.getMailboxId());
-        if (!isAlreadyInMailbox) {
-            save(mailboxMessage);
-        }
+    public Mono<Void> copyInMailbox(MailboxMessage mailboxMessage) {
+        return findMailboxes(mailboxMessage.getMessageId())
+            .collect(Guavate.toImmutableSet())
+            .filter(mailboxIds -> !mailboxIds.contains(mailboxMessage.getMailboxId()))
+            .flatMap(ignored -> save(mailboxMessage));
     }
 
     @Override
-    public void delete(MessageId messageId) {
-        find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
-            .forEach(Throwing.consumer(
-                message -> messageMapper.delete(
-                    mailboxMapper.findMailboxById(message.getMailboxId()),
-                    message)));
+    public Mono<Void> delete(MessageId messageId) {
+        return find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
+            .flatMap(message -> mailboxMapper.findMailboxById(message.getMailboxId())
+                    .doOnNext(mailbox -> messageMapper.delete(mailbox, message)))
+            .then();
     }
 
     @Override
-    public void delete(MessageId messageId, Collection<MailboxId> mailboxIds) {
-        find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
-            .stream()
+    public Mono<Void> delete(MessageId messageId, Collection<MailboxId> mailboxIds) {
+        return find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
             .filter(message -> mailboxIds.contains(message.getMailboxId()))
-            .forEach(Throwing.consumer(
-                message -> messageMapper.delete(
-                    mailboxMapper.findMailboxById(message.getMailboxId()),
-                    message)));
+            .flatMap(message -> mailboxMapper.findMailboxById(message.getMailboxId())
+                    .doOnNext(mailbox -> messageMapper.delete(mailbox, message)))
+            .then();
     }
 
     @Override
-    public Multimap<MailboxId, UpdatedFlags> setFlags(MessageId messageId, List<MailboxId> mailboxIds,
+    public Mono<Multimap<MailboxId, UpdatedFlags>> setFlags(MessageId messageId, List<MailboxId> mailboxIds,
                                                       Flags newState, FlagsUpdateMode updateMode) {
         return find(ImmutableList.of(messageId), MessageMapper.FetchType.Metadata)
-            .stream()
             .filter(message -> mailboxIds.contains(message.getMailboxId()))
-            .map(updateMessage(newState, updateMode))
+            .flatMap(updateMessage(newState, updateMode))
             .distinct()
             .collect(Guavate.toImmutableListMultimap(
                 Pair::getKey,
                 Pair::getValue));
     }
 
-    private Function<MailboxMessage, Pair<MailboxId, UpdatedFlags>> updateMessage(Flags newState, FlagsUpdateMode updateMode) {
-        return Throwing.function((MailboxMessage message) -> {
+    private Function<MailboxMessage, Mono<Pair<MailboxId, UpdatedFlags>>> updateMessage(Flags newState, FlagsUpdateMode updateMode) {
+        return (MailboxMessage message) -> Mono.defer(() -> {
             FlagsUpdateCalculator flagsUpdateCalculator = new FlagsUpdateCalculator(newState, updateMode);
             if (flagsUpdateCalculator.buildNewFlags(message.createFlags()).equals(message.createFlags())) {
-                UpdatedFlags updatedFlags = UpdatedFlags.builder()
+                return Mono.just(UpdatedFlags.builder()
                     .modSeq(message.getModSeq())
                     .uid(message.getUid())
                     .oldFlags(message.createFlags())
                     .newFlags(newState)
-                    .build();
-                return Pair.of(message.getMailboxId(), updatedFlags);
+                    .build());
             }
-            return Pair.of(message.getMailboxId(),
-                messageMapper.updateFlags(
-                    mailboxMapper.findMailboxById(message.getMailboxId()),
-                    flagsUpdateCalculator,
-                    message.getUid().toRange())
-                    .next());
-        });
+            return mailboxMapper.findMailboxById(message.getMailboxId())
+                .map(Throwing.<Mailbox, UpdatedFlags>function(mailbox ->
+                    messageMapper.updateFlags(
+                            mailbox,
+                            flagsUpdateCalculator,
+                            message.getUid().toRange())
+                            .next()).sneakyThrow());
+        })
+        .map(updatedFlags -> Pair.of(message.getMailboxId(), updatedFlags));
     }
 }

@@ -69,13 +69,12 @@ public class TransactionalMessageMapper implements MessageMapper {
     }
 
     @Override
-    public <T> T execute(Transaction<T> transaction) throws MailboxException {
+    public <T> T execute(Transaction<T> transaction) {
         throw new NotImplementedException("not implemented");
     }
 
     @Override
-    public Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set, FetchType type, int limit)
-            throws MailboxException {
+    public Flux<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set, FetchType type, int limit) {
         return messageMapper.findInMailbox(mailbox, set, type, limit);
     }
 

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Function;
 
 import javax.mail.Flags;
 import javax.mail.util.SharedByteArrayInputStream;
@@ -52,6 +53,7 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.Iterables;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 class StoreMailboxMessageResultIteratorTest {
 
@@ -83,17 +85,12 @@ class StoreMailboxMessageResultIteratorTest {
         }
 
         @Override
-        public Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set,
-                                                              org.apache.james.mailbox.store.mail.MessageMapper.FetchType type, int limit)
-                throws MailboxException {
-            
-            List<MailboxMessage> messages = new ArrayList<>();
-            for (MessageUid uid: Iterables.limit(set, limit)) {
-                if (messageRange.includes(uid)) {
-                    messages.add(createMessage(uid));
-                }    
-            }
-            return messages.iterator();
+        public Flux<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set,
+                                                              org.apache.james.mailbox.store.mail.MessageMapper.FetchType type, int limit) {
+            return Mono.fromCallable(() -> Iterables.limit(set, limit))
+                .flatMapIterable(Function.identity())
+                .filter(messageRange::includes)
+                .map(this::createMessage);
         }
 
         private SimpleMailboxMessage createMessage(MessageUid uid) {

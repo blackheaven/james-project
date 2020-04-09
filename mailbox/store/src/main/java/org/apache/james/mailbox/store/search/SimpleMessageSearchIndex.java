@@ -22,10 +22,8 @@ import static org.apache.james.mailbox.store.mail.AbstractMessageMapper.UNLIMITE
 
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -45,7 +43,6 @@ import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.SearchQuery.ConjunctionCriterion;
 import org.apache.james.mailbox.model.SearchQuery.Criterion;
 import org.apache.james.mailbox.model.SearchQuery.UidCriterion;
-import org.apache.james.mailbox.model.SearchQuery.UidRange;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.MailboxMapperFactory;
 import org.apache.james.mailbox.store.mail.MessageMapper;
@@ -53,11 +50,12 @@ import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.MessageMapperFactory;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 
-import com.github.fge.lambdas.Throwing;
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 /**
@@ -122,28 +120,24 @@ public class SimpleMessageSearchIndex implements MessageSearchIndex {
     private List<SearchResult> searchResults(MailboxSession session, Mailbox mailbox, SearchQuery query) throws MailboxException {
         MessageMapper mapper = messageMapperFactory.getMessageMapper(session);
 
-        final SortedSet<MailboxMessage> hitSet = new TreeSet<>();
+        final SortedSet<MailboxMessage> hitSet = searchHits(mailbox, query, mapper)
+                .collect(Guavate.toImmutableSortedSet())
+                .block();
+        return ImmutableList.copyOf(new MessageSearches(hitSet.iterator(), query, textExtractor, attachmentContentLoader, session).iterator());
+    }
 
+    private Flux<MailboxMessage> searchHits(Mailbox mailbox, SearchQuery query, MessageMapper mapper) {
         UidCriterion uidCrit = findConjugatedUidCriterion(query.getCriterias());
         if (uidCrit != null) {
             // if there is a conjugated uid range criterion in the query tree we can optimize by
             // only fetching this uid range
-            UidRange[] ranges = uidCrit.getOperator().getRange();
-            for (UidRange r : ranges) {
-                Iterator<MailboxMessage> it = mapper.findInMailbox(mailbox, MessageRange.range(r.getLowValue(), r.getHighValue()), FetchType.Metadata, UNLIMITED);
-                while (it.hasNext()) {
-                    hitSet.add(it.next());
-                }
-            }
-        } else {
-            // we have to fetch all messages
-            Iterator<MailboxMessage> messages = mapper.findInMailbox(mailbox, MessageRange.all(), FetchType.Full, UNLIMITED);
-            while (messages.hasNext()) {
-                MailboxMessage m = messages.next();
-                hitSet.add(m);
-            }
+            return Mono.fromCallable(() -> uidCrit.getOperator().getRange())
+                .flatMapMany(Flux::fromArray)
+                .flatMap(range -> mapper.findInMailbox(mailbox, MessageRange.range(range.getLowValue(), range.getHighValue()), FetchType.Metadata, UNLIMITED));
         }
-        return ImmutableList.copyOf(new MessageSearches(hitSet.iterator(), query, textExtractor, attachmentContentLoader, session).iterator());
+
+        // we have to fetch all messages
+        return mapper.findInMailbox(mailbox, MessageRange.all(), FetchType.Full, UNLIMITED);
     }
 
     @Override
@@ -151,7 +145,7 @@ public class SimpleMessageSearchIndex implements MessageSearchIndex {
         MailboxMapper mailboxMapper = mailboxMapperFactory.getMailboxMapper(session);
 
         Flux<Mailbox> filteredMailboxes = Flux.fromIterable(mailboxIds)
-            .concatMap(Throwing.function(mailboxMapper::findMailboxByIdReactive).sneakyThrow());
+            .concatMap(mailboxMapper::findMailboxById);
 
         return getAsMessageIds(searchResults(session, filteredMailboxes, searchQuery), limit);
     }

@@ -76,7 +76,9 @@ class CassandraMessageIdMapperTest extends MessageIdMapperTest {
                     message2.getMessageId(),
                     message3.getMessageId(),
                     message4.getMessageId()),
-                MessageMapper.FetchType.Metadata);
+                MessageMapper.FetchType.Metadata)
+            .collectList()
+            .block();
 
         assertThat(messages)
             .containsOnly(message1, message2, message3, message4);
@@ -94,16 +96,20 @@ class CassandraMessageIdMapperTest extends MessageIdMapperTest {
             try {
                 message1.setUid(mapperProvider.generateMessageUid());
                 message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
-                sut.save(message1);
+                sut.save(message1).block();
             } catch (Exception e) {
                 // ignoring expected error
             }
 
             CassandraMessageIdDAO messageIdDAO = new CassandraMessageIdDAO(cassandra.getConf(), new CassandraMessageId.Factory());
             SoftAssertions.assertSoftly(Throwing.consumer(softly -> {
-                softly.assertThat(sut.find(ImmutableList.of(message1.getMessageId()), MessageMapper.FetchType.Metadata))
+                softly.assertThat(sut.find(ImmutableList.of(message1.getMessageId()), MessageMapper.FetchType.Metadata)
+                        .collectList()
+                        .block())
                     .isEmpty();
-                softly.assertThat(messageIdDAO.retrieveMessages((CassandraId) benwaInboxMailbox.getMailboxId(), MessageRange.all()).collectList().block())
+                softly.assertThat(messageIdDAO.retrieveMessages((CassandraId) benwaInboxMailbox.getMailboxId(), MessageRange.all())
+                        .collectList()
+                        .block())
                     .isEmpty();
             }));
         }
@@ -118,14 +124,16 @@ class CassandraMessageIdMapperTest extends MessageIdMapperTest {
             try {
                 message1.setUid(mapperProvider.generateMessageUid());
                 message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
-                sut.save(message1);
+                sut.save(message1).block();
             } catch (Exception e) {
                 // ignoring expected error
             }
 
             CassandraMessageIdDAO messageIdDAO = new CassandraMessageIdDAO(cassandra.getConf(), new CassandraMessageId.Factory());
             SoftAssertions.assertSoftly(Throwing.consumer(softly -> {
-                softly.assertThat(sut.find(ImmutableList.of(message1.getMessageId()), MessageMapper.FetchType.Metadata))
+                softly.assertThat(sut.find(ImmutableList.of(message1.getMessageId()), MessageMapper.FetchType.Metadata)
+                        .collectList()
+                        .block())
                     .isEmpty();
                 softly.assertThat(messageIdDAO.retrieveMessages((CassandraId) benwaInboxMailbox.getMailboxId(), MessageRange.all()).collectList().block())
                     .isEmpty();
@@ -142,16 +150,20 @@ class CassandraMessageIdMapperTest extends MessageIdMapperTest {
             try {
                 message1.setUid(mapperProvider.generateMessageUid());
                 message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
-                sut.save(message1);
+                sut.save(message1).block();
             } catch (Exception e) {
                 // ignoring expected error
             }
 
             CassandraMessageIdDAO messageIdDAO = new CassandraMessageIdDAO(cassandra.getConf(), new CassandraMessageId.Factory());
             SoftAssertions.assertSoftly(Throwing.consumer(softly -> {
-                softly.assertThat(sut.find(ImmutableList.of(message1.getMessageId()), MessageMapper.FetchType.Metadata))
+                softly.assertThat(sut.find(ImmutableList.of(message1.getMessageId()), MessageMapper.FetchType.Metadata)
+                        .collectList()
+                        .block())
                     .isEmpty();
-                softly.assertThat(messageIdDAO.retrieveMessages((CassandraId) benwaInboxMailbox.getMailboxId(), MessageRange.all()).collectList().block())
+                softly.assertThat(messageIdDAO.retrieveMessages((CassandraId) benwaInboxMailbox.getMailboxId(), MessageRange.all())
+                        .collectList()
+                        .block())
                     .isEmpty();
             }));
         }
@@ -166,16 +178,20 @@ class CassandraMessageIdMapperTest extends MessageIdMapperTest {
             try {
                 message1.setUid(mapperProvider.generateMessageUid());
                 message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
-                sut.save(message1);
+                sut.save(message1).block();
             } catch (Exception e) {
                 // ignoring expected error
             }
 
             CassandraMessageIdDAO messageIdDAO = new CassandraMessageIdDAO(cassandra.getConf(), new CassandraMessageId.Factory());
             SoftAssertions.assertSoftly(Throwing.consumer(softly -> {
-                softly.assertThat(sut.find(ImmutableList.of(message1.getMessageId()), MessageMapper.FetchType.Metadata))
+                softly.assertThat(sut.find(ImmutableList.of(message1.getMessageId()), MessageMapper.FetchType.Metadata)
+                        .collectList()
+                        .block())
                     .isEmpty();
-                softly.assertThat(messageIdDAO.retrieveMessages((CassandraId) benwaInboxMailbox.getMailboxId(), MessageRange.all()).collectList().block())
+                softly.assertThat(messageIdDAO.retrieveMessages((CassandraId) benwaInboxMailbox.getMailboxId(), MessageRange.all())
+                        .collectList()
+                        .block())
                     .isEmpty();
             }));
         }
@@ -190,7 +206,7 @@ class CassandraMessageIdMapperTest extends MessageIdMapperTest {
             try {
                 message1.setUid(mapperProvider.generateMessageUid());
                 message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
-                sut.save(message1);
+                sut.save(message1).block();
             } catch (Exception e) {
                 // ignoring expected error
             }
@@ -198,9 +214,13 @@ class CassandraMessageIdMapperTest extends MessageIdMapperTest {
             CassandraMessageIdToImapUidDAO imapUidDAO = new CassandraMessageIdToImapUidDAO(cassandra.getConf(), new CassandraMessageId.Factory());
 
             SoftAssertions.assertSoftly(Throwing.consumer(softly -> {
-                softly.assertThat(sut.find(ImmutableList.of(message1.getMessageId()), MessageMapper.FetchType.Metadata))
+                softly.assertThat(sut.find(ImmutableList.of(message1.getMessageId()), MessageMapper.FetchType.Metadata)
+                        .collectList()
+                        .block())
                     .hasSize(1);
-                softly.assertThat(imapUidDAO.retrieve((CassandraMessageId) message1.getMessageId(), Optional.empty()).collectList().block())
+                softly.assertThat(imapUidDAO.retrieve((CassandraMessageId) message1.getMessageId(), Optional.empty())
+                        .collectList()
+                        .block())
                     .hasSize(1);
             }));
         }
@@ -214,9 +234,11 @@ class CassandraMessageIdMapperTest extends MessageIdMapperTest {
 
             message1.setUid(mapperProvider.generateMessageUid());
             message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
-            sut.save(message1);
+            sut.save(message1).block();
 
-            assertThat(sut.find(ImmutableList.of(message1.getMessageId()), MessageMapper.FetchType.Metadata))
+            assertThat(sut.find(ImmutableList.of(message1.getMessageId()), MessageMapper.FetchType.Metadata)
+                    .collectList()
+                    .block())
                 .hasSize(1);
         }
     }

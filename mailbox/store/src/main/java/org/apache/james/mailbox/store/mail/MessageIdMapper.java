@@ -24,8 +24,6 @@ import java.util.List;
 import javax.mail.Flags;
 
 import org.apache.james.mailbox.MessageManager;
-import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.UpdatedFlags;
@@ -35,28 +33,26 @@ import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import com.google.common.collect.Multimap;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface MessageIdMapper {
 
-    List<MailboxMessage> find(Collection<MessageId> messageIds, FetchType fetchType);
+    Flux<MailboxMessage> find(Collection<MessageId> messageIds, FetchType fetchType);
 
-    default Flux<MailboxMessage> findReactive(Collection<MessageId> messageIds, FetchType fetchType) {
-        return Flux.fromIterable(find(messageIds, fetchType));
-    }
+    Flux<MailboxId> findMailboxes(MessageId messageId);
 
-    List<MailboxId> findMailboxes(MessageId messageId);
+    Mono<Void> save(MailboxMessage mailboxMessage);
 
-    void save(MailboxMessage mailboxMessage) throws MailboxNotFoundException, MailboxException;
+    Mono<Void> copyInMailbox(MailboxMessage mailboxMessage);
 
-    void copyInMailbox(MailboxMessage mailboxMessage) throws MailboxNotFoundException, MailboxException;
+    Mono<Void> delete(MessageId messageId);
 
-    void delete(MessageId messageId);
+    Mono<Void> delete(MessageId messageId, Collection<MailboxId> mailboxIds);
 
-    void delete(MessageId messageId, Collection<MailboxId> mailboxIds);
-
-    default void delete(Multimap<MessageId, MailboxId> ids) {
-        ids.asMap()
-            .forEach(this::delete);
+    default Mono<Void> delete(Multimap<MessageId, MailboxId> ids) {
+        return Flux.fromIterable(ids.asMap().entrySet())
+            .flatMap(entry -> delete(entry.getKey(), entry.getValue()))
+            .then();
     }
 
     /**
@@ -66,7 +62,6 @@ public interface MessageIdMapper {
      * MessageUid.
      *
      * @return Metadata of the update, indexed by mailboxIds.
-     * @throws MailboxException
      */
-    Multimap<MailboxId, UpdatedFlags> setFlags(MessageId messageId, List<MailboxId> mailboxIds, Flags newState, MessageManager.FlagsUpdateMode updateMode) throws MailboxException;
+    Mono<Multimap<MailboxId, UpdatedFlags>> setFlags(MessageId messageId, List<MailboxId> mailboxIds, Flags newState, MessageManager.FlagsUpdateMode updateMode);
 }

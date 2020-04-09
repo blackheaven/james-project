@@ -20,7 +20,6 @@ package org.apache.james.mailbox.store.search;
 
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -122,9 +121,7 @@ public class LazyMessageSearchIndex extends ListeningMessageSearchIndex {
                 done = oldDone;
             }
             synchronized (done) {
-                Iterator<MailboxMessage> messages = factory.getMessageMapper(session).findInMailbox(mailbox, MessageRange.all(), FetchType.Full, UNLIMITED);
-                while (messages.hasNext()) {
-                    final MailboxMessage message = messages.next();
+                for (MailboxMessage message : factory.getMessageMapper(session).findInMailbox(mailbox, MessageRange.all(), FetchType.Full, UNLIMITED).toIterable()) {
                     try {
                         add(session, mailbox, message).block();
                     } catch (Exception e) {

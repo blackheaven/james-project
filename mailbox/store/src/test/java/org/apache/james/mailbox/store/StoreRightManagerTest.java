@@ -70,7 +70,7 @@ class StoreRightManagerTest {
     MailboxMapper mockedMailboxMapper;
 
     @BeforeEach
-    void setup() throws MailboxException {
+    void setup() {
         aliceSession = MailboxSessionUtil.create(MailboxFixture.ALICE);
         MailboxSessionMapperFactory mockedMapperFactory = mock(MailboxSessionMapperFactory.class);
         mockedMailboxMapper = mock(MailboxMapper.class);
@@ -84,18 +84,18 @@ class StoreRightManagerTest {
     }
 
     @Test
-    void hasRightShouldThrowMailboxNotFoundExceptionWhenMailboxDoesNotExist() throws MailboxException {
+    void hasRightShouldThrowMailboxNotFoundExceptionWhenMailboxDoesNotExist() {
         MailboxPath mailboxPath = MailboxPath.forUser(MailboxFixture.ALICE, "unexisting mailbox");
-        when(mockedMailboxMapper.findMailboxByPathBlocking(mailboxPath))
-            .thenThrow(new MailboxNotFoundException(""));
+        when(mockedMailboxMapper.findMailboxByPath(mailboxPath))
+            .thenReturn(Mono.error(new MailboxNotFoundException("")));
 
         assertThatThrownBy(() ->
             storeRightManager.hasRight(mailboxPath, Right.Read, aliceSession))
-            .isInstanceOf(MailboxNotFoundException.class);
+            .hasCauseInstanceOf(MailboxNotFoundException.class);
     }
 
     @Test
-    void hasRightShouldReturnTrueWhenTheUserOwnTheMailbox() throws MailboxException {
+    void hasRightShouldReturnTrueWhenTheUserOwnTheMailbox() {
         Mailbox mailbox = new Mailbox(MailboxPath.forUser(ALICE, MailboxConstants.INBOX), UID_VALIDITY, MAILBOX_ID);
 
         assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))
@@ -121,7 +121,7 @@ class StoreRightManagerTest {
     }
 
     @Test
-    void hasRightShouldReturnFalseWhenTheUserDoesNotOwnTheMailboxAndHasNoRightOnIt() throws MailboxException {
+    void hasRightShouldReturnFalseWhenTheUserDoesNotOwnTheMailboxAndHasNoRightOnIt() {
         Mailbox mailbox = new Mailbox(MailboxPath.forUser(BOB, MailboxConstants.INBOX), UID_VALIDITY, MAILBOX_ID);
 
         assertThat(storeRightManager.hasRight(mailbox, Right.Write, aliceSession))

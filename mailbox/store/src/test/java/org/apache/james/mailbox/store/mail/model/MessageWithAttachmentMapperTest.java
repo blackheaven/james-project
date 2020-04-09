@@ -115,7 +115,7 @@ public abstract class MessageWithAttachmentMapperTest {
     void messagesRetrievedUsingFetchTypeFullShouldHaveAttachmentsLoadedWhenOneAttachment() throws MailboxException {
         saveMessages();
         MessageMapper.FetchType fetchType = MessageMapper.FetchType.Full;
-        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith1Attachment.getUid()), fetchType, LIMIT);
+        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith1Attachment.getUid()), fetchType, LIMIT).toIterable().iterator();
         assertThat(retrievedMessageIterator.next().getAttachments()).isEqualTo(messageWith1Attachment.getAttachments());
     }
 
@@ -123,7 +123,7 @@ public abstract class MessageWithAttachmentMapperTest {
     void messagesRetrievedUsingFetchTypeFullShouldHaveAttachmentsLoadedWhenTwoAttachments() throws MailboxException {
         saveMessages();
         MessageMapper.FetchType fetchType = MessageMapper.FetchType.Full;
-        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith2Attachments.getUid()), fetchType, LIMIT);
+        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith2Attachments.getUid()), fetchType, LIMIT).toIterable().iterator();
         assertThat(retrievedMessageIterator.next().getAttachments()).isEqualTo(messageWith2Attachments.getAttachments());
     }
 
@@ -131,7 +131,7 @@ public abstract class MessageWithAttachmentMapperTest {
     void messagesRetrievedUsingFetchTypeBodyShouldHaveAttachmentsLoadedWhenOneAttachment() throws MailboxException {
         saveMessages();
         MessageMapper.FetchType fetchType = MessageMapper.FetchType.Body;
-        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith1Attachment.getUid()), fetchType, LIMIT);
+        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith1Attachment.getUid()), fetchType, LIMIT).toIterable().iterator();
         assertThat(retrievedMessageIterator.next().getAttachments()).isEqualTo(messageWith1Attachment.getAttachments());
     }
 
@@ -140,7 +140,7 @@ public abstract class MessageWithAttachmentMapperTest {
         Assumptions.assumeTrue(mapperProvider.supportPartialAttachmentFetch());
         saveMessages();
         MessageMapper.FetchType fetchType = MessageMapper.FetchType.Headers;
-        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith1Attachment.getUid()), fetchType, LIMIT);
+        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith1Attachment.getUid()), fetchType, LIMIT).toIterable().iterator();
         assertThat(retrievedMessageIterator.next().getAttachments()).isEmpty();
     }
 
@@ -149,7 +149,7 @@ public abstract class MessageWithAttachmentMapperTest {
         Assumptions.assumeTrue(mapperProvider.supportPartialAttachmentFetch());
         saveMessages();
         MessageMapper.FetchType fetchType = MessageMapper.FetchType.Metadata;
-        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith1Attachment.getUid()), fetchType, LIMIT);
+        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith1Attachment.getUid()), fetchType, LIMIT).toIterable().iterator();
         assertThat(retrievedMessageIterator.next().getAttachments()).isEmpty();
     }
 
@@ -157,7 +157,7 @@ public abstract class MessageWithAttachmentMapperTest {
     void messagesRetrievedUsingFetchTypeFullShouldHaveAttachmentsEmptyWhenNoAttachment() throws MailboxException {
         saveMessages();
         MessageMapper.FetchType fetchType = MessageMapper.FetchType.Full;
-        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWithoutAttachment.getUid()), fetchType, LIMIT);
+        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWithoutAttachment.getUid()), fetchType, LIMIT).toIterable().iterator();
         assertThat(retrievedMessageIterator.next().getAttachments()).isEmpty();
     }
     
@@ -165,7 +165,7 @@ public abstract class MessageWithAttachmentMapperTest {
     void messagesCanBeRetrievedInMailboxWithRangeTypeOne() throws MailboxException, IOException {
         saveMessages();
         MessageMapper.FetchType fetchType = MessageMapper.FetchType.Full;
-        assertThat(messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith1Attachment.getUid()), fetchType, LIMIT).next())
+        assertThat(messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith1Attachment.getUid()), fetchType, LIMIT).next().block())
             .isEqualTo(messageWith1Attachment, fetchType);
     }
 
@@ -173,7 +173,7 @@ public abstract class MessageWithAttachmentMapperTest {
     void messagesRetrievedUsingFetchTypeBodyShouldHaveBodyDataLoaded() throws MailboxException, IOException {
         saveMessages();
         MessageMapper.FetchType fetchType = MessageMapper.FetchType.Body;
-        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith1Attachment.getUid()), fetchType, LIMIT);
+        Iterator<MailboxMessage> retrievedMessageIterator = messageMapper.findInMailbox(attachmentsMailbox, MessageRange.one(messageWith1Attachment.getUid()), fetchType, LIMIT).toIterable().iterator();
         assertThat(retrievedMessageIterator.next()).isEqualTo(messageWith1Attachment, fetchType);
         assertThat(retrievedMessageIterator).toIterable()
             .isEmpty();

@@ -103,16 +103,16 @@ class StoreMailboxManagerAnnotationTest {
     }
 
     @Test
-    void updateAnnotationsShouldThrowExceptionWhenDoesNotLookupMailbox() throws Exception {
-        doThrow(MailboxException.class).when(mailboxMapper).findMailboxByPathBlocking(eq(mailboxPath));
+    void updateAnnotationsShouldThrowExceptionWhenDoesNotLookupMailbox() {
+        when(mailboxMapper.findMailboxByPath(eq(mailboxPath))).thenReturn(Mono.error(new MailboxException()));
 
         assertThatThrownBy(() -> annotationManager.updateAnnotations(mailboxPath, session, ImmutableList.of(PRIVATE_ANNOTATION)))
-            .isInstanceOf(MailboxException.class);
+            .hasCauseInstanceOf(MailboxException.class);
     }
 
     @Test
     void updateAnnotationsShouldCallAnnotationMapperToInsertAnnotation() throws Exception {
-        when(mailboxMapper.findMailboxByPathBlocking(eq(mailboxPath))).thenReturn(mailbox);
+        when(mailboxMapper.findMailboxByPath(eq(mailboxPath))).thenReturn(Mono.just(mailbox));
         annotationManager.updateAnnotations(mailboxPath, session, ANNOTATIONS);
 
         verify(annotationMapper, times(2)).insertAnnotation(eq(mailboxId), any(MailboxAnnotation.class));
@@ -120,7 +120,7 @@ class StoreMailboxManagerAnnotationTest {
 
     @Test
     void updateAnnotationsShouldCallAnnotationMapperToDeleteAnnotation() throws Exception {
-        when(mailboxMapper.findMailboxByPathBlocking(eq(mailboxPath))).thenReturn(mailbox);
+        when(mailboxMapper.findMailboxByPath(eq(mailboxPath))).thenReturn(Mono.just(mailbox));
         annotationManager.updateAnnotations(mailboxPath, session, ANNOTATIONS_WITH_NIL_ENTRY);
 
         verify(annotationMapper, times(1)).insertAnnotation(eq(mailboxId), eq(PRIVATE_ANNOTATION));
@@ -129,15 +129,15 @@ class StoreMailboxManagerAnnotationTest {
 
     @Test
     void getAllAnnotationsShouldThrowExceptionWhenDoesNotLookupMailbox() throws Exception {
-        doThrow(MailboxException.class).when(mailboxMapper).findMailboxByPathBlocking(eq(mailboxPath));
+        when(mailboxMapper.findMailboxByPath(eq(mailboxPath))).thenReturn(Mono.error(new MailboxException()));
 
         assertThatThrownBy(() -> annotationManager.getAllAnnotations(mailboxPath, session))
-            .isInstanceOf(MailboxException.class);
+            .hasCauseInstanceOf(MailboxException.class);
     }
 
     @Test
     void getAllAnnotationsShouldReturnEmptyForNonStoredAnnotation() throws Exception {
-        when(mailboxMapper.findMailboxByPathBlocking(eq(mailboxPath))).thenReturn(mailbox);
+        when(mailboxMapper.findMailboxByPath(eq(mailboxPath))).thenReturn(Mono.just(mailbox));
         when(annotationMapper.getAllAnnotations(eq(mailboxId))).thenReturn(Collections.<MailboxAnnotation>emptyList());
 
         assertThat(annotationManager.getAllAnnotations(mailboxPath, session)).isEmpty();
@@ -145,23 +145,23 @@ class StoreMailboxManagerAnnotationTest {
 
     @Test
     void getAllAnnotationsShouldReturnStoredAnnotation() throws Exception {
-        when(mailboxMapper.findMailboxByPathBlocking(eq(mailboxPath))).thenReturn(mailbox);
+        when(mailboxMapper.findMailboxByPath(eq(mailboxPath))).thenReturn(Mono.just(mailbox));
         when(annotationMapper.getAllAnnotations(eq(mailboxId))).thenReturn(ANNOTATIONS);
 
         assertThat(annotationManager.getAllAnnotations(mailboxPath, session)).isEqualTo(ANNOTATIONS);
     }
 
     @Test
-    void getAnnotationsByKeysShouldThrowExceptionWhenDoesNotLookupMailbox() throws Exception {
-        doThrow(MailboxException.class).when(mailboxMapper).findMailboxByPathBlocking(eq(mailboxPath));
+    void getAnnotationsByKeysShouldThrowExceptionWhenDoesNotLookupMailbox() {
+        when(mailboxMapper.findMailboxByPath(eq(mailboxPath))).thenReturn(Mono.error(new MailboxException()));
 
         assertThatThrownBy(() -> annotationManager.getAnnotationsByKeys(mailboxPath, session, KEYS))
-            .isInstanceOf(MailboxException.class);
+            .hasCauseInstanceOf(MailboxException.class);
     }
 
     @Test
     void getAnnotationsByKeysShouldRetrieveStoreAnnotationsByKey() throws Exception {
-        when(mailboxMapper.findMailboxByPathBlocking(eq(mailboxPath))).thenReturn(mailbox);
+        when(mailboxMapper.findMailboxByPath(eq(mailboxPath))).thenReturn(Mono.just(mailbox));
         when(annotationMapper.getAnnotationsByKeys(eq(mailboxId), eq(KEYS))).thenReturn(ANNOTATIONS);
 
         assertThat(annotationManager.getAnnotationsByKeys(mailboxPath, session, KEYS)).isEqualTo(ANNOTATIONS);

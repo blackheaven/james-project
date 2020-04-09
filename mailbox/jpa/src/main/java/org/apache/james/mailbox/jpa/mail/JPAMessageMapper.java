@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 import javax.mail.Flags;
 import javax.persistence.EntityManagerFactory;
@@ -60,6 +61,7 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * JPA implementation of a {@link MessageMapper}. This class is not thread-safe!
@@ -90,15 +92,15 @@ public class JPAMessageMapper extends JPATransactionalMapper implements MessageM
 
     @Override
     public Flux<MessageUid> listAllMessageUids(Mailbox mailbox) {
-        return findInMailboxReactive(mailbox, MessageRange.all(), FetchType.Metadata, UNLIMITED)
+        return findInMailbox(mailbox, MessageRange.all(), FetchType.Metadata, UNLIMITED)
             .map(MailboxMessage::getUid);
     }
 
     @Override
-    public Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set, FetchType fType, int max)
-            throws MailboxException {
+    public Flux<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set, FetchType fType, int max) {
 
-        return findAsList(mailbox.getMailboxId(), set, max).iterator();
+        return Mono.fromSupplier(Throwing.supplier(() -> findAsList(mailbox.getMailboxId(), set, max)).sneakyThrow())
+            .flatMapIterable(Function.identity());
     }
 
     private List<MailboxMessage> findAsList(MailboxId mailboxId, MessageRange set, int max) throws MailboxException {
@@ -296,7 +298,9 @@ public class JPAMessageMapper extends JPATransactionalMapper implements MessageM
     @Override
     public Iterator<UpdatedFlags> updateFlags(Mailbox mailbox, FlagsUpdateCalculator flagsUpdateCalculator,
             MessageRange set) throws MailboxException {
-        Iterator<MailboxMessage> messages = findInMailbox(mailbox, set, FetchType.Metadata, UNLIMIT_MAX_SIZE);
+        Iterator<MailboxMessage> messages = findInMailbox(mailbox, set, FetchType.Metadata, UNLIMIT_MAX_SIZE)
+            .toIterable()
+            .iterator();
 
         MessageChangedFlags messageChangedFlags = messageMetadataMapper.updateFlags(mailbox, flagsUpdateCalculator, messages);
 
@@ -344,9 +348,6 @@ public class JPAMessageMapper extends JPATransactionalMapper implements MessageM
         return save(mailbox, copy);
     }
 
-    /**
-     * @see org.apache.james.mailbox.store.mail.AbstractMessageMapper#save(Mailbox, MailboxMessage)
-     */
     protected MessageMetaData save(Mailbox mailbox, MailboxMessage message) throws MailboxException {
         try {
             // We need to reload a "JPA attached" mailbox, because the provide

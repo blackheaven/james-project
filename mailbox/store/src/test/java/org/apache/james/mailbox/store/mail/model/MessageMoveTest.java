@@ -134,12 +134,12 @@ public abstract class MessageMoveTest {
         assertThat(messageMapper.getMailboxCounters(benwaWorkMailbox).getUnseen()).isEqualTo(0);
     }
 
-    private Mailbox createMailbox(MailboxPath mailboxPath) throws MailboxException {
-        return mailboxMapper.create(mailboxPath, UID_VALIDITY);
+    private Mailbox createMailbox(MailboxPath mailboxPath) {
+        return mailboxMapper.create(mailboxPath, UID_VALIDITY).block();
     }
 
     private MailboxMessage retrieveMessageFromStorage(Mailbox mailbox, MailboxMessage message) throws MailboxException {
-        return messageMapper.findInMailbox(mailbox, MessageRange.one(message.getUid()), FetchType.Metadata, LIMIT).next();
+        return messageMapper.findInMailbox(mailbox, MessageRange.one(message.getUid()), FetchType.Metadata, LIMIT).next().block();
     }
     
     private MailboxMessage createMessage(Mailbox mailbox, MessageId messageId, String content, int bodyStart, PropertyBuilder propertyBuilder) {

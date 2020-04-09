@@ -116,7 +116,9 @@ public class StoreMessageResultIterator implements MessageResultIterator {
             range = MessageRange.range(cursor, to);
             break;
         }
-        next = mapper.findInMailbox(mailbox, range, ftype, batchSizeFromFetchType(ftype));
+        next = mapper.findInMailbox(mailbox, range, ftype, batchSizeFromFetchType(ftype))
+            .toIterable()
+            .iterator();
     }
 
     private int batchSizeFromFetchType(FetchType fetchType) {

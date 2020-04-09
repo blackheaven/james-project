@@ -85,6 +85,7 @@ import com.google.common.collect.ImmutableSet;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 class UserMailboxesRoutesTest {
@@ -825,7 +826,7 @@ class UserMailboxesRoutesTest {
             MailboxId mailboxId = InMemoryId.of(12);
             when(mailboxManager.search(any(MailboxQuery.class), any()))
                 .thenReturn(
-                        ImmutableList.of(
+                        Flux.just(
                                 MailboxMetaData.unselectableMailbox(
                                         MailboxPath.forUser(USERNAME, MAILBOX_NAME), mailboxId, '.')));
             doThrow(new RuntimeException()).when(mailboxManager).deleteMailbox(any(MailboxPath.class), any());
@@ -838,7 +839,7 @@ class UserMailboxesRoutesTest {
 
         @Test
         void deleteShouldGenerateInternalErrorOnUnknownExceptionOnSearch() throws Exception {
-            when(mailboxManager.search(any(MailboxQuery.class), any())).thenThrow(new RuntimeException());
+            when(mailboxManager.search(any(MailboxQuery.class), any())).thenReturn(Flux.error(new RuntimeException()));
 
             when()
                 .delete(MAILBOX_NAME)
@@ -851,7 +852,7 @@ class UserMailboxesRoutesTest {
             MailboxId mailboxId = InMemoryId.of(12);
             when(mailboxManager.search(any(MailboxQuery.class), any()))
                 .thenReturn(
-                        ImmutableList.of(
+                        Flux.just(
                                 MailboxMetaData.unselectableMailbox(MailboxPath.forUser(USERNAME, MAILBOX_NAME), mailboxId, '.')));
             doThrow(new MailboxException()).when(mailboxManager).deleteMailbox(any(MailboxPath.class), any());
 
@@ -863,7 +864,7 @@ class UserMailboxesRoutesTest {
 
         @Test
         void deleteShouldGenerateInternalErrorOnUnknownMailboxExceptionOnSearch() throws Exception {
-            when(mailboxManager.search(any(MailboxQuery.class), any())).thenThrow(new MailboxException());
+            when(mailboxManager.search(any(MailboxQuery.class), any())).thenReturn(Flux.error(new MailboxException()));
 
             when()
                 .delete(MAILBOX_NAME)
@@ -883,7 +884,7 @@ class UserMailboxesRoutesTest {
 
         @Test
         void deleteShouldGenerateInternalErrorOnUnknownExceptionWhenListingMailboxes() throws Exception {
-            doThrow(new RuntimeException()).when(mailboxManager).search(any(MailboxQuery.class), any());
+            when(mailboxManager.search(any(MailboxQuery.class), any())).thenReturn(Flux.error(new RuntimeException()));
 
             when()
                 .delete()
@@ -893,7 +894,7 @@ class UserMailboxesRoutesTest {
 
         @Test
         void deleteShouldGenerateInternalErrorOnMailboxExceptionWhenListingMailboxes() throws Exception {
-            doThrow(new MailboxException()).when(mailboxManager).search(any(MailboxQuery.class), any());
+            when(mailboxManager.search(any(MailboxQuery.class), any())).thenReturn(Flux.error(new MailboxException()));
 
             when()
                 .delete()
@@ -907,7 +908,7 @@ class UserMailboxesRoutesTest {
             MailboxId mailboxId = InMemoryId.of(12);
             when(mailboxManager.search(any(MailboxQuery.class), any()))
                 .thenReturn(
-                        ImmutableList.of(
+                        Flux.just(
                                 MailboxMetaData.unselectableMailbox(MailboxPath.forUser(USERNAME, "any"), mailboxId, '.')));
             doThrow(new RuntimeException()).when(mailboxManager).deleteMailbox(any(MailboxPath.class), any());
 
@@ -922,7 +923,7 @@ class UserMailboxesRoutesTest {
             MailboxId mailboxId = InMemoryId.of(12);
             when(mailboxManager.search(any(MailboxQuery.class), any()))
                 .thenReturn(
-                        ImmutableList.of(MailboxMetaData.unselectableMailbox(MailboxPath.forUser(USERNAME, "any"), mailboxId, '.')));
+                        Flux.just(MailboxMetaData.unselectableMailbox(MailboxPath.forUser(USERNAME, "any"), mailboxId, '.')));
             doThrow(new MailboxNotFoundException("any")).when(mailboxManager).deleteMailbox(any(MailboxPath.class), any());
 
             when()
@@ -936,7 +937,7 @@ class UserMailboxesRoutesTest {
             MailboxId mailboxId = InMemoryId.of(12);
             when(mailboxManager.search(any(MailboxQuery.class), any()))
                 .thenReturn(
-                        ImmutableList.of(MailboxMetaData.unselectableMailbox(MailboxPath.forUser(USERNAME, "any"), mailboxId, '.')));
+                        Flux.just(MailboxMetaData.unselectableMailbox(MailboxPath.forUser(USERNAME, "any"), mailboxId, '.')));
             doThrow(new MailboxException()).when(mailboxManager).deleteMailbox(any(MailboxPath.class), any());
 
             when()
@@ -967,7 +968,7 @@ class UserMailboxesRoutesTest {
 
         @Test
         void getMailboxesShouldGenerateInternalErrorOnUnknownException() throws Exception {
-            doThrow(new RuntimeException()).when(mailboxManager).search(any(MailboxQuery.class), any());
+            when(mailboxManager.search(any(MailboxQuery.class), any())).thenReturn(Flux.error(new RuntimeException()));
 
             when()
                 .get()
@@ -977,7 +978,7 @@ class UserMailboxesRoutesTest {
 
         @Test
         void getMailboxesShouldGenerateInternalErrorOnUnknownMailboxException() throws Exception {
-            doThrow(new MailboxException()).when(mailboxManager).search(any(MailboxQuery.class), any());
+            when(mailboxManager.search(any(MailboxQuery.class), any())).thenReturn(Flux.error(new MailboxException()));
 
             when()
                 .get()

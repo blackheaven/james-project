@@ -37,7 +37,6 @@ import org.apache.james.mailbox.store.FlagsUpdateCalculator;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.Property;
 import org.apache.james.mailbox.store.transaction.Mapper;
-import org.apache.james.util.streams.Iterators;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -57,16 +56,7 @@ public interface MessageMapper extends Mapper {
      * @param limit the maximal limit of returned {@link MailboxMessage}'s. Use -1 to set no limit. In any case the caller MUST not expect the limit to get applied in all cases as the implementation
      *              MAY just ignore it
      */
-    Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set, FetchType type, int limit)
-            throws MailboxException;
-
-    default Flux<MailboxMessage> findInMailboxReactive(Mailbox mailbox, MessageRange set, FetchType type, int limit) {
-        try {
-            return Iterators.toFlux(findInMailbox(mailbox, set, type, limit));
-        } catch (MailboxException e) {
-            return Flux.error(e);
-        }
-    }
+    Flux<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange set, FetchType type, int limit);
 
     /**
      * Returns a list of {@link MessageUid} which are marked as deleted

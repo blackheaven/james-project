@@ -73,7 +73,7 @@ public class ReIndexerPerformer {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(RE_INDEXER_PERFORMER_USER);
 
         return mailboxSessionMapperFactory.getMailboxMapper(mailboxSession)
-            .findMailboxByIdReactive(mailboxId)
+            .findMailboxById(mailboxId)
             .flatMap(mailbox -> reIndex(reprocessingContext, mailboxSession, mailbox));
     }
 
@@ -123,7 +123,7 @@ public class ReIndexerPerformer {
 
         MailboxQuery mailboxQuery = MailboxQuery.privateMailboxesBuilder(mailboxSession).build();
 
-        return mailboxManager.searchReactive(mailboxQuery, mailboxSession)
+        return mailboxManager.search(mailboxQuery, mailboxSession)
             .map(MailboxMetaData::getId)
             .flatMap(id -> reIndex(id, reprocessingContext), NO_CONCURRENCY, NO_PREFETCH)
             .reduce(Task::combine)
@@ -135,7 +135,7 @@ public class ReIndexerPerformer {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(RE_INDEXER_PERFORMER_USER);
 
         return mailboxSessionMapperFactory.getMailboxMapper(mailboxSession)
-            .findMailboxByIdReactive(mailboxId)
+            .findMailboxById(mailboxId)
             .flatMap(mailbox -> handleMessageReIndexing(mailboxSession, mailbox, uid, reprocessingContext));
     }
 
@@ -143,7 +143,7 @@ public class ReIndexerPerformer {
         MailboxSession session = mailboxManager.createSystemSession(RE_INDEXER_PERFORMER_USER);
 
         return mailboxSessionMapperFactory.getMessageIdMapper(session)
-            .findReactive(ImmutableList.of(messageId), MessageMapper.FetchType.Full)
+            .find(ImmutableList.of(messageId), MessageMapper.FetchType.Full)
             .flatMap(mailboxMessage -> reIndex(mailboxMessage, session))
             .reduce(Task::combine)
             .switchIfEmpty(Mono.just(Result.COMPLETED))
@@ -155,7 +155,7 @@ public class ReIndexerPerformer {
 
     private Mono<Result> reIndex(MailboxMessage mailboxMessage, MailboxSession session) {
         return mailboxSessionMapperFactory.getMailboxMapper(session)
-            .findMailboxByIdReactive(mailboxMessage.getMailboxId())
+            .findMailboxById(mailboxMessage.getMailboxId())
             .flatMap(mailbox -> messageSearchIndex.add(session, mailbox, mailboxMessage))
             .thenReturn(Result.COMPLETED)
             .onErrorResume(e -> {
@@ -178,7 +178,7 @@ public class ReIndexerPerformer {
 
     private Mono<MailboxMessage> fullyReadMessage(MailboxSession mailboxSession, Mailbox mailbox, MessageUid mUid) {
         return mailboxSessionMapperFactory.getMessageMapper(mailboxSession)
-            .findInMailboxReactive(mailbox, MessageRange.one(mUid), MessageMapper.FetchType.Full, SINGLE_MESSAGE)
+            .findInMailbox(mailbox, MessageRange.one(mUid), MessageMapper.FetchType.Full, SINGLE_MESSAGE)
             .next();
     }
 }
