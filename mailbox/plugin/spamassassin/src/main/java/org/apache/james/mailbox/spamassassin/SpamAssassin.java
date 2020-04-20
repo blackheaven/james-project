@@ -18,9 +18,11 @@
  ****************************************************************/
 package org.apache.james.mailbox.spamassassin;
 
+import java.io.Closeable;
 import java.io.InputStream;
-import java.util.List;
+import java.util.Optional;
 
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import org.apache.james.core.Username;
@@ -30,32 +32,77 @@ import org.apache.james.util.Host;
 
 import com.github.fge.lambdas.Throwing;
 
-public class SpamAssassin {
+import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.UnicastProcessor;
+import reactor.core.scheduler.Schedulers;
+import reactor.util.function.Tuple2;
+
+public class SpamAssassin implements Closeable {
 
     private final MetricFactory metricFactory;
-    private final SpamAssassinConfiguration spamAssassinConfiguration;
+    private Optional<UnicastProcessor<Tuple2<InputStream, Username>>> hamQueue;
+    private Optional<UnicastProcessor<Tuple2<InputStream, Username>>> spamQueue;
+    private Optional<Disposable> hamHandle;
+    private Optional<Disposable> spamHandle;
 
     @Inject
     public SpamAssassin(MetricFactory metricFactory, SpamAssassinConfiguration spamAssassinConfiguration) {
         this.metricFactory = metricFactory;
-        this.spamAssassinConfiguration = spamAssassinConfiguration;
+
+        createListeners(spamAssassinConfiguration);
     }
 
-    public void learnSpam(List<InputStream> messages, Username username) {
+    public void learnSpam(Flux<InputStream> messages, Username username) {
+        spamQueue.ifPresent(queue ->
+            messages.zipWith(Mono.just(username).repeat())
+                .doOnNext(queue::onNext)
+                .then()
+                .block()
+        );
+    }
+
+    public void learnHam(Flux<InputStream> messages, Username username) {
+        hamQueue.ifPresent(queue ->
+            messages.zipWith(Mono.just(username).repeat())
+                .doOnNext(queue::onNext)
+                .then()
+                .block()
+        );
+    }
+
+    @Override
+    @PreDestroy
+    public void close() {
+        hamHandle.ifPresent(Disposable::dispose);
+        spamHandle.ifPresent(Disposable::dispose);
+    }
+
+    private void createListeners(SpamAssassinConfiguration spamAssassinConfiguration) {
         if (spamAssassinConfiguration.isEnable()) {
             Host host = spamAssassinConfiguration.getHost().get();
             SpamAssassinInvoker invoker = new SpamAssassinInvoker(metricFactory, host.getHostName(), host.getPort());
-            messages
-                .forEach(Throwing.consumer(message -> invoker.learnAsSpam(message, username)));
-        }
-    }
 
-    public void learnHam(List<InputStream> messages, Username username) {
-        if (spamAssassinConfiguration.isEnable()) {
-            Host host = spamAssassinConfiguration.getHost().get();
-            SpamAssassinInvoker invoker = new SpamAssassinInvoker(metricFactory, host.getHostName(), host.getPort());
-            messages
-                .forEach(Throwing.consumer(message -> invoker.learnAsHam(message, username)));
+            UnicastProcessor<Tuple2<InputStream, Username>> ham = UnicastProcessor.create();
+            hamQueue = Optional.of(ham);
+            hamHandle = Optional.of(ham
+                .doOnNext(Throwing.consumer(messageUsername -> invoker.learnAsHam(messageUsername.getT1(), messageUsername.getT2())))
+                .subscribeOn(Schedulers.elastic())
+                .subscribe());
+
+            UnicastProcessor<Tuple2<InputStream, Username>> spam = UnicastProcessor.create();
+            spamQueue = Optional.of(spam);
+            spamHandle = Optional.of(spam
+                .doOnNext(Throwing.consumer(messageUsername -> invoker.learnAsHam(messageUsername.getT1(), messageUsername.getT2())))
+                .subscribeOn(Schedulers.elastic())
+                .subscribe());
+        } else {
+            hamQueue = Optional.empty();
+            hamHandle = Optional.empty();
+
+            spamQueue = Optional.empty();
+            spamHandle = Optional.empty();
         }
     }
 }
