@@ -26,27 +26,27 @@
 <body>
 
   <section name="Antispam Configuration">
-  
+
     <p>Apache James Server Anti-Spam system can be configured via two main different mechanisms:</p>
-    
+
     <ul>
        <li>SMTP Hooks; see <a href="https://github.com/apache/james-project/tree/master/server/app/src/main/resources/smtpserver.xml">examples</a>.</li>
        <li>Mailets; see <a href="https://github.com/apache/james-project/tree/master/server/app/src/main/resources/mailetcontainer.xml">examples</a>.</li>
     </ul>
 
     <subsection name="AntiSpam SMTP Hooks">
-  
+
       <p>"FastFail" SMTP Hooks acts to reject before spooling
-          on the SMTP level. SpamAssasin hook can be used as a fastfail hook, therefore
+          on the SMTP level. SpamAssassin hook can be used as a fastfail hook, therefore
           SpamAssassin must run as a server on the same machine as the Apache James Server.</p>
-      
+
       <p>SMTP Hooks for non-existent users, DSN filter, domains with invalid MX record, 
           can also be configured.</p>
-          
+
     </subsection>
 
     <subsection name="AntiSpam Mailets">
-    
+
     <ul>
       <li>Black listing Mailet</li>
       <li>Grey listing Mailet</li>
@@ -65,9 +65,24 @@
           as an attachment to another message sent to the feeder in order to avoid bias from the 
           current sender's email header.</li>
     </ul>
-    
+
     </subsection>
-    
+
+  </section>
+
+  <section name="SpamAssassin Configuration">
+    <p>SpamAssin is configured in <strong>spamassassin.properties</strong> and allow the following configuration:</p>
+
+    <dl>
+      <dt><strong>spamassassin.host</strong></dt>
+      <dd>The host of SpamAssassin. Default is <b>127.0.0.1</b>.</dd>
+
+      <dt><strong>spamassassin.port</strong></dt>
+      <dd>The port of SpamAssassin. Default is <b>783</b>.</dd>
+
+      <dt><strong>spamassassin.concurrency</strong></dt>
+      <dd>The number of concurrent requests to SpamAssassin. Default is <b>4</b>.</dd>
+    </dl>
   </section>
 
 </body>

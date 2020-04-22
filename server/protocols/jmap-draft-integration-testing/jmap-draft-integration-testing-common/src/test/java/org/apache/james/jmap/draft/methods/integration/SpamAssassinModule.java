@@ -18,8 +18,6 @@
  ****************************************************************/
 package org.apache.james.jmap.draft.methods.integration;
 
-import java.util.Optional;
-
 import javax.inject.Singleton;
 
 import org.apache.commons.configuration2.BaseConfiguration;
@@ -63,7 +61,9 @@ public class SpamAssassinModule extends AbstractModule {
     @Singleton
     private SpamAssassinConfiguration getSpamAssassinConfiguration() {
         SpamAssassinExtension.SpamAssassin spamAssassin = spamAssassinExtension.getSpamAssassin();
-        return new SpamAssassinConfiguration(Optional.of(Host.from(spamAssassin.getIp(), spamAssassin.getBindingPort())));
+        return SpamAssassinConfiguration.enabled(
+            Host.from(spamAssassin.getIp(), spamAssassin.getBindingPort()),
+            spamAssassin.getConcurrency());
     }
 
     private MailetConfigImpl spamAssassinMailetConfig() {

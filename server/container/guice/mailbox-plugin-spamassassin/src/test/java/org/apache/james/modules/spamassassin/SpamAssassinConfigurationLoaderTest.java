@@ -46,6 +46,12 @@ public class SpamAssassinConfigurationLoaderTest {
     }
 
     @Test
+    public void parallelismShouldReturnDefaultWhenConfigurationIsEmpty() {
+        SpamAssassinConfiguration configuration = SpamAssassinConfigurationLoader.fromProperties(new PropertiesConfiguration());
+        assertThat(configuration.getConcurrency().get()).isEqualTo(SpamAssassinConfigurationLoader.DEFAULT_CONCURRENCY);
+    }
+
+    @Test
     public void hostShouldReturnCustomWhenConfigurationIsProvided() {
         PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration();
         String host = "10.69.1.123";
@@ -55,5 +61,15 @@ public class SpamAssassinConfigurationLoaderTest {
 
         SpamAssassinConfiguration configuration = SpamAssassinConfigurationLoader.fromProperties(propertiesConfiguration);
         assertThat(configuration.getHost().get()).isEqualTo(Host.from(host, port));
+    }
+
+    @Test
+    public void parallelismShouldReturnCustomWhenConfigurationIsProvided() {
+        PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration();
+        int parallelism = 42;
+        propertiesConfiguration.addProperty("spamassassin.parallelism", parallelism);
+
+        SpamAssassinConfiguration configuration = SpamAssassinConfigurationLoader.fromProperties(propertiesConfiguration);
+        assertThat(configuration.getConcurrency().get()).isEqualTo(parallelism);
     }
 }

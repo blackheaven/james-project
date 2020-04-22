@@ -25,13 +25,25 @@ import java.util.Optional;
 import org.apache.james.util.Host;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
 public class SpamAssassinConfiguration {
 
     private final Optional<Host> host;
+    private final Optional<Integer> concurrency;
 
-    public SpamAssassinConfiguration(Optional<Host> host) {
+    public static SpamAssassinConfiguration disabled() {
+        return new SpamAssassinConfiguration(Optional.empty(), Optional.empty());
+    }
+
+    public static SpamAssassinConfiguration enabled(Host host, Integer concurrency) {
+        Preconditions.checkArgument(concurrency > 0, "Concurrency should be at least one");
+        return new SpamAssassinConfiguration(Optional.of(host), Optional.of(concurrency));
+    }
+
+    private SpamAssassinConfiguration(Optional<Host> host, Optional<Integer> concurrency) {
         this.host = host;
+        this.concurrency = concurrency;
     }
 
     public boolean isEnable() {
@@ -42,19 +54,24 @@ public class SpamAssassinConfiguration {
         return host;
     }
 
+    public Optional<Integer> getConcurrency() {
+        return concurrency;
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (o instanceof SpamAssassinConfiguration) {
             SpamAssassinConfiguration that = (SpamAssassinConfiguration) o;
 
-            return Objects.equals(this.host, that.host);
+            return Objects.equals(this.host, that.host)
+                && Objects.equals(this.concurrency, that.concurrency);
         }
         return false;
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(host);
+        return Objects.hash(host, concurrency);
     }
 
     @Override

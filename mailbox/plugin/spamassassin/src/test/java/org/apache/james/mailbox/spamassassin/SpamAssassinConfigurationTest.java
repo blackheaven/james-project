@@ -19,6 +19,7 @@
 package org.apache.james.mailbox.spamassassin;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.Optional;
 
@@ -37,14 +38,31 @@ class SpamAssassinConfigurationTest {
 
     @Test
     void isEnableShouldReturnFalseWhenEmpty() {
-        SpamAssassinConfiguration configuration = new SpamAssassinConfiguration(Optional.empty());
+        SpamAssassinConfiguration configuration = SpamAssassinConfiguration.disabled();
         assertThat(configuration.isEnable()).isFalse();
     }
 
     @Test
     void isEnableShouldReturnTrueWhenConfigured() {
         int port = 1;
-        SpamAssassinConfiguration configuration = new SpamAssassinConfiguration(Optional.of(Host.from("hostname", port)));
+        int parallelism = 4;
+        SpamAssassinConfiguration configuration = SpamAssassinConfiguration.enabled(Host.from("hostname", port), parallelism);
         assertThat(configuration.isEnable()).isTrue();
+    }
+
+    @Test
+    void givingZeroAsParallelismShouldThrow() {
+        int port = 1;
+        int parallelism = 0;
+        assertThatCode(() -> SpamAssassinConfiguration.enabled(Host.from("hostname", port), parallelism))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void givingMinusOneAsParallelismShouldThrow() {
+        int port = 1;
+        int parallelism = -1;
+        assertThatCode(() -> SpamAssassinConfiguration.enabled(Host.from("hostname", port), parallelism))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 }

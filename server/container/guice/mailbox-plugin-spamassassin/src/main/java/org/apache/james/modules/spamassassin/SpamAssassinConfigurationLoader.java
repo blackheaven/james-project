@@ -19,8 +19,6 @@
 
 package org.apache.james.modules.spamassassin;
 
-import java.util.Optional;
-
 import org.apache.commons.configuration2.Configuration;
 import org.apache.james.mailbox.spamassassin.SpamAssassinConfiguration;
 import org.apache.james.util.Host;
@@ -29,20 +27,27 @@ public class SpamAssassinConfigurationLoader {
 
     private static final String SPAMASSASSIN_HOST = "spamassassin.host";
     private static final String SPAMASSASSIN_PORT = "spamassassin.port";
+    private static final String SPAMASSASSIN_CONCURRENCY = "spamassassin.concurrency";
     public static final String DEFAULT_HOST = "127.0.0.1";
     public static final int DEFAULT_PORT = 783;
+    public static final int DEFAULT_CONCURRENCY = 4;
 
     public static SpamAssassinConfiguration disable() {
-        return new SpamAssassinConfiguration(Optional.empty());
+        return SpamAssassinConfiguration.disabled();
     }
 
     public static SpamAssassinConfiguration fromProperties(Configuration configuration) {
         Host host = getHost(configuration);
-        return new SpamAssassinConfiguration(Optional.of(host));
+        Integer concurrency = getConcurrency(configuration);
+        return SpamAssassinConfiguration.enabled(host, concurrency);
     }
 
     private static Host getHost(Configuration propertiesReader) {
         return Host.from(propertiesReader.getString(SPAMASSASSIN_HOST, DEFAULT_HOST), 
                 propertiesReader.getInteger(SPAMASSASSIN_PORT, DEFAULT_PORT));
+    }
+
+    private static Integer getConcurrency(Configuration propertiesReader) {
+        return propertiesReader.getInteger(SPAMASSASSIN_CONCURRENCY, DEFAULT_CONCURRENCY);
     }
 }

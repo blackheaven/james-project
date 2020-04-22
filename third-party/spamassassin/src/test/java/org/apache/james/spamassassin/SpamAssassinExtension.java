@@ -109,6 +109,7 @@ public class SpamAssassinExtension implements BeforeAllCallback, AfterEachCallba
     public static class SpamAssassin {
         
         private static final int SPAMASSASSIN_PORT = 783;
+        private static final int SPAMASSASSIN_CONCURRENCY = 4;
 
         private final String ip;
         private final int bindingPort;
@@ -126,6 +127,10 @@ public class SpamAssassinExtension implements BeforeAllCallback, AfterEachCallba
     
         public int getBindingPort() {
             return bindingPort;
+        }
+
+        public int getConcurrency() {
+            return SPAMASSASSIN_CONCURRENCY;
         }
 
         public void train(String user) throws IOException, URISyntaxException {

@@ -30,22 +30,20 @@ import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.spamassassin.SpamAssassinInvoker;
 import org.apache.james.util.Host;
 
-import com.github.fge.lambdas.Throwing;
-
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.UnicastProcessor;
 import reactor.core.scheduler.Schedulers;
-import reactor.util.function.Tuple2;
+import reactor.util.concurrent.Queues;
+import reactor.util.function.Tuple3;
 
 public class SpamAssassin implements Closeable {
+    private enum Kind { HAM, SPAM }
 
     private final MetricFactory metricFactory;
-    private Optional<UnicastProcessor<Tuple2<InputStream, Username>>> hamQueue;
-    private Optional<UnicastProcessor<Tuple2<InputStream, Username>>> spamQueue;
-    private Optional<Disposable> hamHandle;
-    private Optional<Disposable> spamHandle;
+    private Optional<UnicastProcessor<Tuple3<InputStream, Username, Kind>>> queue;
+    private Optional<Disposable> handle;
 
     @Inject
     public SpamAssassin(MetricFactory metricFactory, SpamAssassinConfiguration spamAssassinConfiguration) {
@@ -55,8 +53,8 @@ public class SpamAssassin implements Closeable {
     }
 
     public void learnSpam(Flux<InputStream> messages, Username username) {
-        spamQueue.ifPresent(queue ->
-            messages.zipWith(Mono.just(username).repeat())
+        queue.ifPresent(queue ->
+            Flux.zip(messages, Mono.just(username).repeat(), Mono.just(Kind.SPAM).repeat())
                 .doOnNext(queue::onNext)
                 .then()
                 .block()
@@ -64,8 +62,8 @@ public class SpamAssassin implements Closeable {
     }
 
     public void learnHam(Flux<InputStream> messages, Username username) {
-        hamQueue.ifPresent(queue ->
-            messages.zipWith(Mono.just(username).repeat())
+        queue.ifPresent(queue ->
+            Flux.zip(messages, Mono.just(username).repeat(), Mono.just(Kind.HAM).repeat())
                 .doOnNext(queue::onNext)
                 .then()
                 .block()
@@ -75,34 +73,34 @@ public class SpamAssassin implements Closeable {
     @Override
     @PreDestroy
     public void close() {
-        hamHandle.ifPresent(Disposable::dispose);
-        spamHandle.ifPresent(Disposable::dispose);
+        handle.ifPresent(Disposable::dispose);
     }
 
-    private void createListeners(SpamAssassinConfiguration spamAssassinConfiguration) {
-        if (spamAssassinConfiguration.isEnable()) {
-            Host host = spamAssassinConfiguration.getHost().get();
+    private void createListeners(SpamAssassinConfiguration configuration) {
+        if (configuration.isEnable()) {
+            Host host = configuration.getHost().get();
             SpamAssassinInvoker invoker = new SpamAssassinInvoker(metricFactory, host.getHostName(), host.getPort());
 
-            UnicastProcessor<Tuple2<InputStream, Username>> ham = UnicastProcessor.create();
-            hamQueue = Optional.of(ham);
-            hamHandle = Optional.of(ham
-                .doOnNext(Throwing.consumer(messageUsername -> invoker.learnAsHam(messageUsername.getT1(), messageUsername.getT2())))
-                .subscribeOn(Schedulers.elastic())
-                .subscribe());
+            UnicastProcessor<Tuple3<InputStream, Username, Kind>> processor = UnicastProcessor.create(Queues.<Tuple3<InputStream, Username, Kind>>one().get());
+            queue = Optional.of(processor);
+            handle = Optional.of(processor
+                .flatMap(messageUsername -> Mono.fromCallable(() -> {
+                    switch (messageUsername.getT3()) {
+                        case HAM:
+                            invoker.learnAsHam(messageUsername.getT1(), messageUsername.getT2());
+                            break;
+                        case SPAM:
+                            invoker.learnAsSpam(messageUsername.getT1(), messageUsername.getT2());
+                            break;
+                    }
 
-            UnicastProcessor<Tuple2<InputStream, Username>> spam = UnicastProcessor.create();
-            spamQueue = Optional.of(spam);
-            spamHandle = Optional.of(spam
-                .doOnNext(Throwing.consumer(messageUsername -> invoker.learnAsHam(messageUsername.getT1(), messageUsername.getT2())))
+                    return false;
+                }), configuration.getConcurrency().get(), 1)
                 .subscribeOn(Schedulers.elastic())
                 .subscribe());
         } else {
-            hamQueue = Optional.empty();
-            hamHandle = Optional.empty();
-
-            spamQueue = Optional.empty();
-            spamHandle = Optional.empty();
+            queue = Optional.empty();
+            handle = Optional.empty();
         }
     }
 }
