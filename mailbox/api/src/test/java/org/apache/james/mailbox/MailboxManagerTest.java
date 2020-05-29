@@ -1763,7 +1763,7 @@ public abstract class MailboxManagerTest<T extends MailboxManager> {
             MailboxId inboxId = mailboxManager.createMailbox(inbox, sessionUser1).get();
 
             assertThatThrownBy(() -> mailboxManager.deleteMailbox(inboxId, sessionUser2))
-                .hasCauseInstanceOf(MailboxNotFoundException.class);
+                .isInstanceOf(MailboxNotFoundException.class);
         }
 
         @Test
