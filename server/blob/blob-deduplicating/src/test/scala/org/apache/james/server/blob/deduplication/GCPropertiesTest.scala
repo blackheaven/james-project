@@ -67,7 +67,7 @@ object Generators {
     }).existing
 
   def dereferenceGen(previousEvents: Seq[Event], generation: Generation): Gen[Option[Dereference]] = {
-    val remainingReferences = existingReferences(previousEvents)
+    val remainingReferences: Set[Reference] = existingReferences(previousEvents)
     if (remainingReferences.isEmpty) {
       Gen.const(None)
     } else {
@@ -79,6 +79,7 @@ object Generators {
 
   val hashGenerator: Gen[String] = Gen.alphaLowerStr.map(content => hash.Hashing.sha256().hashString(content, StandardCharsets.UTF_8).toString)
 
+  // Generate an Event, either a Reference or a Dereference (10% of the time if there are previous Events)
   def eventGen(previousEvents: Seq[Event], contentHashes: Seq[String]): Gen[Event] =
     if (previousEvents.isEmpty) {
       for {
@@ -86,6 +87,14 @@ object Generators {
         firstEvent <- referenceGen(Generation.first, hashForEvent)
       } yield firstEvent
     } else {
+      def pickEvent(newReferenceEvent: Reference, dereferenceEvent: Option[Dereference]): Gen[Event] = {
+        if (dereferenceEvent.isDefined) {
+          Gen.frequency((90, newReferenceEvent), (10, dereferenceEvent))
+        } else {
+          Gen.const(newReferenceEvent)
+        }
+      }
+
       for {
         generation <- nextGenerationsGen(previousEvents.head.generation)
         contentHashForEvent <- Gen.oneOf(contentHashes)
@@ -93,12 +102,14 @@ object Generators {
         newReferenceEvent <- referenceGen(generation, contentHashForEvent)
         dereferenceEvent <- dereferenceGen(previousEvents, generation)
 
-        event <- Gen.oneOf(Seq(newReferenceEvent) ++  dereferenceEvent)
+        event <- pickEvent(newReferenceEvent, dereferenceEvent)
     } yield event
   }
 
+  // Generates a list of Events with a ratio of hashes per event to enforce referencing the same hashes multiple times.
   def eventsGen(maxNbEvents: Int, hashesPerEventsRatio: Float): Gen[Seq[Event]] =  for {
     hashes <- generateHashes(maxNbEvents, hashesPerEventsRatio)
+    // Generate iteratively events until the number of events is reached
     events <- Gen.tailRecM(Seq[Event]())(previousEvents => {
       previousEvents.size match {
         case nbEvents if nbEvents >= maxNbEvents => Gen.const(Right(previousEvents))
@@ -133,6 +144,7 @@ object GCPropertiesTest extends Properties("GC") {
   val maxNbEvents = 100
   val hashesPerEventsRatio = 0.2f
 
+  // Arbitrary machinery to effective shrinking
   val arbEvents: Arbitrary[Seq[Event]] = Arbitrary(Gen.choose(0, maxNbEvents).flatMap(Generators.eventsGen(_, hashesPerEventsRatio)))
   implicit val arbTestParameters: Arbitrary[Generators.TestParameters] = Arbitrary(Generators.testParametersGen(arbEvents.arbitrary))
   implicit val arbTestParameter: Arbitrary[Generators.OnePassGCTestParameters] = Arbitrary(Generators.onePassTestParametersGen(arbEvents.arbitrary))
@@ -162,10 +174,10 @@ object GCPropertiesTest extends Properties("GC") {
   property("2.1. GC should not delete data being referenced by a pending process or still referenced") = forAll {
     testParameters: Generators.TestParameters => {
 
-      val (stillReferencedBlobIds, _) = partitionBlobs(testParameters.events)
+      val partitionedBlobsId = partitionBlobs(testParameters.events)
       testParameters.generationsToCollect.foldLeft(true)((acc, e) => {
         val plannedDeletions = GC.plan(Interpreter(testParameters.events).stabilize(), Iteration.initial, e).blobsToDelete.map(_._2)
-        acc && stillReferencedBlobIds.intersect(plannedDeletions).isEmpty
+        acc && partitionedBlobsId.stillReferencedBlobIds.intersect(plannedDeletions).isEmpty
       })
     }
   }
@@ -176,11 +188,12 @@ object GCPropertiesTest extends Properties("GC") {
         true
       else {
         val plan = GC.plan(Interpreter(testParameters.events).stabilize(), Iteration.initial, testParameters.generationToCollect)
+        // An Event belongs to a collected Generation
         val relevantEvents: Event => Boolean = event => event.generation <= testParameters.generationToCollect.previous(GC.temporization)
         val plannedDeletions = plan.blobsToDelete.map(_._2)
 
-        val (_, notReferencedBlobIds) = partitionBlobs(testParameters.events.filter(relevantEvents))
-        plannedDeletions.size >= notReferencedBlobIds.size * 0.9
+        val partitionedBlobsId = partitionBlobs(testParameters.events.filter(relevantEvents))
+        plannedDeletions.size >= partitionedBlobsId.notReferencedBlobIds.size * 0.9
       }
     }
   }
@@ -188,7 +201,7 @@ object GCPropertiesTest extends Properties("GC") {
   /*
   Implement an oracle that implements BlobStore with a Ref Count reference tracking
    */
-  def partitionBlobs(events: Seq[Event]): (Set[BlobId], Set[BlobId]) = {
+  def partitionBlobs(events: Seq[Event]): PartitionedEvents = {
     val (referencingEvents, dereferencingEvents) = events.partition {
       case _: Reference => true
       case _: Dereference => false
@@ -208,8 +221,11 @@ object GCPropertiesTest extends Properties("GC") {
     })
 
     lazy val notReferencedBlobIds = dereferencedBlobsCount.keySet -- stillReferencedBlobIds
-    (stillReferencedBlobIds, notReferencedBlobIds)
+    PartitionedEvents(stillReferencedBlobIds, notReferencedBlobIds)
   }
+
+  case class PartitionedEvents(stillReferencedBlobIds: Set[BlobId], notReferencedBlobIds: Set[BlobId])
+
 }
 
 
