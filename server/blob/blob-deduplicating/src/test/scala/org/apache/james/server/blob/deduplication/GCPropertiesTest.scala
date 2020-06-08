@@ -87,12 +87,9 @@ object Generators {
         firstEvent <- referenceGen(Generation.first, hashForEvent)
       } yield firstEvent
     } else {
-      def pickEvent(newReferenceEvent: Reference, dereferenceEvent: Option[Dereference]): Gen[Event] = {
-        if (dereferenceEvent.isDefined) {
-          Gen.frequency((90, newReferenceEvent), (10, dereferenceEvent))
-        } else {
-          Gen.const(newReferenceEvent)
-        }
+      def pickEvent(newReferenceEvent: Reference, dereferenceEventOption: Option[Dereference]): Gen[Event] = dereferenceEventOption match {
+        case Some(dereferenceEvent) => Gen.frequency((90, newReferenceEvent), (10, dereferenceEvent))
+        case None => Gen.const(newReferenceEvent)
       }
 
       for {
