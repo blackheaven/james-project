@@ -21,6 +21,7 @@ package org.apache.james.transport.mailets;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -41,10 +42,8 @@ import org.apache.mailet.Mail;
 import org.apache.mailet.base.MailAddressFixture;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.util.BufferRecyclers;
 import com.google.common.collect.ImmutableMap;
@@ -56,23 +55,20 @@ public class ICALToJsonAttributeTest {
     @SuppressWarnings("unchecked")
     private static final Class<Map<String, byte[]>> MAP_STRING_BYTES_CLASS = (Class<Map<String, byte[]>>) (Object) Map.class;
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     private ICALToJsonAttribute testee;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         testee = new ICALToJsonAttribute();
     }
 
     @Test
-    public void getMailetInfoShouldReturnExpectedValue() {
+    void getMailetInfoShouldReturnExpectedValue() {
         assertThat(testee.getMailetInfo()).isEqualTo("ICALToJson Mailet");
     }
 
     @Test
-    public void initShouldSetAttributesWhenAbsent() throws Exception {
+    void initShouldSetAttributesWhenAbsent() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         assertThat(testee.getSourceAttributeName()).isEqualTo(ICALToJsonAttribute.DEFAULT_SOURCE);
@@ -80,34 +76,31 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void initShouldThrowOnEmptySourceAttribute() throws Exception {
-        expectedException.expect(MessagingException.class);
-
-        testee.init(FakeMailetConfig.builder()
-            .setProperty(ICALToJsonAttribute.SOURCE_ATTRIBUTE_NAME, "")
-            .build());
+    void initShouldThrowOnEmptySourceAttribute() {
+        assertThatThrownBy(() -> testee.init(FakeMailetConfig.builder()
+                .setProperty(ICALToJsonAttribute.SOURCE_ATTRIBUTE_NAME, "")
+                .build()))
+            .isInstanceOf(MessagingException.class);
     }
 
     @Test
-    public void initShouldThrowOnEmptyRawSourceAttribute() throws Exception {
-        expectedException.expect(MessagingException.class);
-
-        testee.init(FakeMailetConfig.builder()
-            .setProperty(ICALToJsonAttribute.RAW_SOURCE_ATTRIBUTE_NAME, "")
-            .build());
+    void initShouldThrowOnEmptyRawSourceAttribute() {
+        assertThatThrownBy(() -> testee.init(FakeMailetConfig.builder()
+                .setProperty(ICALToJsonAttribute.RAW_SOURCE_ATTRIBUTE_NAME, "")
+                .build()))
+            .isInstanceOf(MessagingException.class);
     }
 
     @Test
-    public void initShouldThrowOnEmptyDestinationAttribute() throws Exception {
-        expectedException.expect(MessagingException.class);
-
-        testee.init(FakeMailetConfig.builder()
-            .setProperty(ICALToJsonAttribute.DESTINATION_ATTRIBUTE_NAME, "")
-            .build());
+    void initShouldThrowOnEmptyDestinationAttribute() {
+        assertThatThrownBy(() -> testee.init(FakeMailetConfig.builder()
+                .setProperty(ICALToJsonAttribute.DESTINATION_ATTRIBUTE_NAME, "")
+                .build()))
+            .isInstanceOf(MessagingException.class);
     }
 
     @Test
-    public void initShouldSetAttributesWhenPresent() throws Exception {
+    void initShouldSetAttributesWhenPresent() throws Exception {
         String destination = "myDestination";
         String source = "mySource";
         String raw = "myRaw";
@@ -123,7 +116,7 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void serviceShouldFilterMailsWithoutICALs() throws Exception {
+    void serviceShouldFilterMailsWithoutICALs() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         Mail mail = FakeMail.builder()
@@ -138,7 +131,7 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void serviceShouldNotFailOnWrongAttributeType() throws Exception {
+    void serviceShouldNotFailOnWrongAttributeType() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         Mail mail = FakeMail.builder()
@@ -154,7 +147,7 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void serviceShouldNotFailOnWrongRawAttributeType() throws Exception {
+    void serviceShouldNotFailOnWrongRawAttributeType() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         Mail mail = FakeMail.builder()
@@ -170,7 +163,7 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void serviceShouldNotFailOnWrongAttributeParameter() throws Exception {
+    void serviceShouldNotFailOnWrongAttributeParameter() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         ImmutableMap<String, String> wrongParametrizedMap = ImmutableMap.of("key", "value");
@@ -187,7 +180,7 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void serviceShouldNotFailOnWrongRawAttributeParameter() throws Exception {
+    void serviceShouldNotFailOnWrongRawAttributeParameter() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         ImmutableMap<String, String> wrongParametrizedMap = ImmutableMap.of("key", "value");
@@ -204,7 +197,7 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void serviceShouldFilterMailsWithoutSender() throws Exception {
+    void serviceShouldFilterMailsWithoutSender() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
@@ -224,7 +217,7 @@ public class ICALToJsonAttributeTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void serviceShouldAttachEmptyListWhenNoRecipient() throws Exception {
+    void serviceShouldAttachEmptyListWhenNoRecipient() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
@@ -245,7 +238,7 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void serviceShouldAttachJson() throws Exception {
+    void serviceShouldAttachJson() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
@@ -287,7 +280,7 @@ public class ICALToJsonAttributeTest {
 
 
     @Test
-    public void serviceShouldAttachJsonWithTheReplyToAttributeValueWhenPresent() throws Exception {
+    void serviceShouldAttachJsonWithTheReplyToAttributeValueWhenPresent() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
@@ -326,7 +319,7 @@ public class ICALToJsonAttributeTest {
             });
     }
     @Test
-    public void serviceShouldAttachJsonForSeveralRecipient() throws Exception {
+    void serviceShouldAttachJsonForSeveralRecipient() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
@@ -374,7 +367,7 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void serviceShouldAttachJsonForSeveralICALs() throws Exception {
+    void serviceShouldAttachJsonForSeveralICALs() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
@@ -425,7 +418,7 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void serviceShouldFilterInvalidICS() throws Exception {
+    void serviceShouldFilterInvalidICS() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
@@ -465,7 +458,7 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void serviceShouldFilterNonExistingKeys() throws Exception {
+    void serviceShouldFilterNonExistingKeys() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
@@ -505,7 +498,7 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void serviceShouldUseFromWhenSpecified() throws Exception {
+    void serviceShouldUseFromWhenSpecified() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
@@ -545,7 +538,7 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void serviceShouldSupportMimeMessagesWithoutFromFields() throws Exception {
+    void serviceShouldSupportMimeMessagesWithoutFromFields() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
@@ -583,7 +576,7 @@ public class ICALToJsonAttributeTest {
     }
 
     @Test
-    public void serviceShouldUseFromWhenSpecifiedAndNoSender() throws Exception {
+    void serviceShouldUseFromWhenSpecifiedAndNoSender() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
