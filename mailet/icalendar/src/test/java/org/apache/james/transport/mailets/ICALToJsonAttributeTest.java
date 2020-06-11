@@ -270,6 +270,7 @@ public class ICALToJsonAttributeTest {
                     .isEqualTo("{" +
                         "\"ical\": \"" + toJsonValue(ics) + "\"," +
                         "\"sender\": \"" + SENDER.asString() + "\"," +
+                        "\"replyTo\": \"" + SENDER.asString() + "\"," +
                         "\"recipient\": \"" + recipient.asString() + "\"," +
                         "\"uid\": \"f1514f44bf39311568d640727cff54e819573448d09d2e5677987ff29caa01a9e047feb2aab16e43439a608f28671ab7c10e754ce92be513f8e04ae9ff15e65a9819cf285a6962bc\"," +
                         "\"sequence\": \"0\"," +
@@ -284,6 +285,46 @@ public class ICALToJsonAttributeTest {
         return new String(BufferRecyclers.getJsonStringEncoder().quoteAsUTF8(new String(ics, StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
     }
 
+
+    @Test
+    public void serviceShouldAttachJsonWithTheReplyToAttributeValueWhenPresent() throws Exception {
+        testee.init(FakeMailetConfig.builder().build());
+
+        byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
+        Calendar calendar = new CalendarBuilder().build(new ByteArrayInputStream(ics));
+        ImmutableMap<String, Calendar> icals = ImmutableMap.of("key", calendar);
+        ImmutableMap<String, byte[]> rawIcals = ImmutableMap.of("key", ics);
+        MailAddress recipient = MailAddressFixture.ANY_AT_JAMES2;
+        MailAddress replyTo = MailAddressFixture.OTHER_AT_JAMES;
+        Mail mail = FakeMail.builder()
+            .name("mail")
+            .sender(SENDER)
+            .recipient(recipient)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE, AttributeValue.ofAny(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE, AttributeValue.ofAny(rawIcals)))
+            .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
+                .addHeader(ICALToJsonAttribute.REPLY_TO_HEADER_NAME, replyTo.asString()))
+            .build();
+        testee.service(mail);
+
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION, MAP_STRING_BYTES_CLASS))
+            .isPresent()
+            .hasValueSatisfying(jsons -> {
+                assertThat(jsons).hasSize(1);
+                assertThatJson(new String(jsons.values().iterator().next(), StandardCharsets.UTF_8))
+                    .isEqualTo("{" +
+                        "\"ical\": \"" + toJsonValue(ics) + "\"," +
+                        "\"sender\": \"" + SENDER.asString() + "\"," +
+                        "\"replyTo\": \"" + replyTo.asString() + "\"," +
+                        "\"recipient\": \"" + recipient.asString() + "\"," +
+                        "\"uid\": \"f1514f44bf39311568d640727cff54e819573448d09d2e5677987ff29caa01a9e047feb2aab16e43439a608f28671ab7c10e754ce92be513f8e04ae9ff15e65a9819cf285a6962bc\"," +
+                        "\"sequence\": \"0\"," +
+                        "\"dtstamp\": \"20170106T115036Z\"," +
+                        "\"method\": \"REQUEST\"," +
+                        "\"recurrence-id\": null" +
+                        "}");
+            });
+    }
     @Test
     public void serviceShouldAttachJsonForSeveralRecipient() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
@@ -311,6 +352,7 @@ public class ICALToJsonAttributeTest {
                         "\"ical\": \"" + toJsonValue(ics) + "\"," +
                         "\"sender\": \"" + SENDER.asString() + "\"," +
                         "\"recipient\": \"" + MailAddressFixture.ANY_AT_JAMES2.asString() + "\"," +
+                        "\"replyTo\": \"" + SENDER.asString() + "\"," +
                         "\"uid\": \"f1514f44bf39311568d640727cff54e819573448d09d2e5677987ff29caa01a9e047feb2aab16e43439a608f28671ab7c10e754ce92be513f8e04ae9ff15e65a9819cf285a6962bc\"," +
                         "\"sequence\": \"0\"," +
                         "\"dtstamp\": \"20170106T115036Z\"," +
@@ -321,6 +363,7 @@ public class ICALToJsonAttributeTest {
                         "\"ical\": \"" + toJsonValue(ics) + "\"," +
                         "\"sender\": \"" + SENDER.asString() + "\"," +
                         "\"recipient\": \"" + MailAddressFixture.OTHER_AT_JAMES.asString() + "\"," +
+                        "\"replyTo\": \"" + SENDER.asString() + "\"," +
                         "\"uid\": \"f1514f44bf39311568d640727cff54e819573448d09d2e5677987ff29caa01a9e047feb2aab16e43439a608f28671ab7c10e754ce92be513f8e04ae9ff15e65a9819cf285a6962bc\"," +
                         "\"sequence\": \"0\"," +
                         "\"dtstamp\": \"20170106T115036Z\"," +
@@ -360,6 +403,7 @@ public class ICALToJsonAttributeTest {
                         "\"ical\": \"" + toJsonValue(ics2) + "\"," +
                         "\"sender\": \"" + SENDER.asString() + "\"," +
                         "\"recipient\": \"" + recipient.asString() + "\"," +
+                        "\"replyTo\": \"" + SENDER.asString() + "\"," +
                         "\"uid\": \"f1514f44bf39311568d64072ac247c17656ceafde3b4b3eba961c8c5184cdc6ee047feb2aab16e43439a608f28671ab7c10e754c301b1e32001ad51dd20eac2fc7af20abf4093bbe\"," +
                         "\"sequence\": \"0\"," +
                         "\"dtstamp\": \"20170103T103250Z\"," +
@@ -370,6 +414,7 @@ public class ICALToJsonAttributeTest {
                         "\"ical\": \"" + toJsonValue(ics) + "\"," +
                         "\"sender\": \"" + SENDER.asString() + "\"," +
                         "\"recipient\": \"" + recipient.asString() + "\"," +
+                        "\"replyTo\": \"" + SENDER.asString() + "\"," +
                         "\"uid\": \"f1514f44bf39311568d640727cff54e819573448d09d2e5677987ff29caa01a9e047feb2aab16e43439a608f28671ab7c10e754ce92be513f8e04ae9ff15e65a9819cf285a6962bc\"," +
                         "\"sequence\": \"0\"," +
                         "\"dtstamp\": \"20170106T115036Z\"," +
@@ -409,6 +454,7 @@ public class ICALToJsonAttributeTest {
                         "\"ical\": \"" + toJsonValue(ics) + "\"," +
                         "\"sender\": \"" + SENDER.asString() + "\"," +
                         "\"recipient\": \"" + recipient.asString() + "\"," +
+                        "\"replyTo\": \"" + SENDER.asString() + "\"," +
                         "\"uid\": \"f1514f44bf39311568d640727cff54e819573448d09d2e5677987ff29caa01a9e047feb2aab16e43439a608f28671ab7c10e754ce92be513f8e04ae9ff15e65a9819cf285a6962bc\"," +
                         "\"sequence\": \"0\"," +
                         "\"dtstamp\": \"20170106T115036Z\"," +
@@ -447,6 +493,7 @@ public class ICALToJsonAttributeTest {
                     assertThatJson(actual.get(0)).isEqualTo("{" +
                         "\"ical\": \"" + toJsonValue(ics) + "\"," +
                         "\"sender\": \"" + SENDER.asString() + "\"," +
+                        "\"replyTo\": \"" + SENDER.asString() + "\"," +
                         "\"recipient\": \"" + recipient.asString() + "\"," +
                         "\"uid\": \"f1514f44bf39311568d640727cff54e819573448d09d2e5677987ff29caa01a9e047feb2aab16e43439a608f28671ab7c10e754ce92be513f8e04ae9ff15e65a9819cf285a6962bc\"," +
                         "\"sequence\": \"0\"," +
@@ -487,6 +534,7 @@ public class ICALToJsonAttributeTest {
                             "\"ical\": \"" + toJsonValue(ics) + "\"," +
                             "\"sender\": \"" + from + "\"," +
                             "\"recipient\": \"" + recipient.asString() + "\"," +
+                            "\"replyTo\": \"" + from + "\"," +
                             "\"uid\": \"f1514f44bf39311568d640727cff54e819573448d09d2e5677987ff29caa01a9e047feb2aab16e43439a608f28671ab7c10e754ce92be513f8e04ae9ff15e65a9819cf285a6962bc\"," +
                             "\"sequence\": \"0\"," +
                             "\"dtstamp\": \"20170106T115036Z\"," +
@@ -524,6 +572,7 @@ public class ICALToJsonAttributeTest {
                             "\"ical\": \"" + toJsonValue(ics) + "\"," +
                             "\"sender\": \"" + SENDER.asString() + "\"," +
                             "\"recipient\": \"" + recipient.asString() + "\"," +
+                            "\"replyTo\": \"" + SENDER.asString() + "\"," +
                             "\"uid\": \"f1514f44bf39311568d640727cff54e819573448d09d2e5677987ff29caa01a9e047feb2aab16e43439a608f28671ab7c10e754ce92be513f8e04ae9ff15e65a9819cf285a6962bc\"," +
                             "\"sequence\": \"0\"," +
                             "\"dtstamp\": \"20170106T115036Z\"," +
@@ -562,6 +611,7 @@ public class ICALToJsonAttributeTest {
                             "\"ical\": \"" + toJsonValue(ics) + "\"," +
                             "\"sender\": \"" + from + "\"," +
                             "\"recipient\": \"" + recipient.asString() + "\"," +
+                            "\"replyTo\": \"" + from + "\"," +
                             "\"uid\": \"f1514f44bf39311568d640727cff54e819573448d09d2e5677987ff29caa01a9e047feb2aab16e43439a608f28671ab7c10e754ce92be513f8e04ae9ff15e65a9819cf285a6962bc\"," +
                             "\"sequence\": \"0\"," +
                             "\"dtstamp\": \"20170106T115036Z\"," +

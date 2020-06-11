@@ -32,7 +32,8 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.MailAddress;
-import org.apache.james.transport.mailets.model.ICAL;
+import org.apache.james.core.MaybeSender;
+import org.apache.james.transport.mailets.model.ICALAttributeDTO;
 import org.apache.james.util.StreamUtils;
 import org.apache.mailet.Attribute;
 import org.apache.mailet.AttributeName;
@@ -97,12 +98,10 @@ public class ICALToJsonAttribute extends GenericMailet {
     public static final String DEFAULT_SOURCE_ATTRIBUTE_NAME = "icalendar";
     public static final String DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME = "attachments";
     public static final String DEFAULT_DESTINATION_ATTRIBUTE_NAME = "icalendarJson";
-    public static final AttributeName SOURCE = AttributeName.of(SOURCE_ATTRIBUTE_NAME);
-    public static final AttributeName RAW_SOURCE = AttributeName.of(RAW_SOURCE_ATTRIBUTE_NAME);
-    public static final AttributeName DESTINATION = AttributeName.of(DESTINATION_ATTRIBUTE_NAME);
     public static final AttributeName DEFAULT_SOURCE = AttributeName.of(DEFAULT_SOURCE_ATTRIBUTE_NAME);
     public static final AttributeName DEFAULT_RAW_SOURCE = AttributeName.of(DEFAULT_RAW_SOURCE_ATTRIBUTE_NAME);
     public static final AttributeName DEFAULT_DESTINATION = AttributeName.of(DEFAULT_DESTINATION_ATTRIBUTE_NAME);
+    public static final String REPLY_TO_HEADER_NAME = "replyTo";
 
     static {
         ICal4JConfigurator.configure();
@@ -170,27 +169,46 @@ public class ICALToJsonAttribute extends GenericMailet {
     }
 
     private void setAttribute(Mail mail, Map<String, Calendar> calendars, Map<String, byte[]> rawCalendars) throws MessagingException {
-        Optional<String> sender = retrieveSender(mail);
+        Optional<MailAddress> sender = retrieveSender(mail);
         if (!sender.isPresent()) {
             LOGGER.info("Skipping {} because no sender and no from", mail.getName());
             return;
         }
+
+        MailAddress transportSender = sender.get();
+        MailAddress participant = fetchParticipant(mail).orElse(transportSender);
+
         Map<String, byte[]> jsonsInByteForm = calendars.entrySet()
             .stream()
-            .flatMap(calendar -> toJson(calendar, rawCalendars, mail, sender.get()))
+            .flatMap(calendar -> toJson(calendar, rawCalendars, mail, transportSender, participant))
             .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
         mail.setAttribute(new Attribute(destinationAttributeName, AttributeValue.ofAny(jsonsInByteForm)));
     }
 
-    private Stream<Pair<String, byte[]>> toJson(Map.Entry<String, Calendar> entry, Map<String, byte[]> rawCalendars, Mail mail, String sender) {
+    private Optional<MailAddress> fetchParticipant(Mail mail) throws MessagingException {
+        return Optional.ofNullable(mail.getMessage())
+            .flatMap(Throwing.<MimeMessage, Optional<String[]>>function(mimeMessage ->
+                    Optional.ofNullable(mimeMessage.getHeader(REPLY_TO_HEADER_NAME))
+                ).sneakyThrow())
+            .filter(headers -> headers.length > 0)
+            .map(headers -> headers[0])
+            .map(MaybeSender::getMailSender)
+            .flatMap(MaybeSender::asOptional);
+    }
+
+    private Stream<Pair<String, byte[]>> toJson(Map.Entry<String, Calendar> entry,
+                                                Map<String, byte[]> rawCalendars,
+                                                Mail mail,
+                                                MailAddress sender,
+                                                MailAddress participant) {
         return mail.getRecipients()
             .stream()
-            .flatMap(recipient -> toICAL(entry, rawCalendars, recipient, sender))
+            .flatMap(recipient -> toICAL(entry, rawCalendars, recipient, sender, participant))
             .flatMap(ical -> toJson(ical, mail.getName()))
             .map(json -> Pair.of(UUID.randomUUID().toString(), json.getBytes(StandardCharsets.UTF_8)));
     }
 
-    private Stream<String> toJson(ICAL ical, String mailName) {
+    private Stream<String> toJson(ICALAttributeDTO ical, String mailName) {
         try {
             return Stream.of(objectMapper.writeValueAsString(ical));
         } catch (JsonProcessingException e) {
@@ -202,7 +220,11 @@ public class ICALToJsonAttribute extends GenericMailet {
         }
     }
 
-    private Stream<ICAL> toICAL(Map.Entry<String, Calendar> entry, Map<String, byte[]> rawCalendars, MailAddress recipient, String sender) {
+    private Stream<ICALAttributeDTO> toICAL(Map.Entry<String, Calendar> entry,
+                                            Map<String, byte[]> rawCalendars,
+                                            MailAddress recipient,
+                                            MailAddress sender,
+                                            MailAddress participant) {
         Calendar calendar = entry.getValue();
         byte[] rawICal = rawCalendars.get(entry.getKey());
         if (rawICal == null) {
@@ -210,27 +232,27 @@ public class ICALToJsonAttribute extends GenericMailet {
             return Stream.of();
         }
         try {
-            return Stream.of(ICAL.builder()
+            return Stream.of(ICALAttributeDTO.builder()
                 .from(calendar, rawICal)
-                .recipient(recipient)
                 .sender(sender)
-                .build());
+                .recipient(recipient)
+                .replyTo(participant));
         } catch (Exception e) {
             LOGGER.error("Exception while converting calendar to ICAL", e);
             return Stream.of();
         }
     }
 
-    private Optional<String> retrieveSender(Mail mail) throws MessagingException {
-        Optional<String> fromMime = StreamUtils.ofOptional(
+    private Optional<MailAddress> retrieveSender(Mail mail) throws MessagingException {
+        Optional<MailAddress> fromMime = StreamUtils.ofOptional(
             Optional.ofNullable(mail.getMessage())
                 .map(Throwing.function(MimeMessage::getFrom).orReturn(new Address[]{})))
             .map(address -> (InternetAddress) address)
             .map(InternetAddress::getAddress)
+            .map(MaybeSender::getMailSender)
+            .flatMap(MaybeSender::asStream)
             .findFirst();
-        Optional<String> fromEnvelope = mail.getMaybeSender().asOptional()
-            .map(MailAddress::asString);
 
-        return fromMime.or(() -> fromEnvelope);
+        return fromMime.or(() -> mail.getMaybeSender().asOptional());
     }
 }
