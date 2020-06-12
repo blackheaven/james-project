@@ -176,16 +176,16 @@ public class ICALToJsonAttribute extends GenericMailet {
         }
 
         MailAddress transportSender = sender.get();
-        MailAddress participant = fetchParticipant(mail).orElse(transportSender);
+        MailAddress replyTo = fetchReplyTo(mail).orElse(transportSender);
 
         Map<String, byte[]> jsonsInByteForm = calendars.entrySet()
             .stream()
-            .flatMap(calendar -> toJson(calendar, rawCalendars, mail, transportSender, participant))
+            .flatMap(calendar -> toJson(calendar, rawCalendars, mail, transportSender, replyTo))
             .collect(Guavate.toImmutableMap(Pair::getKey, Pair::getValue));
         mail.setAttribute(new Attribute(destinationAttributeName, AttributeValue.ofAny(jsonsInByteForm)));
     }
 
-    private Optional<MailAddress> fetchParticipant(Mail mail) throws MessagingException {
+    private Optional<MailAddress> fetchReplyTo(Mail mail) throws MessagingException {
         return Optional.ofNullable(mail.getMessage())
             .flatMap(Throwing.<MimeMessage, Optional<String[]>>function(mimeMessage ->
                     Optional.ofNullable(mimeMessage.getHeader(REPLY_TO_HEADER_NAME))
@@ -200,10 +200,10 @@ public class ICALToJsonAttribute extends GenericMailet {
                                                 Map<String, byte[]> rawCalendars,
                                                 Mail mail,
                                                 MailAddress sender,
-                                                MailAddress participant) {
+                                                MailAddress replyTo) {
         return mail.getRecipients()
             .stream()
-            .flatMap(recipient -> toICAL(entry, rawCalendars, recipient, sender, participant))
+            .flatMap(recipient -> toICAL(entry, rawCalendars, recipient, sender, replyTo))
             .flatMap(ical -> toJson(ical, mail.getName()))
             .map(json -> Pair.of(UUID.randomUUID().toString(), json.getBytes(StandardCharsets.UTF_8)));
     }
@@ -224,7 +224,7 @@ public class ICALToJsonAttribute extends GenericMailet {
                                             Map<String, byte[]> rawCalendars,
                                             MailAddress recipient,
                                             MailAddress sender,
-                                            MailAddress participant) {
+                                            MailAddress replyTo) {
         Calendar calendar = entry.getValue();
         byte[] rawICal = rawCalendars.get(entry.getKey());
         if (rawICal == null) {
@@ -236,7 +236,7 @@ public class ICALToJsonAttribute extends GenericMailet {
                 .from(calendar, rawICal)
                 .sender(sender)
                 .recipient(recipient)
-                .replyTo(participant));
+                .replyTo(replyTo));
         } catch (Exception e) {
             LOGGER.error("Exception while converting calendar to ICAL", e);
             return Stream.of();
