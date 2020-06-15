@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.mail.MessagingException;
 
@@ -44,6 +45,9 @@ import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.fasterxml.jackson.core.util.BufferRecyclers;
 import com.google.common.collect.ImmutableMap;
@@ -278,9 +282,9 @@ public class ICALToJsonAttributeTest {
         return new String(BufferRecyclers.getJsonStringEncoder().quoteAsUTF8(new String(ics, StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
     }
 
-
-    @Test
-    void serviceShouldAttachJsonWithTheReplyToAttributeValueWhenPresent() throws Exception {
+    @ParameterizedTest
+    @MethodSource("validReplyToHeaders")
+    void serviceShouldAttachJsonWithTheReplyToAttributeValueWhenPresent(String replyToHeader) throws Exception {
         testee.init(FakeMailetConfig.builder().build());
 
         byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
@@ -296,7 +300,7 @@ public class ICALToJsonAttributeTest {
             .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE, AttributeValue.ofAny(icals)))
             .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE, AttributeValue.ofAny(rawIcals)))
             .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
-                .addHeader(ICALToJsonAttribute.REPLY_TO_HEADER_NAME, replyTo.asString()))
+                .addHeader(ICALToJsonAttribute.REPLY_TO_HEADER_NAME, replyToHeader))
             .build();
         testee.service(mail);
 
@@ -318,6 +322,57 @@ public class ICALToJsonAttributeTest {
                         "}");
             });
     }
+
+    private static Stream<Arguments> validReplyToHeaders() {
+        String address = MailAddressFixture.OTHER_AT_JAMES.asString();
+        return Stream.of(
+                address,
+                "<" + address + ">",
+                "\"Bob\" <" + address + ">",
+                "\"Bob\"\n      <" + address + ">",
+                "\"QUOTED ENCODING\" <" + address + ">")
+            .map(Arguments::of);
+    };
+
+    @Test
+    void serviceShouldAttachJsonWithTheSenderAsReplyToAttributeValueWhenReplyToIsInvalid() throws Exception {
+        testee.init(FakeMailetConfig.builder().build());
+
+        byte[] ics = ClassLoaderUtils.getSystemResourceAsByteArray("ics/meeting.ics");
+        Calendar calendar = new CalendarBuilder().build(new ByteArrayInputStream(ics));
+        ImmutableMap<String, Calendar> icals = ImmutableMap.of("key", calendar);
+        ImmutableMap<String, byte[]> rawIcals = ImmutableMap.of("key", ics);
+        MailAddress recipient = MailAddressFixture.ANY_AT_JAMES2;
+        Mail mail = FakeMail.builder()
+            .name("mail")
+            .sender(SENDER)
+            .recipient(recipient)
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_SOURCE, AttributeValue.ofAny(icals)))
+            .attribute(new Attribute(ICALToJsonAttribute.DEFAULT_RAW_SOURCE, AttributeValue.ofAny(rawIcals)))
+            .mimeMessage(MimeMessageBuilder.mimeMessageBuilder()
+                .addHeader(ICALToJsonAttribute.REPLY_TO_HEADER_NAME, "inv@lid.m@il.adr"))
+            .build();
+        testee.service(mail);
+
+        assertThat(AttributeUtils.getValueAndCastFromMail(mail, ICALToJsonAttribute.DEFAULT_DESTINATION, MAP_STRING_BYTES_CLASS))
+            .isPresent()
+            .hasValueSatisfying(jsons -> {
+                assertThat(jsons).hasSize(1);
+                assertThatJson(new String(jsons.values().iterator().next(), StandardCharsets.UTF_8))
+                    .isEqualTo("{" +
+                        "\"ical\": \"" + toJsonValue(ics) + "\"," +
+                        "\"sender\": \"" + SENDER.asString() + "\"," +
+                        "\"replyTo\": \"" + SENDER.asString() + "\"," +
+                        "\"recipient\": \"" + recipient.asString() + "\"," +
+                        "\"uid\": \"f1514f44bf39311568d640727cff54e819573448d09d2e5677987ff29caa01a9e047feb2aab16e43439a608f28671ab7c10e754ce92be513f8e04ae9ff15e65a9819cf285a6962bc\"," +
+                        "\"sequence\": \"0\"," +
+                        "\"dtstamp\": \"20170106T115036Z\"," +
+                        "\"method\": \"REQUEST\"," +
+                        "\"recurrence-id\": null" +
+                        "}");
+            });
+    }
+
     @Test
     void serviceShouldAttachJsonForSeveralRecipient() throws Exception {
         testee.init(FakeMailetConfig.builder().build());
