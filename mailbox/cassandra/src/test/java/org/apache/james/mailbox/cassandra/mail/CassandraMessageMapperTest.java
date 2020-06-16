@@ -52,7 +52,9 @@ class CassandraMessageMapperTest extends MessageMapperTest {
     
     @Override
     protected MapperProvider createMapperProvider() {
-        return new CassandraMapperProvider(cassandraCluster.getCassandraCluster());
+        return new CassandraMapperProvider(
+            cassandraCluster.getCassandraCluster(),
+            cassandraCluster.getCassandraConsistenciesConfiguration());
     }
 
     @Test
@@ -184,7 +186,10 @@ class CassandraMessageMapperTest extends MessageMapperTest {
                 // ignoring expected error
             }
 
-            CassandraMessageIdToImapUidDAO imapUidDAO = new CassandraMessageIdToImapUidDAO(cassandra.getConf(), new CassandraMessageId.Factory());
+            CassandraMessageIdToImapUidDAO imapUidDAO = new CassandraMessageIdToImapUidDAO(
+                cassandra.getConf(),
+                cassandraCluster.getCassandraConsistenciesConfiguration(),
+                new CassandraMessageId.Factory());
 
             SoftAssertions.assertSoftly(Throwing.consumer(softly -> {
                 softly.assertThat(messageMapper.findInMailbox(benwaInboxMailbox, MessageRange.all(), FetchType.Metadata, 1))

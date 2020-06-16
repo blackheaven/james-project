@@ -242,9 +242,14 @@ class CassandraACLMapperTest {
             CassandraACLMapper aclMapper = new CassandraACLMapper(
                 cassandra.getConf(),
                 new CassandraUserMailboxRightsDAO(cassandra.getConf(), CassandraUtils.WITH_DEFAULT_CONFIGURATION),
-                CassandraConfiguration.DEFAULT_CONFIGURATION);
+                CassandraConfiguration.DEFAULT_CONFIGURATION,
+                cassandraCluster.getCassandraConsistenciesConfiguration());
 
-            aclMapper.updateACL(MAILBOX_ID, MailboxACL.command().key(key).rights(rights).asAddition()).block();
+            try {
+                aclMapper.updateACL(MAILBOX_ID, MailboxACL.command().key(key).rights(rights).asAddition());
+            } catch (MailboxException exception) {
+                throw new RuntimeException(exception);
+            }
             return true;
         });
     }
