@@ -192,13 +192,15 @@ public class ICALToJsonAttribute extends GenericMailet {
                 ).sneakyThrow())
             .filter(headers -> headers.length > 0)
             .map(headers -> headers[0])
-            .flatMap(headerValue -> {
-                try {
-                    return Optional.of(new MailAddress(new InternetAddress(headerValue)));
-                } catch (MessagingException e) {
-                    return Optional.empty();
-                }
-            });
+            .flatMap(this::retrieveReplyTo);
+    }
+
+    private Optional<? extends MailAddress> retrieveReplyTo(String headerValue) {
+        try {
+            return Optional.of(new MailAddress(new InternetAddress(headerValue)));
+        } catch (MessagingException e) {
+            return Optional.empty();
+        }
     }
 
     private Stream<Pair<String, byte[]>> toJson(Map.Entry<String, Calendar> entry,
