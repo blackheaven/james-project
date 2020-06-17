@@ -330,7 +330,7 @@ public class ICALToJsonAttributeTest {
                 "<" + address + ">",
                 "\"Bob\" <" + address + ">",
                 "\"Bob\"\n      <" + address + ">",
-                "\"QUÔTED ENCODING\" <" + address + ">")
+                " =?UTF-8?Q?Beno=c3=aet_TELLIER?= <" + address + ">")
             .map(Arguments::of);
     };
 

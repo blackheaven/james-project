@@ -27,12 +27,16 @@ import java.util.stream.Stream;
 
 import javax.mail.Address;
 import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.core.MailAddress;
 import org.apache.james.core.MaybeSender;
+import org.apache.james.mime4j.dom.address.Group;
+import org.apache.james.mime4j.dom.address.Mailbox;
+import org.apache.james.mime4j.field.address.LenientAddressParser;
 import org.apache.james.transport.mailets.model.ICALAttributeDTO;
 import org.apache.james.util.StreamUtils;
 import org.apache.mailet.Attribute;
@@ -195,12 +199,31 @@ public class ICALToJsonAttribute extends GenericMailet {
             .flatMap(this::retrieveReplyTo);
     }
 
-    private Optional<? extends MailAddress> retrieveReplyTo(String headerValue) {
+    private Optional<MailAddress> retrieveReplyTo(String headerValue) {
+        return LenientAddressParser.DEFAULT
+            .parseAddressList(headerValue)
+            .stream()
+            .flatMap(this::convertAddressToMailboxStream)
+            .flatMap(this::convertMailboxToMailAddress)
+            .findFirst();
+
+    }
+
+    private Stream<MailAddress> convertMailboxToMailAddress(Mailbox mailbox) {
         try {
-            return Optional.of(new MailAddress(new InternetAddress(headerValue)));
-        } catch (MessagingException e) {
-            return Optional.empty();
+            return Stream.of(new MailAddress(mailbox.getAddress()));
+        } catch (AddressException e) {
+            return Stream.empty();
         }
+    }
+
+    private Stream<Mailbox> convertAddressToMailboxStream(org.apache.james.mime4j.dom.address.Address address) {
+        if (address instanceof Mailbox) {
+            return Stream.of((Mailbox) address);
+        } else if (address instanceof Group) {
+            return ((Group) address).getMailboxes().stream();
+        }
+        return Stream.empty();
     }
 
     private Stream<Pair<String, byte[]>> toJson(Map.Entry<String, Calendar> entry,
