@@ -25,6 +25,7 @@ import static org.apache.james.mailbox.store.mail.AbstractMessageMapper.UNLIMITE
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -97,6 +98,8 @@ import org.apache.james.util.IteratorWrapper;
 import org.apache.james.util.io.BodyOffsetInputStream;
 import org.apache.james.util.io.InputStreamConsummer;
 import org.apache.james.util.streams.Iterators;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
@@ -116,6 +119,7 @@ import reactor.core.scheduler.Schedulers;
  * {@link MailboxSession}'s.
  */
 public class StoreMessageManager implements MessageManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger(StoreMessageManager.class);
     /**
      * The minimal Permanent flags the {@link MessageManager} must support. <br>
      * 
@@ -307,6 +311,7 @@ public class StoreMessageManager implements MessageManager {
     @Override
     public AppendResult appendMessage(InputStream msgIn, Date internalDate, final MailboxSession mailboxSession, boolean isRecent, Flags flagsToBeSet) throws MailboxException {
         File file = null;
+        AppendResult result = null;
 
         if (!isWriteable(mailboxSession)) {
             throw new ReadOnlyException(getMailboxPath());
@@ -338,7 +343,15 @@ public class StoreMessageManager implements MessageManager {
                 InputStreamConsummer.consume(tmpMsgIn);
                 bufferedOut.flush();
                 int bodyStartOctet = getBodyStartOctet(bIn);
-                return createAndDispatchMessage(internalDate, mailboxSession, file, propertyBuilder, flags, bodyStartOctet);
+                result = createAndDispatchMessage(internalDate, mailboxSession, file, propertyBuilder, flags, bodyStartOctet);
+                return result;
+            }
+        } catch (FileNotFoundException e) {
+            if (!file.exists() && result != null) {
+                LOGGER.warn("Unable to delete the temporary file", e);
+                return result;
+            } else {
+                throw new MailboxException("Unable to parse message", e);
             }
         } catch (IOException | MimeException e) {
             throw new MailboxException("Unable to parse message", e);
