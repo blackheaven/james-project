@@ -25,7 +25,6 @@ import static org.apache.james.mailbox.store.mail.AbstractMessageMapper.UNLIMITE
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -96,6 +95,7 @@ import org.apache.james.mime4j.stream.RecursionMode;
 import org.apache.james.util.IteratorWrapper;
 import org.apache.james.util.io.BodyOffsetInputStream;
 import org.apache.james.util.io.InputStreamConsummer;
+import org.apache.james.util.io.TemporaryFileOutputStream;
 import org.apache.james.util.streams.Iterators;
 
 import com.github.steveash.guavate.Guavate;
@@ -306,8 +306,6 @@ public class StoreMessageManager implements MessageManager {
 
     @Override
     public AppendResult appendMessage(InputStream msgIn, Date internalDate, final MailboxSession mailboxSession, boolean isRecent, Flags flagsToBeSet) throws MailboxException {
-        File file = null;
-
         if (!isWriteable(mailboxSession)) {
             throw new ReadOnlyException(getMailboxPath());
         }
@@ -316,8 +314,7 @@ public class StoreMessageManager implements MessageManager {
             // Create a temporary file and copy the message to it. We will work
             // with the file as
             // source for the InputStream
-            file = File.createTempFile("imap", ".msg");
-            try (FileOutputStream out = new FileOutputStream(file);
+            try (TemporaryFileOutputStream out = new TemporaryFileOutputStream("imap", ".msg");
                  BufferedOutputStream bufferedOut = new BufferedOutputStream(out);
                  BufferedInputStream tmpMsgIn = new BufferedInputStream(new TeeInputStream(msgIn, bufferedOut));
                  BodyOffsetInputStream bIn = new BodyOffsetInputStream(tmpMsgIn)) {
@@ -338,19 +335,10 @@ public class StoreMessageManager implements MessageManager {
                 InputStreamConsummer.consume(tmpMsgIn);
                 bufferedOut.flush();
                 int bodyStartOctet = getBodyStartOctet(bIn);
-                return createAndDispatchMessage(internalDate, mailboxSession, file, propertyBuilder, flags, bodyStartOctet);
+                return createAndDispatchMessage(internalDate, mailboxSession, out.getFile(), propertyBuilder, flags, bodyStartOctet);
             }
         } catch (IOException | MimeException e) {
             throw new MailboxException("Unable to parse message", e);
-        } finally {
-            // delete the temporary file if one was specified
-            if (file != null) {
-                if (!file.delete()) {
-                    // Don't throw an IOException. The message could be appended
-                    // and the temporary file
-                    // will be deleted hopefully some day
-                }
-            }
         }
     }
 
