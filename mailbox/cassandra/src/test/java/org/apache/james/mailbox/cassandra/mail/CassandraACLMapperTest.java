@@ -245,11 +245,7 @@ class CassandraACLMapperTest {
                 CassandraConfiguration.DEFAULT_CONFIGURATION,
                 cassandraCluster.getCassandraConsistenciesConfiguration());
 
-            try {
-                aclMapper.updateACL(MAILBOX_ID, MailboxACL.command().key(key).rights(rights).asAddition());
-            } catch (MailboxException exception) {
-                throw new RuntimeException(exception);
-            }
+            aclMapper.updateACL(MAILBOX_ID, MailboxACL.command().key(key).rights(rights).asAddition());
             return true;
         });
     }
