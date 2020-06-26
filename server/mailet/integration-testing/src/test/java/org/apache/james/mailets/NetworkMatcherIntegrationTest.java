@@ -67,7 +67,7 @@ public class NetworkMatcherIntegrationTest {
                 .putProcessor(rootProcessor)
                 .putProcessor(CommonProcessors.deliverOnlyTransport()))
             .build(temporaryFolder.newFolder());
-        jamesServer.start();
+        temporaryJamesServer.start();
 
         DataProbe dataProbe = temporaryJamesServer.getProbe(DataProbeImpl.class);
         dataProbe.addDomain(DEFAULT_DOMAIN);
