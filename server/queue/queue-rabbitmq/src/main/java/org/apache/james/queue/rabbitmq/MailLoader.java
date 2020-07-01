@@ -29,6 +29,8 @@ import org.apache.james.blob.mail.MimeMessagePartsId;
 import org.apache.james.queue.api.MailQueue;
 import org.apache.mailet.Mail;
 
+import com.github.fge.lambdas.Throwing;
+
 import reactor.core.publisher.Mono;
 
 class MailLoader {
@@ -52,14 +54,10 @@ class MailLoader {
     }
 
     private Mono<Mail> buildMailWithMessageReference(MailReference mailReference, MimeMessage mimeMessage) {
-        Mail mail = mailReference.getMail();
-        try {
-            mail.setMessage(mimeMessage);
-            return Mono.just(mail);
-        } catch (AddressException e) {
-            return Mono.error(new MailQueue.MailQueueException("Failed to parse mail address", e));
-        } catch (MessagingException e) {
-            return Mono.error(new MailQueue.MailQueueException("Failed to generate mime message", e));
-        }
+        return Mono.just(mailReference.getMail())
+            .flatMap(mail -> Mono.fromRunnable(Throwing.runnable(() -> mail.setMessage(mimeMessage)).sneakyThrow())
+                .thenReturn(mail))
+            .onErrorResume(AddressException.class, e -> Mono.error(new MailQueue.MailQueueException("Failed to parse mail address", e)))
+            .onErrorResume(MessagingException.class, e -> Mono.error(new MailQueue.MailQueueException("Failed to generate mime message", e)));
     }
 }
