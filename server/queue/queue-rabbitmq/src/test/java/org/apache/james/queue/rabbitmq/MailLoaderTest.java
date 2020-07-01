@@ -26,9 +26,8 @@ import static org.mockito.Mockito.when;
 
 import javax.mail.internet.MimeMessage;
 
+import org.apache.james.blob.api.HashBlobId;
 import org.apache.james.blob.api.Store;
-import org.apache.james.blob.api.TestBlobId;
-
 import org.apache.james.blob.mail.MimeMessagePartsId;
 import org.junit.jupiter.api.Test;
 
@@ -39,9 +38,10 @@ class MailLoaderTest {
     void storeExceptionShouldBePropagated() {
         Store<MimeMessage, MimeMessagePartsId> store = mock(Store.class);
         when(store.read(any())).thenReturn(Mono.error(new RuntimeException("Cassandra problem")));
-        MailLoader loader = new MailLoader(store, new TestBlobId.Factory());
         MailReferenceDTO dto = mock(MailReferenceDTO.class);
         when(dto.toMailReference(any())).thenReturn(mock(MailReference.class));
+        MailLoader loader = new MailLoader(store, new HashBlobId.Factory());
+
         String result = loader.load(dto)
             .thenReturn("continued")
             .onErrorResume(RuntimeException.class, e -> Mono.just("caught"))
