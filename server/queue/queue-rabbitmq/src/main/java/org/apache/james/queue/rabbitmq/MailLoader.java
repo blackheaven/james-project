@@ -19,6 +19,8 @@
 
 package org.apache.james.queue.rabbitmq;
 
+import java.util.function.Function;
+
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
@@ -54,10 +56,13 @@ class MailLoader {
     }
 
     private Mono<Mail> buildMailWithMessageReference(MailReference mailReference, MimeMessage mimeMessage) {
+        Function<Mail, Mono<Object>> setMessage = mail ->
+            Mono.fromRunnable(Throwing.runnable(() -> mail.setMessage(mimeMessage)).sneakyThrow())
+                .onErrorResume(AddressException.class, e -> Mono.error(new MailQueue.MailQueueException("Failed to parse mail address", e)))
+                .onErrorResume(MessagingException.class, e -> Mono.error(new MailQueue.MailQueueException("Failed to generate mime message", e)));
+
         return Mono.just(mailReference.getMail())
-            .flatMap(mail -> Mono.fromRunnable(Throwing.runnable(() -> mail.setMessage(mimeMessage)).sneakyThrow())
-                .thenReturn(mail))
-            .onErrorResume(AddressException.class, e -> Mono.error(new MailQueue.MailQueueException("Failed to parse mail address", e)))
-            .onErrorResume(MessagingException.class, e -> Mono.error(new MailQueue.MailQueueException("Failed to generate mime message", e)));
+            .flatMap(mail -> setMessage.apply(mail)
+                .thenReturn(mail));
     }
 }
