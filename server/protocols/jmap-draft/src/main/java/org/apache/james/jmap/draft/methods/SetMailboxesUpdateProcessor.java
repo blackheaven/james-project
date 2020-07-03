@@ -22,7 +22,6 @@ package org.apache.james.jmap.draft.methods;
 import static org.apache.james.jmap.draft.methods.Method.JMAP_PREFIX;
 
 import java.util.Optional;
-import java.util.function.Predicate;
 
 import javax.inject.Inject;
 
@@ -175,7 +174,7 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
     @VisibleForTesting
     <T> boolean requestChanged(Optional<T> requestValue, Optional<T> storeValue) {
         return requestValue
-            .filter(Predicate.not(Predicate.isEqual(storeValue)))
+            .filter(value -> !requestValue.equals(storeValue))
             .isPresent();
     }
 
