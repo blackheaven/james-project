@@ -32,7 +32,6 @@ import org.apache.james.core.Domain;
 import org.apache.james.util.StreamUtils;
 
 import com.github.steveash.guavate.Guavate;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 public class DomainListConfiguration {
@@ -115,7 +114,7 @@ public class DomainListConfiguration {
 
     public static DomainListConfiguration from(HierarchicalConfiguration<ImmutableNode> config) {
         ImmutableList<Domain> configuredDomains = StreamUtils.ofNullable(config.getStringArray(CONFIGURE_DOMAIN_NAMES))
-            .filter(Predicate.not(Strings::isNullOrEmpty))
+            .filter(Predicate.not(String::isEmpty))
             .map(Domain::of)
             .collect(Guavate.toImmutableList());
 

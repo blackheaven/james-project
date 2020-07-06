@@ -71,7 +71,7 @@ public class MailboxPath {
     
     public MailboxPath(String namespace, Username user, String name) {
         this.namespace = Optional.ofNullable(namespace)
-            .filter(Predicate.not(Strings::isNullOrEmpty))
+            .filter(Predicate.not(String::isEmpty))
             .orElse(MailboxConstants.USER_NAMESPACE);
         this.user = user;
         this.name = name;
