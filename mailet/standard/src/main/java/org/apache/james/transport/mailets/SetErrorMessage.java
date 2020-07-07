@@ -26,15 +26,13 @@ import javax.mail.MessagingException;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 
-import com.google.common.base.Strings;
-
 public class SetErrorMessage extends GenericMailet {
     private String errorMessage;
 
     @Override
     public void init() throws MessagingException {
         errorMessage = getInitParameterAsOptional("errorMessage")
-            .filter(Predicate.not(Strings::isNullOrEmpty))
+            .filter(Predicate.not(String::isEmpty))
             .orElseThrow(() -> new IllegalStateException("'errorMessage' needs to be specified and cannot be empty"));
     }
 

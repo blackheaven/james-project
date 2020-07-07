@@ -49,7 +49,6 @@ import org.apache.james.webadmin.utils.Responses;
 import org.eclipse.jetty.http.HttpStatus;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -203,7 +202,7 @@ public class TasksRoutes implements Routes {
     private Duration getTimeout(Request req) {
         try {
             Duration timeout =  Optional.ofNullable(req.queryParams("timeout"))
-                .filter(Predicate.not(Strings::isNullOrEmpty))
+                .filter(Predicate.not(String::isEmpty))
                 .map(rawString -> DurationParser.parse(rawString, ChronoUnit.SECONDS))
                 .orElse(MAXIMUM_AWAIT_TIMEOUT);
 

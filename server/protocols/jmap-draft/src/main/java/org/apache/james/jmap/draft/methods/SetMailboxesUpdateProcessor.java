@@ -173,7 +173,7 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
 
     @VisibleForTesting
     <T> boolean requestChanged(Optional<T> requestValue, Optional<T> storeValue) {
-        return requestValue.isPresent() && requestValue != storeValue;
+        return requestValue.isPresent() && !requestValue.equals(storeValue);
     }
 
     private Mailbox getMailbox(MailboxId mailboxId, MailboxSession mailboxSession) throws MailboxNotFoundException {
