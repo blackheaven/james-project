@@ -24,7 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import javax.mail.Flags;
 import javax.mail.Folder;
@@ -56,6 +58,7 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -255,6 +258,49 @@ interface MailsShouldBeWellReceived {
                 .select(TestIMAPClient.INBOX)
                 .awaitMessageCount(CALMLY_AWAIT, messageCount);
         }
+    }
+
+    @Test
+    default void oneHundredMailsShouldBeAppendableConcurrently(GuiceJamesServer server) throws Exception {
+        server.getProbe(DataProbeImpl.class).fluent()
+                .addDomain(DOMAIN)
+                .addUser(JAMES_USER, PASSWORD);
+
+        MailboxProbeImpl mailboxProbe = server.getProbe(MailboxProbeImpl.class);
+        mailboxProbe.createMailbox("#private", JAMES_USER, DefaultMailboxes.INBOX);
+
+        int messageCount = 100;
+        String message = Resources.toString(Resources.getResource("eml/htmlMail.eml"), StandardCharsets.UTF_8);
+        try (TestIMAPClient imapClient = new TestIMAPClient()) {
+            imapClient.connect(JAMES_SERVER_HOST, server.getProbe(ImapGuiceProbe.class).getImapPort())
+                .login(JAMES_USER, PASSWORD)
+                .select(TestIMAPClient.INBOX);
+
+            LongStream.range(0, messageCount)
+                    .forEach(Throwing.longConsumer(session -> {
+                        imapClient.session(session);
+                        appendUniqueMessage(imapClient, TestIMAPClient.INBOX, message).block();
+                    }).sneakyThrow());
+//            Flux.range(0, messageCount)
+//                .parallel(10)
+//                .runOn(Schedulers.elastic())
+//                .flatMap(ignored -> appendUniqueMessage(cc, imapClient, TestIMAPClient.INBOX, message))
+//                .then()
+//                .block();
+
+            CALMLY_AWAIT_FIVE_MINUTE.until(() -> server.getProbe(SpoolerProbe.class).processingFinished());
+
+            imapClient.awaitMessageCount(CALMLY_AWAIT, messageCount);
+        }
+    }
+
+    default Mono<Void> appendUniqueMessage(TestIMAPClient imapClient, String mailbox, String message) {
+        return Mono.fromCallable(() -> {
+                String uniqueMessage = message.replace("banana", "UUID " + UUID.randomUUID().toString());
+                imapClient.append(mailbox, uniqueMessage);
+                return true;
+            })
+            .then();
     }
 
     default void sendUniqueMessage(SMTPMessageSender sender, String message) throws IOException {

@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.net.imap.IMAPClient;
+import org.apache.commons.net.imap.IMAPCommand;
+import org.apache.commons.net.imap.IMAPReply;
 import org.apache.commons.net.io.CRLFLineReader;
 import org.apache.james.core.Username;
 import org.assertj.core.api.Assertions;
@@ -91,6 +93,13 @@ public class TestIMAPClient extends ExternalResource implements Closeable, After
 
     public TestIMAPClient select(String mailbox) throws IOException {
         imapClient.select(mailbox);
+        return this;
+    }
+
+    public TestIMAPClient append(String mailbox, String message) throws IOException {
+        if (!imapClient.append(mailbox, null, null, message)) {
+            throw new RuntimeException(imapClient.getReplyString());
+        }
         return this;
     }
 
@@ -175,6 +184,13 @@ public class TestIMAPClient extends ExternalResource implements Closeable, After
     public String setFlagsForAllMessagesInMailbox(String flag) throws IOException {
         imapClient.store("1:*", "+FLAGS", flag);
         return imapClient.getReplyString();
+    }
+
+    public TestIMAPClient session(Long session) throws IOException {
+        if (!IMAPReply.isSuccess(imapClient.sendData("SESSION: " + session.toString()))) {
+            throw new RuntimeException(imapClient.getReplyString());
+        }
+        return this;
     }
 
     public String copyAllMessagesInMailboxTo(String mailboxName) throws IOException {
