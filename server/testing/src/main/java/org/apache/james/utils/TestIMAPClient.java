@@ -30,8 +30,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.net.imap.IMAPClient;
-import org.apache.commons.net.imap.IMAPCommand;
-import org.apache.commons.net.imap.IMAPReply;
 import org.apache.commons.net.io.CRLFLineReader;
 import org.apache.james.core.Username;
 import org.assertj.core.api.Assertions;
@@ -186,8 +184,8 @@ public class TestIMAPClient extends ExternalResource implements Closeable, After
         return imapClient.getReplyString();
     }
 
-    public TestIMAPClient session(Long session) throws IOException {
-        if (!IMAPReply.isSuccess(imapClient.sendData("SESSION: " + session.toString()))) {
+    public TestIMAPClient fetch(String sequenceSet, String itemNames) throws IOException {
+        if (!imapClient.fetch(sequenceSet, itemNames)) {
             throw new RuntimeException(imapClient.getReplyString());
         }
         return this;

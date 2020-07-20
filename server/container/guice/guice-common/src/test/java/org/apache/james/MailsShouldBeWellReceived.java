@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
@@ -261,7 +260,7 @@ interface MailsShouldBeWellReceived {
     }
 
     @Test
-    default void oneHundredMailsShouldBeAppendableConcurrently(GuiceJamesServer server) throws Exception {
+    default void oneHundredFetchesShouldBePerformableConcurrently(GuiceJamesServer server) throws Exception {
         server.getProbe(DataProbeImpl.class).fluent()
                 .addDomain(DOMAIN)
                 .addUser(JAMES_USER, PASSWORD);
@@ -269,38 +268,27 @@ interface MailsShouldBeWellReceived {
         MailboxProbeImpl mailboxProbe = server.getProbe(MailboxProbeImpl.class);
         mailboxProbe.createMailbox("#private", JAMES_USER, DefaultMailboxes.INBOX);
 
-        int messageCount = 100;
+        int fetchAttemps = 100;
         String message = Resources.toString(Resources.getResource("eml/htmlMail.eml"), StandardCharsets.UTF_8);
         try (TestIMAPClient imapClient = new TestIMAPClient()) {
             imapClient.connect(JAMES_SERVER_HOST, server.getProbe(ImapGuiceProbe.class).getImapPort())
                 .login(JAMES_USER, PASSWORD)
                 .select(TestIMAPClient.INBOX);
 
-            LongStream.range(0, messageCount)
-                    .forEach(Throwing.longConsumer(session -> {
-                        imapClient.session(session);
-                        appendUniqueMessage(imapClient, TestIMAPClient.INBOX, message).block();
-                    }).sneakyThrow());
-//            Flux.range(0, messageCount)
-//                .parallel(10)
-//                .runOn(Schedulers.elastic())
-//                .flatMap(ignored -> appendUniqueMessage(cc, imapClient, TestIMAPClient.INBOX, message))
-//                .then()
-//                .block();
+            appendUniqueMessage(imapClient, TestIMAPClient.INBOX, message);
 
-            CALMLY_AWAIT_FIVE_MINUTE.until(() -> server.getProbe(SpoolerProbe.class).processingFinished());
-
-            imapClient.awaitMessageCount(CALMLY_AWAIT, messageCount);
+            Flux.range(0, fetchAttemps)
+                .parallel(10)
+                .runOn(Schedulers.elastic())
+                .flatMap(ignored -> Mono.fromCallable(() -> imapClient.fetch("*:*", "FLAGS")))
+                .then()
+                .block();
         }
     }
 
-    default Mono<Void> appendUniqueMessage(TestIMAPClient imapClient, String mailbox, String message) {
-        return Mono.fromCallable(() -> {
-                String uniqueMessage = message.replace("banana", "UUID " + UUID.randomUUID().toString());
-                imapClient.append(mailbox, uniqueMessage);
-                return true;
-            })
-            .then();
+    default void appendUniqueMessage(TestIMAPClient imapClient, String mailbox, String message) throws IOException {
+        String uniqueMessage = message.replace("banana", "UUID " + UUID.randomUUID().toString());
+        imapClient.append(mailbox, uniqueMessage);
     }
 
     default void sendUniqueMessage(SMTPMessageSender sender, String message) throws IOException {
