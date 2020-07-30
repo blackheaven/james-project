@@ -127,7 +127,8 @@ public class DeletedMessageVaultHook implements PreDeletionHook {
         Preconditions.checkNotNull(deleteOperation);
 
         return groupMetadataByOwnerAndMessageId(deleteOperation)
-            .flatMap(this::appendToTheVault)
+            .parallel()
+            .concatMap(this::appendToTheVault)
             .then();
     }
 
